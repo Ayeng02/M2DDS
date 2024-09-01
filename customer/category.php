@@ -1,6 +1,6 @@
 <?php
 // Database connection
-include './includes/db_connect.php';
+include '../includes/db_connect.php';
 
 // Get category code and filter type from URL or default to 'all'
 $category_code = $_GET['code'];
@@ -54,7 +54,7 @@ if ($product_result->num_rows === 0) {
     <title>Products - <?php echo htmlspecialchars($category['category_name']); ?></title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="./css/home.css">
+    <link rel="stylesheet" href="../css/home.css">
     <style>
         .card-img-top {
             width: 100%;
@@ -154,12 +154,12 @@ if ($product_result->num_rows === 0) {
     </style>
 </head>
 <body>
-<?php include './includes/header.php' ?>
+<?php include '../includes/header.php' ?>
 
 <div class="container">
     <!-- Category Image Section -->
     <?php if (!empty($category['category_img'])): ?>
-        <img src="./<?php echo htmlspecialchars($category['category_img']); ?>" alt="Category Image" class="category-img">
+        <img src="../<?php echo htmlspecialchars($category['category_img']); ?>" alt="Category Image" class="category-img">
     <?php endif; ?>
 
     <!-- Category Description Section -->
@@ -196,7 +196,7 @@ if ($product_result->num_rows === 0) {
                 echo '<div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-4">
                     <div class="card h-100">
                         <a href="product-details.php?id=' . htmlspecialchars($product["prod_code"]) . '">
-                            <img class="card-img-top" src="./' . htmlspecialchars($product["prod_img"]) . '" alt="' . htmlspecialchars($product["prod_name"]) . '">
+                            <img class="card-img-top" src="../' . htmlspecialchars($product["prod_img"]) . '" alt="' . htmlspecialchars($product["prod_name"]) . '">
                         </a>
                         <div class="card-body">
                             <h5 class="card-title">
@@ -228,7 +228,7 @@ if ($product_result->num_rows === 0) {
 </div>
 
 <!-- Footer -->
-<?php include './includes/footer.php' ?>
+<?php include '../includes/footer.php' ?>
 
 
 <!-- Toast Notification -->
@@ -248,7 +248,7 @@ if ($product_result->num_rows === 0) {
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<script src="./js/notif.js"></script>
+<script src="../js/notif.js"></script>
 <script>
     function changeQuantity(action, productId) {
         const quantityInput = document.getElementById(`quantity-${productId}`);
