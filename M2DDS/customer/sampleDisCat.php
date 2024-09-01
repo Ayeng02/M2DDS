@@ -1,5 +1,5 @@
 <?php
-require 'vendor/autoload.php'; // Include the Composer autoload file
+require '../vendor/autoload.php'; // Include the Composer autoload file
 
 use Picqer\Barcode\BarcodeGeneratorPNG;
 
