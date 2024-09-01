@@ -568,6 +568,7 @@
 
 
         <!-- Video Section -->
+        <!--Temporary deleted-->
         <div class="video-section">
             <h3>Watch Our Latest Promo Video</h3>
             <hr class="under">
