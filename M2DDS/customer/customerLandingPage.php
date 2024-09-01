@@ -561,7 +561,7 @@
         <?php
         } else {
         }
-
+        //connection close
         $conn->close();
         ?>
 
