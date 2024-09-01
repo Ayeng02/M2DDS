@@ -264,7 +264,7 @@
             </div>
         </div>
 
-        <!-- Product Cards -->
+        <!-- Product Cards for what's New-->
         <h3 class="mb-4" style="text-align: center; padding-top: 20px; font-weight: bold; color: crimson;">What's New</h3>
         <hr class="under">
         <div class="row">
