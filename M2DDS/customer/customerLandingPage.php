@@ -454,11 +454,13 @@
                                     (<?php echo $avg_rating; ?>/5, <?php echo $review_count; ?> reviews)
                                 </p>
                                 <div class="d-flex flex-column align-items-center mb-3">
+                                    <!--
                                     <div class="d-flex align-items-center mb-2">
                                         <button class="incBtn1 btn btn-outline-secondary btn-sm" onclick="changeQuantity('decrease', '<?php echo $prod_code; ?>')">-</button>
                                         <input type="text" id="quantity-<?php echo $prod_code; ?>" class="form-control form-control-sm mx-1" value="1" readonly style="width: 50px; text-align: center; background-color: #FF8225; color: #f0f0f0; font-weight: 500; font-size:12px;">
                                         <button class="incBtn2 btn btn-outline-secondary btn-sm" onclick="changeQuantity('increase', '<?php echo $prod_code; ?>')">+</button>
                                     </div>
+                                -->
                                     <button class="btn btn-outline-success" style="margin-top: 10px;" onclick="addToCart('<?php echo $prod_code; ?>')">Add to Cart</button>
                                     <a href="product-details.php?id=<?php echo $prod_code; ?>" class="btn btn-primary mt-2">See Details</a>
                                 </div>
