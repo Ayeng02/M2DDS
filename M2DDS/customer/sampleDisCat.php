@@ -102,7 +102,7 @@ foreach ($categories as $category) {
                             <td><?php echo htmlspecialchars($category['category_name']); ?></td>
                             <td><?php echo htmlspecialchars($category['category_desc']); ?></td>
                             <td>
-                                <img src="<?php echo htmlspecialchars($category['category_img']); ?>" alt="Category Image" style="width: 100px; height: auto;">
+                                <img src="../<?php echo htmlspecialchars($category['category_img']); ?>" alt="Category Image" style="width: 100px; height: auto;">
                             </td>
                             <td>
                                 <img src="<?php echo $barcodeDataUris[$category['category_code']]; ?>" alt="Barcode" style="width: 150px; height: auto;">
