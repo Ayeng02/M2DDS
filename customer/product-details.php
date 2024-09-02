@@ -6,7 +6,7 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 
 // Set error reporting to ignore notices
-error_reporting(E_ALL & ~E_NOTICE) ;
+error_reporting(E_ALL & ~E_NOTICE);
 
 // Include database connection
 include '../includes/db_connect.php';
@@ -75,86 +75,111 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_submitted'])) 
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Details</title>
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="stylesheet" href="../css/home.css">
     <style>
         body {
             background-color: #f0f0f0;
         }
+
         .star-yellow {
-            color: #FFD700; /* Gold color for stars */
+            color: #FFD700;
+            /* Gold color for stars */
         }
+
         .product-details img {
             max-width: 100%;
             height: auto;
         }
+
         .review {
             border-bottom: 1px solid #ddd;
             padding-bottom: 10px;
             margin-bottom: 10px;
         }
+
         .recommendation-card {
             border: 1px solid #ddd;
             border-radius: 5px;
             overflow: hidden;
             margin-bottom: 20px;
         }
+
         .recommendation-card img {
             width: 100%;
-            height: 200px; /* Set a fixed height for all images */
-            object-fit: cover; /* Ensure the image covers the card without distortion */
+            height: 200px;
+            /* Set a fixed height for all images */
+            object-fit: cover;
+            /* Ensure the image covers the card without distortion */
         }
+
         .recommendation-card .card-body {
             padding: 15px;
         }
+
         .centered-content {
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100%;
         }
+
         .navbar {
             top: 0px;
         }
+
         .product-details {
             margin-top: 50px;
         }
+
         .user-icon-circle {
-            margin-left: 10px; 
-            color: #333; /* Icon color */
-            border-radius: 50%; /* Makes the icon circular */
-            background-color: #ffffff; /* Background color of the circle */
+            margin-left: 10px;
+            color: #333;
+            /* Icon color */
+            border-radius: 50%;
+            /* Makes the icon circular */
+            background-color: #ffffff;
+            /* Background color of the circle */
             padding: 10px;
-            font-size: 1.2em; /* Adjust the icon*/
-            vertical-align: middle; /* Aligns the icon with the text */
+            font-size: 1.2em;
+            /* Adjust the icon*/
+            vertical-align: middle;
+            /* Aligns the icon with the text */
             margin-left: -0px;
             margin-right: 1px;
         }
+
         .review-container {
-        max-height: none;
-        overflow: hidden;
-    }
-    .review-container.show-more {
-        max-height: none;
-    }
-    .review-item {
-        display: none;
-    }
-    .review-item.visible {
-        display: block;
-    }
-    .show-more-link {
-        cursor: pointer;
-        color: #007bff;
-        text-decoration: underline;
-    }
-    .toast {
+            max-height: none;
+            overflow: hidden;
+        }
+
+        .review-container.show-more {
+            max-height: none;
+        }
+
+        .review-item {
+            display: none;
+        }
+
+        .review-item.visible {
+            display: block;
+        }
+
+        .show-more-link {
+            cursor: pointer;
+            color: #007bff;
+            text-decoration: underline;
+        }
+
+        .toast {
             position: fixed;
             top: 20px;
             right: 20px;
@@ -184,14 +209,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_submitted'])) 
             background-color: #e36f10;
             border-color: #e36f10;
         }
-        .product-img {
-        width: 300px;
-        height: 300px;
-        object-fit: cover;
-    }
-
     </style>
 </head>
+
 <body>
     <?php include '../includes/header.php'; ?>
     <div class="container my-5">
@@ -201,32 +221,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_submitted'])) 
                     <?php
                     // Display product details
                     ?>
-                   <div class="product-details">
-    <h3><?php echo htmlspecialchars($prod_name); ?></h3>
-    <div class="d-flex flex-column flex-md-row">
-        <img src="../<?php echo htmlspecialchars($prod_img); ?>" alt="<?php echo htmlspecialchars($prod_name); ?>" class="mb-3" style="width: 450px; height: 300px; object-fit: cover; border-radius:10px;">
-        <div class="d-flex flex-column justify-content-between ml-md-4">
-            <div>
-                <p>Price: ₱<?php echo number_format($prod_price, 2); ?></p>
-                <p>Discount: ₱<?php echo number_format($prod_discount, 2); ?></p>
-                <p>QOH (kg.): <?php echo htmlspecialchars($prod_qoh); ?> kg.</p>
-                <p>Average Rating: <?php echo $avg_rating; ?>/5 (<?php echo $review_count; ?> reviews)</p>
-            </div>
-            <?php if ($prod_qoh > 0): ?>
-            <!-- Quantity Adjustment -->
-            <div class="d-flex align-items-center mb-3" style="justify-content: center;">
-                <button class="incBtn1 btn btn-outline-secondary" onclick="changeQuantity('decrease', '<?php echo $prod_code; ?>')">-</button>
-                <input type="text" id="quantity-<?php echo $prod_code; ?>" class="form-control mx-2" value="1" readonly style="width: 60px; text-align: center; background-color: #FF8225; color: #f0f0f0; font-weight: 500; font-size:12px;">
-                <button class="incBtn2 btn btn-outline-secondary" onclick="changeQuantity('increase', '<?php echo $prod_code; ?>')">+</button>
-            </div>
-            <button class="btn btn-outline-success mb-3" onclick="addToCart('<?php echo $prod_code; ?>')">Add to Cart</button>
-            <?php else: ?>
-            <p class="text-danger" style="margin-bottom: 100px; font-weight: 800;">Out of Stock</p>
-            <?php endif; ?>
-        </div>
-    </div>
-    <p>Description: <?php echo htmlspecialchars($prod_desc); ?></p>
-</div>
+                    <div class="product-details">
+                        <h3><?php echo htmlspecialchars($prod_name); ?></h3>
+                        <div class="d-flex flex-column flex-md-row">
+                            <img src="../<?php echo htmlspecialchars($prod_img); ?>" alt="<?php echo htmlspecialchars($prod_name); ?>" class="mb-3">
+                            <div class="d-flex flex-column justify-content-between ml-md-4">
+                                <div>
+                                    <p>Price: ₱<?php echo number_format($prod_price, 2); ?></p>
+                                    <p>Discount: ₱<?php echo number_format($prod_discount, 2); ?></p>
+                                    <p>QOH (kg.): <?php echo htmlspecialchars($prod_qoh); ?> kg.</p>
+                                    <p>Average Rating: <?php echo $avg_rating; ?>/5 (<?php echo $review_count; ?> reviews)</p>
+                                </div>
+                                <!-- Quantity Adjustment -->
+                                <div class="d-flex align-items-center mb-3" style="justify-content: center;">
+                                    <button class="incBtn1 btn btn-outline-secondary" onclick="changeQuantity('decrease', '<?php echo $prod_code; ?>')">-</button>
+                                    <input type="text" id="quantity-<?php echo $prod_code; ?>" class="form-control mx-2" value="1" readonly style="width: 60px; text-align: center; background-color: #FF8225; color: #f0f0f0; font-weight: 500; font-size:12px;">
+                                    <button class="incBtn2 btn btn-outline-secondary" onclick="changeQuantity('increase', '<?php echo $prod_code; ?>')">+</button>
+                                </div>
+                                <button class="btn btn-outline-success mb-3" onclick="addToCart('<?php echo $prod_code; ?>')">Add to Cart</button>
+                            </div>
+                        </div>
+                        <p>Description: <?php echo htmlspecialchars($prod_desc); ?></p>
+                    </div>
 
                     <!-- Review Submission Form -->
                     <h4 style="padding-top: 20px;">Submit Your Review</h4>
@@ -273,77 +289,77 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_submitted'])) 
                     $result_reviews = $conn->query($sql_reviews);
                     ?>
 
-<h4 style="font-weight: bold; margin-bottom:20px;">Customer Reviews</h4>
-<div class="review-container">
-    <?php
-    if ($result_reviews->num_rows > 0) {
-        $review_counter = 0;
-        while ($review = $result_reviews->fetch_assoc()) {
-            $rev_message = htmlspecialchars($review['rev_message']);
-            $rev_star = intval($review['rev_star']);
-            $f_name = htmlspecialchars($review['f_name']);
-            $l_name = htmlspecialchars($review['l_name']);
-            $rev_date = htmlspecialchars($review['rev_date']);
-            ?>
-            <div class="review-item <?php echo $review_counter < 5 ? 'visible' : ''; ?>">
-                <div class="review">
-                    <p><i class="fas fa-user-circle user-icon-circle"></i> <strong><?php echo "$f_name $l_name"; ?></strong> <span class="text-muted">(<?php echo $rev_date; ?>)</span></p>
-                    <p>Rating: <?php echo str_repeat('<i class="fas fa-star star-yellow"></i>', $rev_star) . str_repeat('<i class="far fa-star"></i>', 5 - $rev_star); ?></p>
-                    <p><?php echo $rev_message; ?></p>
-                </div>
-            </div>
-            <?php
-            $review_counter++;
-        }
-    } else {
-        echo "<p>No reviews yet.</p>";
-    }
-    ?>
-</div>
+                    <h4 style="font-weight: bold; margin-bottom:20px;">Customer Reviews</h4>
+                    <div class="review-container">
+                        <?php
+                        if ($result_reviews->num_rows > 0) {
+                            $review_counter = 0;
+                            while ($review = $result_reviews->fetch_assoc()) {
+                                $rev_message = htmlspecialchars($review['rev_message']);
+                                $rev_star = intval($review['rev_star']);
+                                $f_name = htmlspecialchars($review['f_name']);
+                                $l_name = htmlspecialchars($review['l_name']);
+                                $rev_date = htmlspecialchars($review['rev_date']);
+                        ?>
+                                <div class="review-item <?php echo $review_counter < 5 ? 'visible' : ''; ?>">
+                                    <div class="review">
+                                        <p><i class="fas fa-user-circle user-icon-circle"></i> <strong><?php echo "$f_name $l_name"; ?></strong> <span class="text-muted">(<?php echo $rev_date; ?>)</span></p>
+                                        <p>Rating: <?php echo str_repeat('<i class="fas fa-star star-yellow"></i>', $rev_star) . str_repeat('<i class="far fa-star"></i>', 5 - $rev_star); ?></p>
+                                        <p><?php echo $rev_message; ?></p>
+                                    </div>
+                                </div>
+                        <?php
+                                $review_counter++;
+                            }
+                        } else {
+                            echo "<p>No reviews yet.</p>";
+                        }
+                        ?>
+                    </div>
 
-<?php if ($result_reviews->num_rows > 5) { ?>
-    <p class="show-more-link" onclick="toggleReviewVisibility(event)">Show More Reviews</p>
-<?php } ?>
+                    <?php if ($result_reviews->num_rows > 5) { ?>
+                        <p class="show-more-link" onclick="toggleReviewVisibility(event)">Show More Reviews</p>
+                    <?php } ?>
 
 
-                     <!-- Recommended Product Section -->
+                    <!-- Recommended Product Section -->
                     <h4 style="padding: 20px; text-align:center; color:crimson; font-weight:600;">Recommended Products</h4>
                     <div class="row">
-                    <?php
-                    $sql_recommend = "
+                        <?php
+                        $sql_recommend = "
                         SELECT prod_code, prod_name, prod_img
                         FROM product_tbl
                         WHERE prod_code != '$prod_code'
                         ORDER BY RAND()
                         LIMIT 3
                     ";
-                    $result_recommend = $conn->query($sql_recommend);
+                        $result_recommend = $conn->query($sql_recommend);
 
-                    if ($result_recommend->num_rows > 0) {
-                        while ($recommend = $result_recommend->fetch_assoc()) {
-                            $recommend_prod_code = $recommend['prod_code'];
-                            $recommend_prod_name = $recommend['prod_name'];
-                            $recommend_prod_img = $recommend['prod_img'];
-                            ?>
-                            <div class="col-6 col-md-4">
-                                <div class="recommendation-card">
-                                    <img src="../<?php echo htmlspecialchars($recommend_prod_img); ?>" alt="<?php echo htmlspecialchars($recommend_prod_name); ?>">
-                                    <div class="card-body">
-                                        <h5 class="card-title"><?php echo htmlspecialchars($recommend_prod_name); ?></h5>
-                                        <a href="product-details.php?id=<?php echo htmlspecialchars($recommend_prod_code); ?>" class="btn btn-primary">View Details</a>
+                        if ($result_recommend->num_rows > 0) {
+                            while ($recommend = $result_recommend->fetch_assoc()) {
+                                $recommend_prod_code = $recommend['prod_code'];
+                                $recommend_prod_name = $recommend['prod_name'];
+                                $recommend_prod_img = $recommend['prod_img'];
+                        ?>
+                                <div class="col-6 col-md-4">
+                                    <div class="recommendation-card">
+                                        <img src="../<?php echo htmlspecialchars($recommend_prod_img); ?>" alt="<?php echo htmlspecialchars($recommend_prod_name); ?>">
+                                        <div class="card-body">
+                                            <h5 class="card-title"><?php echo htmlspecialchars($recommend_prod_name); ?></h5>
+                                            <a href="product-details.php?id=<?php echo htmlspecialchars($recommend_prod_code); ?>" class="btn btn-primary">View Details</a>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <?php
+                        <?php
+                            }
+                        } else {
+                            echo "<p>No recommended products found.</p>";
                         }
-                    } else {
-                        echo "<p>No recommended products found.</p>";
-                    }
-                    ?>
+                        ?>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
     </div>
     <!--Footer-->
@@ -375,7 +391,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_submitted'])) 
             if (action === 'increase') {
                 quantityInput.value = (currentQuantity + 0.25).toFixed(2);
             } else if (action === 'decrease') {
-                if(currentQuantity>1){
+                if (currentQuantity > 1) {
                     quantityInput.value = (currentQuantity - 0.25).toFixed(2);
                 }
             }
@@ -428,22 +444,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_submitted'])) 
         }, 3000);
 
         function toggleReviewVisibility(event) {
-        event.preventDefault();
-        const reviews = document.querySelectorAll('.review-item');
-        const linkText = event.target;
+            event.preventDefault();
+            const reviews = document.querySelectorAll('.review-item');
+            const linkText = event.target;
 
-        reviews.forEach((review, index) => {
-            if (index >= 5) {
-                review.classList.toggle('visible');
+            reviews.forEach((review, index) => {
+                if (index >= 5) {
+                    review.classList.toggle('visible');
+                }
+            });
+
+            if (linkText.textContent === 'Show More Reviews') {
+                linkText.textContent = 'Show Less Reviews';
+            } else {
+                linkText.textContent = 'Show More Reviews';
             }
-        });
-
-        if (linkText.textContent === 'Show More Reviews') {
-            linkText.textContent = 'Show Less Reviews';
-        } else {
-            linkText.textContent = 'Show More Reviews';
         }
-    }
     </script>
 </body>
+
 </html>

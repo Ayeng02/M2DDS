@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,6 +14,7 @@
             right: 20px;
             z-index: 9999;
         }
+
         .chat-box {
             display: none;
             position: fixed;
@@ -22,21 +24,25 @@
             height: 400px;
             border: 1px solid #ddd;
             border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             background: #fff;
             overflow: hidden;
             display: flex;
             flex-direction: column;
         }
+
         .chat-header {
-            background: #800000; /* Maroon */
-            color: #FFD700; /* Semi-Light Gold */
+            background: #800000;
+            /* Maroon */
+            color: #FFD700;
+            /* Semi-Light Gold */
             padding: 15px;
             border-radius: 10px 10px 0 0;
             cursor: pointer;
             text-align: center;
             font-weight: bold;
         }
+
         .chat-body {
             padding: 15px;
             flex: 1;
@@ -44,12 +50,14 @@
             display: flex;
             flex-direction: column;
         }
+
         .chat-footer {
             padding: 10px;
             border-top: 1px solid #ddd;
             background: #f8f9fa;
             display: flex;
         }
+
         .chat-footer input {
             flex: 1;
             border-radius: 20px;
@@ -57,26 +65,35 @@
             padding: 10px;
             margin-right: 10px;
         }
+
         .chat-footer button {
             border-radius: 20px;
-            background: #800000; /* Maroon */
-            color: #FFD700; /* Semi-Light Gold */
+            background: #800000;
+            /* Maroon */
+            color: #FFD700;
+            /* Semi-Light Gold */
             border: none;
         }
+
         .chat-footer button:hover {
-            background: #6f0000; /* Darker Maroon */
+            background: #6f0000;
+            /* Darker Maroon */
         }
+
         .message {
             margin-bottom: 10px;
             max-width: 80%;
         }
+
         .message.user {
             align-self: flex-end;
-            background: #800000; /* Maroon */
+            background: #800000;
+            /* Maroon */
             color: #fff;
             padding: 10px;
             border-radius: 20px 20px 0 20px;
         }
+
         .message.seller {
             align-self: flex-start;
             background: #f5f5f5;
@@ -86,6 +103,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Your content here -->
 
@@ -110,6 +128,7 @@
 
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
     <script>
         function toggleChatBox() {
             const chatBox = document.getElementById('chatBox');
@@ -134,4 +153,5 @@
         });
     </script>
 </body>
+
 </html>
