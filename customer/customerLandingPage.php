@@ -267,14 +267,13 @@
             include '../includes/db_connect.php';
 
             // Query to get products with average star rating and the number of reviews, limited to 4
-            $sql = "
-            SELECT p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_img, p.prod_discount, 
-                IFNULL(AVG(r.rev_star), 0) as avg_rating, COUNT(r.rev_star) as review_count
-            FROM product_tbl p
-            LEFT JOIN ratings_tbl r ON p.prod_code = r.prod_code
-            GROUP BY p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_img, p.prod_discount
-            ORDER BY p.created_at DESC
-            LIMIT 4 ";
+            $sql = "SELECT p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_img, p.prod_discount, p.prod_qoh, 
+                        IFNULL(AVG(r.rev_star), 0) as avg_rating, COUNT(r.rev_star) as review_count
+                    FROM product_tbl p
+                    LEFT JOIN ratings_tbl r ON p.prod_code = r.prod_code
+                    GROUP BY p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_img, p.prod_discount
+                    ORDER BY p.created_at DESC
+                    LIMIT 4 ";
 
 
             $result = $conn->query($sql);
@@ -283,6 +282,7 @@
             if ($result->num_rows > 0) {
                 while ($row = $result->fetch_assoc()) {
                     $prod_code = $row['prod_code'];
+                    $prod_qoh = $row['prod_qoh'];
                     $prod_name = $row['prod_name'];
                     $prod_desc = $row['prod_desc'];
                     $prod_price = $row['prod_price'];
@@ -325,12 +325,16 @@
                                     (<?php echo $avg_rating; ?>/5, <?php echo $review_count; ?> reviews)
                                 </p>
                                 <div class="d-flex flex-column align-items-center mb-3">
+                                    <?php if ($prod_qoh > 0): ?>
                                     <div class="d-flex align-items-center mb-2">
                                         <button class="incBtn1 btn btn-outline-secondary btn-sm" onclick="changeQuantity('decrease', '<?php echo $prod_code; ?>')">-</button>
                                         <input type="text" id="quantity-<?php echo $prod_code; ?>" class="form-control form-control-sm mx-1" value="1" readonly style="width: 50px; text-align: center; background-color: #FF8225; color: #f0f0f0; font-weight: 500; font-size:12px;">
                                         <button class="incBtn2 btn btn-outline-secondary btn-sm" onclick="changeQuantity('increase', '<?php echo $prod_code; ?>')">+</button>
                                     </div>
                                     <button class="btn btn-outline-success" style="margin-top: 10px;" onclick="addToCart('<?php echo $prod_code; ?>')">Add to Cart</button>
+                                    <?php else: ?>
+                                    <p class="text-danger" style="font-weight: 800;">Out of Stock</p>
+                                    <?php endif; ?>
                                     <a href="product-details.php?id=<?php echo $prod_code; ?>" class="btn btn-primary mt-2">See Details</a>
                                 </div>
                             </div>
@@ -370,7 +374,7 @@
         include '../includes/db_connect.php';
 
         // Fetch the top 8 best sellers with correct average ratings, review count, and total sales
-        $sql = "SELECT p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_discount, p.prod_img, 
+        $sql = "SELECT p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_discount, p.prod_img, p.prod_qoh, 
                     IFNULL(AVG(r.rev_star), 0) as avg_rating, 
                     IFNULL(review_counts.review_count, 0) as review_count, 
                     COUNT(o.prod_code) as total_sales
@@ -400,6 +404,7 @@
                 <?php
                 while ($row = $result->fetch_assoc()) {
                     $prod_code = $row['prod_code'];
+                    $prod_qoh = $row['prod_qoh'];
                     $prod_name = $row['prod_name'];
                     $prod_desc = $row['prod_desc'];
                     $prod_price = $row['prod_price'];
@@ -452,7 +457,11 @@
                                         <button class="incBtn2 btn btn-outline-secondary btn-sm" onclick="changeQuantity('increase', '<?php echo $prod_code; ?>')">+</button>
                                     </div>
                                 -->
+                                    <?php if ($prod_qoh > 0): ?>
                                     <button class="btn btn-outline-success" style="margin-top: 10px;" onclick="addToCart('<?php echo $prod_code; ?>')">Add to Cart</button>
+                                    <?php else: ?>
+                                    <p class="text-danger" style="font-weight: 800;">Out of Stock</p>
+                                    <?php endif; ?>
                                     <a href="product-details.php?id=<?php echo $prod_code; ?>" class="btn btn-primary mt-2">See Details</a>
                                 </div>
                             </div>
@@ -471,7 +480,7 @@
         include '../includes/db_connect.php';
 
         // Fetch discounted products with average ratings
-        $sql = "SELECT p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_discount, p.prod_img, 
+        $sql = "SELECT p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_discount, p.prod_img, p.prod_qoh,
                     IFNULL(AVG(r.rev_star), 0) as avg_rating, COUNT(r.rev_star) as rating_count
                 FROM product_tbl p
                 LEFT JOIN ratings_tbl r ON p.prod_code = r.prod_code
@@ -491,6 +500,7 @@
                 <?php
                 while ($row = $result->fetch_assoc()) {
                     $prod_code = $row['prod_code'];
+                    $prod_qoh = $row['prod_qoh'];
                     $prod_name = $row['prod_name'];
                     $prod_desc = $row['prod_desc'];
                     $prod_price = $row['prod_price'];
@@ -538,7 +548,11 @@
                                         <button class="incBtn2 btn btn-outline-secondary btn-sm" onclick="changeQuantity('increase', '<?php echo $prod_code; ?>')">+</button>
                                     </div>
                                 -->
+                                    <?php if ($prod_qoh > 0): ?>
                                     <button class="btn btn-outline-success" style="margin-top: 10px;" onclick="addToCart('<?php echo $prod_code; ?>')">Add to Cart</button>
+                                    <?php else: ?>
+                                    <p class="text-danger" style="font-weight: 800;">Out of Stock</p>
+                                    <?php endif; ?>
                                     <a href="product-details.php?id=<?php echo $prod_code; ?>" class="btn btn-primary mt-2">See Details</a>
                                 </div>
                             </div>

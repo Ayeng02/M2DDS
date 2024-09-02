@@ -6,7 +6,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $search_query = "%" . $_GET['v'] . "%";
 
     $sql = "
-        SELECT p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_img, p.prod_discount,
+        SELECT p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_img, p.prod_discount, p.prod_qoh,
                IFNULL(AVG(r.rev_star), 0) as avg_rating, COUNT(r.rev_star) as review_count
         FROM product_tbl p
         LEFT JOIN ratings_tbl r ON p.prod_code = r.prod_code
@@ -51,16 +51,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         }
 
         .product-card {
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-body {
+            flex-grow: 1;
         }
 
         .product-card:hover {
-            transform: translateY(-5px);
+            transform: scale(1px);
             box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
         }
 
         .card-img-top {
-            border-radius: 8px 8px 0 0;
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
         }
 
         .card-title {
@@ -126,6 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             <?php if (!empty($products)): ?>
                 <?php foreach ($products as $product):
                     $prod_code = htmlspecialchars($product['prod_code']);
+                    $prod_qoh = htmlspecialchars($product['prod_qoh']);
                     $prod_name = htmlspecialchars($product['prod_name']);
                     $prod_desc = htmlspecialchars($product['prod_desc']);
                     $prod_price = number_format($product['prod_price'], 2);
@@ -164,12 +173,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                                     (<?php echo $avg_rating; ?>/5, <?php echo $review_count; ?> reviews)
                                 </p>
                                 <div class="d-flex flex-column align-items-center mb-3">
+                                    <?php if ($prod_qoh > 0): ?>
                                     <div class="d-flex align-items-center mb-2">
                                         <button class="incBtn1 btn btn-outline-secondary btn-sm" onclick="changeQuantity('decrease', '<?php echo $prod_code; ?>')">-</button>
                                         <input type="text" id="quantity-<?php echo $prod_code; ?>" class="form-control form-control-sm mx-1" value="1" readonly style="width: 50px; text-align: center; background-color: #FF8225; color: #f0f0f0; font-weight: 500; font-size:12px;">
                                         <button class="incBtn2 btn btn-outline-secondary btn-sm" onclick="changeQuantity('increase', '<?php echo $prod_code; ?>')">+</button>
                                     </div>
                                     <button class="btn btn-outline-success" style="margin-top: 10px;" onclick="addToCart('<?php echo $prod_code; ?>')">Add to Cart</button>
+                                    <?php else: ?>
+                                    <p class="text-danger" style="font-weight: 800;">Out of Stock</p>
+                                    <?php endif; ?>
                                     <a href="product-details.php?id=<?php echo $prod_code; ?>" class="btn btn-primary mt-2">See Details</a>
                                 </div>
                             </div>
