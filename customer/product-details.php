@@ -201,28 +201,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_submitted'])) 
                     <?php
                     // Display product details
                     ?>
-                    <div class="product-details">
-                        <h3><?php echo htmlspecialchars($prod_name); ?></h3>
-                        <div class="d-flex flex-column flex-md-row">
-                            <img src="../<?php echo htmlspecialchars($prod_img); ?>" alt="<?php echo htmlspecialchars($prod_name); ?>" class="mb-3" style="width: 450px; height: 300px; object-fit: cover; border-radius:10px;">
-                            <div class="d-flex flex-column justify-content-between ml-md-4">
-                                <div>
-                                    <p>Price: ₱<?php echo number_format($prod_price, 2); ?></p>
-                                    <p>Discount: ₱<?php echo number_format($prod_discount, 2); ?></p>
-                                    <p>QOH (kg.): <?php echo htmlspecialchars($prod_qoh); ?> kg.</p>
-                                    <p>Average Rating: <?php echo $avg_rating; ?>/5 (<?php echo $review_count; ?> reviews)</p>
-                                </div>
-                                <!-- Quantity Adjustment -->
-                                <div class="d-flex align-items-center mb-3" style="justify-content: center;">
-                                    <button class="incBtn1 btn btn-outline-secondary" onclick="changeQuantity('decrease', '<?php echo $prod_code; ?>')">-</button>
-                                    <input type="text" id="quantity-<?php echo $prod_code; ?>" class="form-control mx-2" value="1" readonly style="width: 60px; text-align: center; background-color: #FF8225; color: #f0f0f0; font-weight: 500; font-size:12px;">
-                                    <button class="incBtn2 btn btn-outline-secondary" onclick="changeQuantity('increase', '<?php echo $prod_code; ?>')">+</button>
-                                </div>
-                                <button class="btn btn-outline-success mb-3" onclick="addToCart('<?php echo $prod_code; ?>')">Add to Cart</button>
-                            </div>
-                        </div>
-                        <p>Description: <?php echo htmlspecialchars($prod_desc); ?></p>
-                    </div>
+                   <div class="product-details">
+    <h3><?php echo htmlspecialchars($prod_name); ?></h3>
+    <div class="d-flex flex-column flex-md-row">
+        <img src="../<?php echo htmlspecialchars($prod_img); ?>" alt="<?php echo htmlspecialchars($prod_name); ?>" class="mb-3" style="width: 450px; height: 300px; object-fit: cover; border-radius:10px;">
+        <div class="d-flex flex-column justify-content-between ml-md-4">
+            <div>
+                <p>Price: ₱<?php echo number_format($prod_price, 2); ?></p>
+                <p>Discount: ₱<?php echo number_format($prod_discount, 2); ?></p>
+                <p>QOH (kg.): <?php echo htmlspecialchars($prod_qoh); ?> kg.</p>
+                <p>Average Rating: <?php echo $avg_rating; ?>/5 (<?php echo $review_count; ?> reviews)</p>
+            </div>
+            <?php if ($prod_qoh > 0): ?>
+            <!-- Quantity Adjustment -->
+            <div class="d-flex align-items-center mb-3" style="justify-content: center;">
+                <button class="incBtn1 btn btn-outline-secondary" onclick="changeQuantity('decrease', '<?php echo $prod_code; ?>')">-</button>
+                <input type="text" id="quantity-<?php echo $prod_code; ?>" class="form-control mx-2" value="1" readonly style="width: 60px; text-align: center; background-color: #FF8225; color: #f0f0f0; font-weight: 500; font-size:12px;">
+                <button class="incBtn2 btn btn-outline-secondary" onclick="changeQuantity('increase', '<?php echo $prod_code; ?>')">+</button>
+            </div>
+            <button class="btn btn-outline-success mb-3" onclick="addToCart('<?php echo $prod_code; ?>')">Add to Cart</button>
+            <?php else: ?>
+            <p class="text-danger" style="margin-bottom: 100px; font-weight: 800;">Out of Stock</p>
+            <?php endif; ?>
+        </div>
+    </div>
+    <p>Description: <?php echo htmlspecialchars($prod_desc); ?></p>
+</div>
 
                     <!-- Review Submission Form -->
                     <h4 style="padding-top: 20px;">Submit Your Review</h4>
