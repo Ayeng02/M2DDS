@@ -8,7 +8,7 @@ include '../includes/db_connect.php';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
     $password = $_POST['password'];
-    
+
     // Prepare and execute query
     $stmt = $conn->prepare("SELECT cust_id, cust_pass FROM Customers WHERE email = ?");
     $stmt->bind_param("s", $email);
@@ -41,17 +41,19 @@ $conn->close();
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Meat-To-Door Delivery</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <style>
         body {
             display: flex;
             justify-content: center;
         }
+
         .background-animation {
             position: absolute;
             top: 0;
@@ -63,11 +65,21 @@ $conn->close();
             animation: gradientAnimation 15s ease infinite;
             z-index: -1;
         }
+
         @keyframes gradientAnimation {
-            0% { background-position: 0% 0%; }
-            50% { background-position: 100% 100%; }
-            100% { background-position: 0% 0%; }
+            0% {
+                background-position: 0% 0%;
+            }
+
+            50% {
+                background-position: 100% 100%;
+            }
+
+            100% {
+                background-position: 0% 0%;
+            }
         }
+
         .login-container {
             width: 100%;
             max-width: 500px;
@@ -80,53 +92,65 @@ $conn->close();
             overflow: hidden;
             margin-top: 75px;
         }
+
         .login-header {
             text-align: center;
             margin-bottom: 1.5rem;
         }
+
         .login-header img {
             max-width: 120px;
             margin-bottom: 1rem;
         }
+
         .login-header h1 {
             font-size: 1.75rem;
             color: #333;
             margin: 0;
         }
+
         .login-header p {
             color: #6c757d;
             margin: 0;
             font-size: 1rem;
         }
+
         .login-form .form-group {
             margin-bottom: 1.5rem;
         }
+
         .login-form .form-control {
             border-radius: 0.25rem;
             border: 1px solid #ced4da;
             padding: 0.75rem;
             font-size: 1rem;
         }
+
         .login-form .btn {
             border-radius: 0.25rem;
             padding: 0.75rem;
             font-size: 1rem;
             font-weight: 600;
         }
+
         .login-footer {
             text-align: center;
             margin-top: 1.5rem;
         }
+
         .login-footer a {
             color: #007bff;
             text-decoration: none;
         }
+
         .login-footer a:hover {
             text-decoration: underline;
         }
+
         .alert {
             display: none;
         }
+
         .navbar {
             width: 100%;
             z-index: 999;
@@ -155,10 +179,12 @@ $conn->close();
         .navbar-toggler-icon {
             background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='crimson' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
         }
+
         .logo2 {
             height: 40px;
             margin-right: 10px;
         }
+
         .btn-primary {
             background-color: #FF8225;
             border-color: #FF8225;
@@ -170,48 +196,51 @@ $conn->close();
         }
     </style>
 </head>
-<body>
-<!-- Navigation Bar -->
-<nav class="navbar navbar-expand-lg">
-    <a class="navbar-brand" href="#">
-        <img class="logo2" src="../img/logo.ico" alt="Meat-To-Door Logo">
-        Meat-To-Door
-    </a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-                <a class="nav-link" href="../index.php">
-                    <i class="fas fa-home"></i> Home <span class="sr-only">(current)</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-info-circle"></i> About Us
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-envelope"></i> Contact
-                </a>
-            </li>
-            <li class="nav-item active">
-                <a class="nav-link" href="login.php">
-                    <i class="fas fa-sign-in-alt"></i> Login
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="register.php">
-                    <i class="fas fa-user-plus"></i> Register
-                </a>
-            </li>
-        </ul>
-    </div>
-</nav>
 
-    <div class="background-animation"></div>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg">
+        <a class="navbar-brand" href="#">
+            <img class="logo2" src="../img/logo.ico" alt="Meat-To-Door Logo">
+            Meat-To-Door
+        </a>
+
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="../index.php">
+                        <i class="fas fa-home"></i> Home <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-info-circle"></i> About Us
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-envelope"></i> Contact
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="login.php">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="register.php">
+                        <i class="fas fa-user-plus"></i> Register
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+ <div class="background-animation"></div>
     <div class="container login-container">
         <div class="login-header">
             <img src="../img/logo.ico" alt="Meat-To-Door Logo">
@@ -224,6 +253,7 @@ $conn->close();
                     <?php echo $error; ?>
                 </div>
             <?php endif; ?>
+            
             <div class="form-group">
                 <label for="email">Email address</label>
                 <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
@@ -264,4 +294,5 @@ $conn->close();
         });
     </script>
 </body>
+
 </html>
