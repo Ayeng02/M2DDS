@@ -12,7 +12,6 @@
         body {
             background-color: #f0f0f0;
         }
-    /*this is a comment*/
         .navbar {
             width: 100%;
             z-index: 999;
