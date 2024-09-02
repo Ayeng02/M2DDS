@@ -19,13 +19,13 @@ if (!isset($_GET['id'])) {
 $prod_code = $conn->real_escape_string($_GET['id']);
 
 // Query to get product details
-    $sql_product = "
-        SELECT p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_img, p.prod_discount, p.prod_qoh,
+$sql_product = "
+    SELECT p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_img, p.prod_discount, p.prod_qoh,
            IFNULL(AVG(r.rev_star), 0) as avg_rating, COUNT(r.rev_star) as review_count
-         FROM product_tbl p
-         LEFT JOIN ratings_tbl r ON p.prod_code = r.prod_code
-          WHERE p.prod_code = '$prod_code'
-         GROUP BY p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_img, p.prod_discount, p.prod_qoh
+    FROM product_tbl p
+    LEFT JOIN ratings_tbl r ON p.prod_code = r.prod_code
+    WHERE p.prod_code = '$prod_code'
+    GROUP BY p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_img, p.prod_discount, p.prod_qoh
 ";
 
 $result_product = $conn->query($sql_product);
