@@ -7,13 +7,13 @@
     <title>Home</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="stylesheet" href="../css/home.css">
     <link rel="icon" href="../img/logo.ico" type="image/x-icon">
     <style>
         body {
             background-color: #f0f0f0;
-        }   
+        }
 
         .navbar {
             top: 0px;
@@ -36,16 +36,12 @@
         .card-img-top {
             width: 100%;
             height: 200px;
-            /* Fixed height */
             object-fit: cover;
-            /* Cover the container */
         }
 
         .star-yellow {
             color: #FFB200;
-            /* Set star color to yellow */
             font-size: 0.9rem;
-            /* Adjust size as needed */
         }
 
         .toast {
@@ -91,7 +87,6 @@
         .badge-custom {
             color: #ffffff;
         }
-
     </style>
 </head>
 
@@ -115,7 +110,7 @@
         $result = $conn->query($sql);
 
         echo '<div id="categoriesCarousel" class="carousel slide" data-ride="carousel">
-    <div class="carousel-inner">';
+                 <div class="carousel-inner">';
 
         if ($result->num_rows > 0) {
             $isActive = true;
@@ -124,36 +119,36 @@
                 $isActive = false; // Only the first item should be active
 
                 echo '<div class="carousel-item ' . $activeClass . '">
-            <a href="category.php?code=' . $row["category_code"] . '">
-                <img src="../' . $row["category_img"] . '" class="d-block w-100" alt="' . $row["category_name"] . '">
-            </a>
-            <div class="carousel-caption d-flex flex-column justify-content-center align-items-center">
-                <h5>' . $row["category_name"] . '</h5>
-                <p>' . $row["category_desc"] . '</p>
-            </div>
-          </div>';
+                                    <a href="category.php?code=' . $row["category_code"] . '">
+                                        <img src="../' . $row["category_img"] . '" class="d-block w-100" alt="' . $row["category_name"] . '">
+                                    </a>
+                                    <div class="carousel-caption d-flex flex-column justify-content-center align-items-center">
+                                        <h5>' . $row["category_name"] . '</h5>
+                                        <p>' . $row["category_desc"] . '</p>
+                                    </div>
+                            </div>';
             }
         } else {
             // Display default carousel item if no categories are found
             echo '<div class="carousel-item active">
-        <img src="https://via.placeholder.com/1200x300?text=No+Categories+Available" class="d-block w-100" alt="No Categories">
-        <div class="carousel-caption d-flex flex-column justify-content-center align-items-center">
-            <h5>No Categories Available</h5>
-            <p>Please check back later for updates.</p>
-        </div>
-      </div>';
+                        <img src="https://via.placeholder.com/1200x300?text=No+Categories+Available" class="d-block w-100" alt="No Categories">
+                        <div class="carousel-caption d-flex flex-column justify-content-center align-items-center">
+                            <h5>No Categories Available</h5>
+                            <p>Please check back later for updates.</p>
+                        </div>
+                    </div>';
         }
 
         echo '  </div>
-    <a class="carousel-control-prev" href="#categoriesCarousel" role="button" data-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="sr-only">Previous</span>
-    </a>
-    <a class="carousel-control-next" href="#categoriesCarousel" role="button" data-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="sr-only">Next</span>
-    </a>
-  </div>';
+                <a class="carousel-control-prev" href="#categoriesCarousel" role="button" data-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Previous</span>
+                </a>
+                <a class="carousel-control-next" href="#categoriesCarousel" role="button" data-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Next</span>
+                </a>
+             </div>';
 
         $conn->close();
         ?>
@@ -177,18 +172,18 @@
 
                     // Create a query to get the latest three orders with product code, status, and total
                     $sql = "SELECT 
-            o.order_id AS order_id,
-            s.status_name AS status,
-            o.order_total
-        FROM 
-            Order_tbl o
-        JOIN 
-            status_tbl s ON o.status_code = s.status_code
-        WHERE 
-            o.cust_id = ? 
-        ORDER BY 
-            o.order_date DESC
-        LIMIT 5";
+                                o.order_id AS order_id,
+                                s.status_name AS status,
+                                o.order_total
+                            FROM 
+                                Order_tbl o
+                            JOIN 
+                                status_tbl s ON o.status_code = s.status_code
+                            WHERE 
+                                o.cust_id = ? 
+                            ORDER BY 
+                                o.order_date DESC
+                            LIMIT 5";
 
                     $stmt = $conn->prepare($sql);
                     if (!$stmt) {
@@ -259,7 +254,7 @@
                             <p class="card-text">Special discount on selected items.</p>
                             <a href="offer-details.html" class="btn btn-primary">Learn More</a>
                         </div>
-                    </div> 
+                    </div>
                 </div>
             </div>
         </div>
@@ -370,31 +365,27 @@
             ?>
         </div>
 
-
-
-
         <?php
         // Database connection
         include '../includes/db_connect.php';
 
         // Fetch the top 8 best sellers with correct average ratings, review count, and total sales
-        $sql = "
-    SELECT p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_discount, p.prod_img, 
-        IFNULL(AVG(r.rev_star), 0) as avg_rating, 
-        IFNULL(review_counts.review_count, 0) as review_count, 
-        COUNT(o.prod_code) as total_sales
-    FROM product_tbl p
-    LEFT JOIN (
-        SELECT prod_code, COUNT(rev_star) as review_count
-        FROM ratings_tbl
-        GROUP BY prod_code
-    ) review_counts ON p.prod_code = review_counts.prod_code
-    LEFT JOIN ratings_tbl r ON p.prod_code = r.prod_code
-    JOIN order_tbl o ON p.prod_code = o.prod_code
-    GROUP BY p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_img, p.prod_discount, review_counts.review_count
-    ORDER BY total_sales DESC
-    LIMIT 8
-    ";
+        $sql = "SELECT p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_discount, p.prod_img, 
+                    IFNULL(AVG(r.rev_star), 0) as avg_rating, 
+                    IFNULL(review_counts.review_count, 0) as review_count, 
+                    COUNT(o.prod_code) as total_sales
+                FROM product_tbl p
+                LEFT JOIN (
+                    SELECT prod_code, COUNT(rev_star) as review_count
+                    FROM ratings_tbl
+                    GROUP BY prod_code
+                ) review_counts ON p.prod_code = review_counts.prod_code
+                LEFT JOIN ratings_tbl r ON p.prod_code = r.prod_code
+                JOIN order_tbl o ON p.prod_code = o.prod_code
+                GROUP BY p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_img, p.prod_discount, review_counts.review_count
+                ORDER BY total_sales DESC
+                LIMIT 8
+                ";
 
         $result = $conn->query($sql);
 
@@ -480,14 +471,13 @@
         include '../includes/db_connect.php';
 
         // Fetch discounted products with average ratings
-        $sql = "
-    SELECT p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_discount, p.prod_img, 
-           IFNULL(AVG(r.rev_star), 0) as avg_rating, COUNT(r.rev_star) as rating_count
-    FROM product_tbl p
-    LEFT JOIN ratings_tbl r ON p.prod_code = r.prod_code
-    WHERE p.prod_discount > 0
-    GROUP BY p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_discount, p.prod_img
-";
+        $sql = "SELECT p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_discount, p.prod_img, 
+                    IFNULL(AVG(r.rev_star), 0) as avg_rating, COUNT(r.rev_star) as rating_count
+                FROM product_tbl p
+                LEFT JOIN ratings_tbl r ON p.prod_code = r.prod_code
+                WHERE p.prod_discount > 0
+                GROUP BY p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_discount, p.prod_img";
+        
         $result = $conn->query($sql);
 
         // Check if there are any discounted products
@@ -568,7 +558,7 @@
 
 
         <!-- Video Section -->
-        <!--Temporary deleted-->
+        <!--Temporary deleted and will replaced with an updated one-->
         <div class="video-section">
             <h3>Watch Our Latest Promo Video</h3>
             <hr class="under">
@@ -577,7 +567,6 @@
                 Your browser does not support the video tag.
             </video>
         </div>
-
 
     </div>
 
@@ -604,22 +593,22 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="../js/notif.js"></script>
     <script>
-function changeQuantity(action, productId) {
-    console.log(`Action: ${action}, Product ID: ${productId}`);  // Debugging
+        function changeQuantity(action, productId) {
+            console.log(`Action: ${action}, Product ID: ${productId}`); // Debugging
 
-    const quantityInput = document.getElementById(`quantity-${productId}`);
-    let currentQuantity = parseFloat(quantityInput.value);
+            const quantityInput = document.getElementById(`quantity-${productId}`);
+            let currentQuantity = parseFloat(quantityInput.value);
 
-    console.log(`Current Quantity: ${currentQuantity}`);  // Debugging
+            console.log(`Current Quantity: ${currentQuantity}`); // Debugging
 
-    if (action === 'increase') {
-        quantityInput.value = (currentQuantity + 0.25).toFixed(2);
-    } else if (action === 'decrease') {
-        if (currentQuantity > 1) {  // Prevents decreasing below 1
-            quantityInput.value = (currentQuantity - 0.25).toFixed(2);
+            if (action === 'increase') {
+                quantityInput.value = (currentQuantity + 0.25).toFixed(2);
+            } else if (action === 'decrease') {
+                if (currentQuantity > 1) { // Prevents decreasing below 1
+                    quantityInput.value = (currentQuantity - 0.25).toFixed(2);
+                }
+            }
         }
-    }
-}
 
 
 

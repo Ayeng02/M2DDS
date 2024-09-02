@@ -1,53 +1,54 @@
 <?php
-// Database connection
-include '../includes/db_connect.php';
+        // Database connection
+        include '../includes/db_connect.php';
 
-// Get category code and filter type from URL or default to 'all'
-$category_code = $_GET['code'];
-$filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
+        // Get category code and filter type from URL or default to 'all'
+        $category_code = $_GET['code'];
+        $filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
 
-// Fetch category details
-$category_sql = "SELECT category_name, category_img, category_desc FROM category_tbl WHERE category_code = ?";
-$category_stmt = $conn->prepare($category_sql);
-$category_stmt->bind_param("s", $category_code);
-$category_stmt->execute();
-$category_result = $category_stmt->get_result();
-$category = $category_result->fetch_assoc();
+        // Fetch category details
+        $category_sql = "SELECT category_name, category_img, category_desc FROM category_tbl WHERE category_code = ?";
+        $category_stmt = $conn->prepare($category_sql);
+        $category_stmt->bind_param("s", $category_code);
+        $category_stmt->execute();
+        $category_result = $category_stmt->get_result();
+        $category = $category_result->fetch_assoc();
 
-// Set up base query for products
-$product_sql = "SELECT prod_code, prod_name, prod_desc, prod_price, prod_discount, prod_img FROM product_tbl WHERE category_code = ?";
+        // Set up base query for products
+        $product_sql = "SELECT prod_code, prod_name, prod_desc, prod_price, prod_discount, prod_img FROM product_tbl WHERE category_code = ?";
 
-// Modify query based on filter
-if ($filter === 'new') {
-    $product_sql .= " AND DATE_ADD(created_at, INTERVAL 30 DAY) >= NOW()";
-} elseif ($filter === 'old') {
-    $product_sql .= " AND DATE_ADD(created_at, INTERVAL 30 DAY) < NOW()";
-} elseif ($filter === 'discounted') {
-    $product_sql .= " AND prod_discount > 0";
-}
+        // Modify query based on filter
+        if ($filter === 'new') {
+            $product_sql .= " AND DATE_ADD(created_at, INTERVAL 30 DAY) >= NOW()";
+        } elseif ($filter === 'old') {
+            $product_sql .= " AND DATE_ADD(created_at, INTERVAL 30 DAY) < NOW()";
+        } elseif ($filter === 'discounted') {
+            $product_sql .= " AND prod_discount > 0";
+        }
 
-// Prepare and execute statement
-$product_stmt = $conn->prepare($product_sql);
-$product_stmt->bind_param("s", $category_code);
-$product_stmt->execute();
-$product_result = $product_stmt->get_result();
+        // Prepare and execute statement
+        $product_stmt = $conn->prepare($product_sql);
+        $product_stmt->bind_param("s", $category_code);
+        $product_stmt->execute();
+        $product_result = $product_stmt->get_result();
 
-// Check if any products are available for the selected filter
-$no_products_message = '';
-if ($product_result->num_rows === 0) {
-    if ($filter === 'new') {
-        $no_products_message = 'No new products available yet.';
-    } elseif ($filter === 'old') {
-        $no_products_message = 'No old products available yet.';
-    } elseif ($filter === 'discounted') {
-        $no_products_message = 'No discounted products available yet.';
-    } else {
-        $no_products_message = 'No products found for this category.';
-    }
-}
+        // Check if any products are available for the selected filter
+        $no_products_message = '';
+        if ($product_result->num_rows === 0) {
+            if ($filter === 'new') {
+                $no_products_message = 'No new products available yet.';
+            } elseif ($filter === 'old') {
+                $no_products_message = 'No old products available yet.';
+            } elseif ($filter === 'discounted') {
+                $no_products_message = 'No discounted products available yet.';
+            } else {
+                $no_products_message = 'No products found for this category.';
+            }
+        }
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -61,37 +62,44 @@ if ($product_result->num_rows === 0) {
             height: 150px;
             object-fit: cover;
         }
+
         .card-body {
             display: flex;
             flex-direction: column;
             justify-content: space-between;
         }
+
         .card {
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             height: 100%;
         }
+
         .quantity-control {
             display: flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 10px;
         }
+
         .quantity-control button {
             width: 30px;
             height: 30px;
             padding: 0;
         }
+
         .quantity-control input {
             width: 40px;
             text-align: center;
         }
+
         .add-to-cart {
             width: 100%;
             font-size: 14px;
             padding: 5px 10px;
         }
+
         .category-img {
             width: 100%;
             height: auto;
@@ -99,38 +107,47 @@ if ($product_result->num_rows === 0) {
             object-fit: cover;
             margin-top: 100px;
         }
+
         .category-description {
             margin-bottom: 20px;
             font-size: 1.1em;
             color: #333;
         }
+
         .container {
             margin-bottom: 50px;
         }
+
         .filter-form {
             margin-bottom: 20px;
         }
+
         .no-products-message {
             text-align: center;
             font-size: 1.2em;
             color: #888;
         }
+
         .discount-info {
             color: red;
             font-weight: bold;
         }
+
         .discount-info .original-price {
             text-decoration: line-through;
             color: #888;
         }
-        .aboutCat{
+
+        .aboutCat {
             text-align: center;
             padding: 10px;
         }
-        .category-description{
+
+        .category-description {
             text-align: center;
             margin-bottom: 20px;
         }
+
         .toast {
             position: fixed;
             top: 20px;
@@ -153,47 +170,49 @@ if ($product_result->num_rows === 0) {
         }
     </style>
 </head>
+
 <body>
-<?php include '../includes/header.php' ?>
+    <!--Header-->
+    <?php include '../includes/header.php' ?>
 
-<div class="container">
-    <!-- Category Image Section -->
-    <?php if (!empty($category['category_img'])): ?>
-        <img src="../<?php echo htmlspecialchars($category['category_img']); ?>" alt="Category Image" class="category-img">
-    <?php endif; ?>
+    <div class="container">
+        <!-- Category Image Section -->
+        <?php if (!empty($category['category_img'])): ?>
+            <img src="../<?php echo htmlspecialchars($category['category_img']); ?>" alt="Category Image" class="category-img">
+        <?php endif; ?>
 
-    <!-- Category Description Section -->
-    <h4 class="aboutCat">About <?php echo htmlspecialchars($category['category_name']); ?> Category</h4>
-    <?php if (!empty($category['category_desc'])): ?>
-        <div class="category-description">
-            <?php echo nl2br(htmlspecialchars($category['category_desc'])); ?>
-        </div>
-    <?php endif; ?>
+        <!-- Category Description Section -->
+        <h4 class="aboutCat">About <?php echo htmlspecialchars($category['category_name']); ?> Category</h4>
+        <?php if (!empty($category['category_desc'])): ?>
+            <div class="category-description">
+                <?php echo nl2br(htmlspecialchars($category['category_desc'])); ?>
+            </div>
+        <?php endif; ?>
 
-    <h1 class="my-4"><?php echo htmlspecialchars($category['category_name']); ?></h1>
+        <h1 class="my-4"><?php echo htmlspecialchars($category['category_name']); ?></h1>
 
-    <!-- Filter Form -->
-    <form method="get" action="" class="filter-form">
-        <input type="hidden" name="code" value="<?php echo htmlspecialchars($category_code); ?>">
-        <div class="form-group">
-            <label for="filter">Filter by:</label>
-            <select id="filter" name="filter" class="form-control" onchange="this.form.submit()">
-                <option value="all" <?php echo $filter === 'all' ? 'selected' : ''; ?>>All</option>
-                <option value="new" <?php echo $filter === 'new' ? 'selected' : ''; ?>>New</option>
-                <option value="old" <?php echo $filter === 'old' ? 'selected' : ''; ?>>Old</option>
-                <option value="discounted" <?php echo $filter === 'discounted' ? 'selected' : ''; ?>>Discounted</option>
-            </select>
-        </div>
-    </form>
+        <!-- Filter Form -->
+        <form method="get" action="" class="filter-form">
+            <input type="hidden" name="code" value="<?php echo htmlspecialchars($category_code); ?>">
+            <div class="form-group">
+                <label for="filter">Filter by:</label>
+                <select id="filter" name="filter" class="form-control" onchange="this.form.submit()">
+                    <option value="all" <?php echo $filter === 'all' ? 'selected' : ''; ?>>All</option>
+                    <option value="new" <?php echo $filter === 'new' ? 'selected' : ''; ?>>New</option>
+                    <option value="old" <?php echo $filter === 'old' ? 'selected' : ''; ?>>Old</option>
+                    <option value="discounted" <?php echo $filter === 'discounted' ? 'selected' : ''; ?>>Discounted</option>
+                </select>
+            </div>
+        </form>
 
-    <!-- Product Listings -->
-    <div class="row">
-        <?php
-        if ($no_products_message) {
-            echo '<div class="col-12 no-products-message">' . htmlspecialchars($no_products_message) . '</div>';
-        } else {
-            while ($product = $product_result->fetch_assoc()) {
-                echo '<div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-4">
+        <!-- Product Listings -->
+        <div class="row">
+            <?php
+            if ($no_products_message) {
+                echo '<div class="col-12 no-products-message">' . htmlspecialchars($no_products_message) . '</div>';
+            } else {
+                while ($product = $product_result->fetch_assoc()) {
+                    echo '<div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-4">
                     <div class="card h-100">
                         <a href="product-details.php?id=' . htmlspecialchars($product["prod_code"]) . '">
                             <img class="card-img-top" src="../' . htmlspecialchars($product["prod_img"]) . '" alt="' . htmlspecialchars($product["prod_name"]) . '">
@@ -203,16 +222,16 @@ if ($product_result->num_rows === 0) {
                                 <a href="product-details.php?id=' . htmlspecialchars($product["prod_code"]) . '">' . htmlspecialchars($product["prod_name"]) . '</a>
                             </h5>';
 
-                if ($product["prod_discount"] > 0) {
-                    echo '<h6 class="discount-info">
+                    if ($product["prod_discount"] > 0) {
+                        echo '<h6 class="discount-info">
                             <span class="original-price">$' . number_format($product["prod_price"], 2) . '</span>
                             $' . number_format($product["prod_discount"], 2) . '
                         </h6>';
-                } else {
-                    echo '<h6>$' . number_format($product["prod_price"], 2) . '</h6>';
-                }
+                    } else {
+                        echo '<h6>$' . number_format($product["prod_price"], 2) . '</h6>';
+                    }
 
-                echo '<div class="quantity-control">
+                    echo '<div class="quantity-control">
                         <button class="incBtn1 btn btn-outline-secondary btn-sm" type="button" onclick="changeQuantity(\'decrease\', \'' . htmlspecialchars($product["prod_code"]) . '\')">-</button>
                         <input type="text" id="quantity-' . htmlspecialchars($product["prod_code"]) . '" class="form-control form-control-sm mx-1" value="1" readonly style="width:50px; background-color: #FF8225; color: #f0f0f0; font-weight: 500; font-size:12px;">
                         <button class="incBtn2 btn btn-outline-secondary btn-sm" type="button" onclick="changeQuantity(\'increase\', \'' . htmlspecialchars($product["prod_code"]) . '\')">+</button>
@@ -221,18 +240,18 @@ if ($product_result->num_rows === 0) {
                 </div>
             </div>
         </div>';
+                }
             }
-        }
-        ?>
+            ?>
+        </div>
     </div>
-</div>
 
-<!-- Footer -->
-<?php include '../includes/footer.php' ?>
+    <!-- Footer -->
+    <?php include '../includes/footer.php' ?>
 
 
-<!-- Toast Notification -->
-<div class="toast" id="successToast" role="alert" aria-live="assertive" aria-atomic="true" data-autohide="true">
+    <!-- Toast Notification -->
+    <div class="toast" id="successToast" role="alert" aria-live="assertive" aria-atomic="true" data-autohide="true">
         <div class="toast-header" style="background-color: #0ab001;">
             <strong class="mr-auto" style="color: #ffffff;">Success</strong>
             <small style="color: #ffffff;">Now</small>
@@ -245,26 +264,26 @@ if ($product_result->num_rows === 0) {
         </div>
     </div>
 
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<script src="../js/notif.js"></script>
-<script>
-    function changeQuantity(action, productId) {
-        const quantityInput = document.getElementById(`quantity-${productId}`);
-        let currentQuantity = parseFloat(quantityInput.value);
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="../js/notif.js"></script>
+    <script>
+        function changeQuantity(action, productId) {
+            const quantityInput = document.getElementById(`quantity-${productId}`);
+            let currentQuantity = parseFloat(quantityInput.value);
 
-        if (action === 'increase') {
-            quantityInput.value = (currentQuantity + 0.25).toFixed(2);
-        } else if (action === 'decrease') {
-            if(currentQuantity > 1){
-            quantityInput.value = (currentQuantity - 0.25).toFixed(2);
+            if (action === 'increase') {
+                quantityInput.value = (currentQuantity + 0.25).toFixed(2);
+            } else if (action === 'decrease') {
+                if (currentQuantity > 1) {
+                    quantityInput.value = (currentQuantity - 0.25).toFixed(2);
+                }
             }
         }
-    }
 
-    // For adding cart function
-    function addToCart(prodCode) {
+        // For adding cart function
+        function addToCart(prodCode) {
             var qtyInput = document.getElementById('quantity-' + prodCode);
             var cartQty = qtyInput ? qtyInput.value : 1; // Default to 1 if quantity input is not found
 
@@ -299,10 +318,11 @@ if ($product_result->num_rows === 0) {
 
             xhr.send('prod_code=' + encodeURIComponent(prodCode) + '&cart_qty=' + encodeURIComponent(cartQty));
         }
-</script>
+    </script>
 </body>
 </html>
 
 <?php
 $conn->close();
 ?>
+

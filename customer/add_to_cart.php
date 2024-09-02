@@ -5,7 +5,7 @@ include '../includes/db_connect.php';
 // Check if the user is logged in
 if (!isset($_SESSION['cust_id'])) {
     echo json_encode(['status' => 'error', 'message' => 'User not logged in']);
-    
+
     exit();
 }
 
@@ -36,7 +36,7 @@ if ($result_check->num_rows > 0) {
     $sql_update = "UPDATE cart_table SET cart_qty = ? WHERE cust_id = ? AND prod_code = ?";
     $stmt_update = $conn->prepare($sql_update);
     $stmt_update->bind_param('dss', $new_qty, $cust_id, $prod_code);
-    
+
     if ($stmt_update->execute()) {
         echo json_encode(['status' => 'success', 'message' => 'Product quantity updated in cart']);
     } else {
@@ -48,7 +48,7 @@ if ($result_check->num_rows > 0) {
     $sql_insert = "INSERT INTO cart_table (cust_id, prod_code, cart_qty) VALUES (?, ?, ?)";
     $stmt_insert = $conn->prepare($sql_insert);
     $stmt_insert->bind_param('ssd', $cust_id, $prod_code, $cart_qty);
-    
+
     if ($stmt_insert->execute()) {
         echo json_encode(['status' => 'success', 'message' => 'Product added to cart']);
     } else {
@@ -59,4 +59,3 @@ if ($result_check->num_rows > 0) {
 
 $stmt_check->close();
 $conn->close();
-?>

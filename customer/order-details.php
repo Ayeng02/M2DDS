@@ -213,7 +213,7 @@ $conn->close();
                     <p class="card-text"><strong>Address:</strong> <?php echo htmlspecialchars($order['order_barangay']) . ', ' . htmlspecialchars($order['order_purok']) . ', ' . htmlspecialchars($order['order_province']); ?></p>
                     <p class="card-text"><strong>Mode of Payment:</strong> <?php echo htmlspecialchars($order['order_mop']); ?></p>
                     <p class="card-text"><strong>Date:</strong> <?php echo date('F j, Y, g:i a', strtotime($order['order_date'])); ?></p>
-                    <p class="card-text"><strong>Total:</strong> $<?php echo number_format($order['order_total'], 2); ?></p>
+                    <p class="card-text"><strong>Total:</strong> ₱<?php echo number_format($order['order_total'], 2); ?></p>
 
                     <?php if ($order['status_code'] == 5): ?>
                         <div class="alert alert-danger mt-4">
