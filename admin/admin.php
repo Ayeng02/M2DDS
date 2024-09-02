@@ -20,13 +20,19 @@
                 <img class="dashboard-img" src="dashboard.png" alt="">
                 <h3>Dashboard</h3>
             </div>
-            <button id="prod">PRODUCT</button><br>
-            <input type="button" name="product" id="prod" value="USER"><br>
-            <input type="button" name="product" id="prod" value="SALES"><br>
+          
+            <ul class="dashboard-category">
+                <li id="prod"><i class="fa-brands fa-product-hunt"></i>PRODUCT</li>
+                <li id="prod"><i class="fa-regular fa-user"></i>USER</li>
+                <li id="prod"><i class="fa-solid fa-coins"></i>SALES</li>
+                <li id="prod"><i class="fa-solid fa-clipboard-check"></i>REPORTS</li>
+                <br /><br /><br /><br /><br /><br />
+                <li id="prod"><i class="fa-solid fa-right-from-bracket fa-rotate-180"></i>LOGOUT</li>
+
+            </ul>
+            
            </div>
-           
-     
-    
+
         <div class="header">
 
         <h1>Meat To Door Delivery System</h1>
