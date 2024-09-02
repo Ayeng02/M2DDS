@@ -184,6 +184,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_submitted'])) 
             background-color: #e36f10;
             border-color: #e36f10;
         }
+        .product-img {
+        width: 300px;
+        height: 300px;
+        object-fit: cover;
+    }
 
     </style>
 </head>
@@ -199,7 +204,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_submitted'])) 
                     <div class="product-details">
                         <h3><?php echo htmlspecialchars($prod_name); ?></h3>
                         <div class="d-flex flex-column flex-md-row">
-                            <img src="../<?php echo htmlspecialchars($prod_img); ?>" alt="<?php echo htmlspecialchars($prod_name); ?>" class="mb-3">
+                            <img src="../<?php echo htmlspecialchars($prod_img); ?>" alt="<?php echo htmlspecialchars($prod_name); ?>" class="mb-3" style="width: 450px; height: 300px; object-fit: cover; border-radius:10px;">
                             <div class="d-flex flex-column justify-content-between ml-md-4">
                                 <div>
                                     <p>Price: ₱<?php echo number_format($prod_price, 2); ?></p>
