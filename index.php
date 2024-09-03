@@ -237,6 +237,16 @@
                         <i class="fas fa-user-plus"></i> Register
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        |
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-book"></i> User Manual
+                    </a>
+                </li>
             </ul>
         </div>
     </nav>

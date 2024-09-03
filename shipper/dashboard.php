@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meat-to-Door-Delivery</title>
+    <title>Meat to Door Delivery System</title>
 </head>
 <body>
     
