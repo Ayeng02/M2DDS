@@ -54,7 +54,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
 
 
         .jumbotron {
-            background: url('./category/porkchop.png') no-repeat center center;
+            background: url('./img/meat-bg.png') no-repeat center center;
             background-size: cover;
             color: white;
         }
