@@ -118,11 +118,14 @@
             background-color: #FF8225;
         }
         .navbar-light .navbar-nav .nav-link {
-            color: red;
+            color: black;
+            
+            
         }
         .navbar-light .navbar-nav .nav-link:hover {
             color: #a72828;
         }
+        
        
         /* Hide sidebar heading text when collapsed */
 #sidebar-wrapper:not(.expanded) .sidebar-title {
@@ -133,8 +136,37 @@
     width: 30px; /* Adjust size when collapsed */
     height: 30px;
 }
-.container-fluid-header{
+/*.container-fluid-header{
     display: flex;
+    background-color: #FF8225;
+}*/
+.container-box{
+    display: inline-flex;
+    background-color: #FF8225;
+    width: 30%;
+    height: 35vh;
+    color: white;
+    border-radius: 10px;
+    align-items: center;
+    margin-top: 20px;
+    margin-left: 30px;
+    text-align: center;
+    justify-content: center;
+    
+}
+.container-rate{
+    display: flex;
+    background-color: #a72828;
+    width: 50%;
+    height: 45vh;
+    color: white;
+    margin-top: 60px;
+    margin-left: 30px;
+    border-radius: 10px;
+    justify-content: center;
+    text-align: center;
+    align-items: center;
+
 }
     </style>
 </head>
@@ -174,7 +206,7 @@
     <!-- Page Content -->
     <div id="page-content-wrapper">
         <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
-            <div class="container-fluid-header">
+            <div class="container-fluid">
                 <button class="btn btn-toggle" id="menu-toggle-top">☰</button>
                 <div class="collapse navbar-collapse">
                     <ul class="navbar-nav ml-auto">
@@ -192,42 +224,16 @@
         <div class="container-fluid">
             <div class="content-header">
                 <h1 class="mt-4" id="dashboard">Dashboard</h1>
-                <p>Welcome to your admin panel. Here you can manage products, categories, and orders.</p>
             </div>
+            <div class="container-box">first card</div>
+            <div class="container-box">second card</div>
+             <div class="container-box">third card</div>
 
-            <div class="content-header">
-                <h2 class="mt-4" id="products">Products</h2>
-                <p>Manage your products here. You can add, edit, or delete products.</p>
-                <div class="card">
-                    <div class="card-body">
-                        <!-- Product Management UI -->
-                        <p>Product management tools and tables go here.</p>
-                    </div>
-                </div>
-            </div>
+            
+          
 
-            <div class="content-header">
-                <h2 class="mt-4" id="categories">Categories</h2>
-                <p>Manage your categories here. You can add, edit, or delete categories.</p>
-                <div class="card">
-                    <div class="card-body">
-                        <!-- Category Management UI -->
-                        <p>Category management tools and tables go here.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="content-header">
-                <h2 class="mt-4" id="orders">Orders</h2>
-                <p>View and manage orders here.</p>
-                <div class="card">
-                    <div class="card-body">
-                        <!-- Order Management UI -->
-                        <p>Order management tools and tables go here.</p>
-                    </div>
-                </div>
-            </div>
         </div>
+        <div class="container-rate"> Rating Card</div>
     </div>
     <!-- /#page-content-wrapper -->
 </div>
