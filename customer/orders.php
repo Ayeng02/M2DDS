@@ -298,7 +298,7 @@
         }
 
         function cancelOrder(orderId) {
-            if (confirm('Are you sure you want to cancel this order?')) {
+            if (confirm('Ar     e you sure you want to cancel this order?')) {
                 $.ajax({
                     url: 'cancel_order.php',
                     type: 'POST',
