@@ -26,7 +26,7 @@
             height: 100vh; /* Full viewport height */
         }
         #sidebar-wrapper {
-    min-height: 100vh;
+    min-height: 120vh;
     width: 80px; /* Default width for icons only */
     background-color: #a72828;
     color: #fff;
@@ -118,11 +118,12 @@
             background-color: #FF8225;
         }
         .navbar-light .navbar-nav .nav-link {
-            color: white;
+            color: red;
         }
         .navbar-light .navbar-nav .nav-link:hover {
             color: #a72828;
         }
+       
         /* Hide sidebar heading text when collapsed */
 #sidebar-wrapper:not(.expanded) .sidebar-title {
     display: none;
@@ -131,6 +132,9 @@
 #sidebar-wrapper:not(.expanded) .logo-img {
     width: 30px; /* Adjust size when collapsed */
     height: 30px;
+}
+.container-fluid-header{
+    display: flex;
 }
     </style>
 </head>
@@ -170,7 +174,7 @@
     <!-- Page Content -->
     <div id="page-content-wrapper">
         <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
-            <div class="container-fluid">
+            <div class="container-fluid-header">
                 <button class="btn btn-toggle" id="menu-toggle-top">☰</button>
                 <div class="collapse navbar-collapse">
                     <ul class="navbar-nav ml-auto">
