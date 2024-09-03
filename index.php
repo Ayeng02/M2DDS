@@ -1,3 +1,13 @@
+<?php
+ session_start();
+
+ // Redirect to landing page if already logged in
+if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
+    header('Location: ./customer/customerLandingPage.php');
+    exit();
+}
+ ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
