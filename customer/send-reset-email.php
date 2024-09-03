@@ -1,4 +1,12 @@
 <?php
+
+session_start();
+// Redirect to verify code page if email is already set in session
+if (isset($_SESSION['email'])) {
+    header('Location: verify-code.php');
+    exit();
+}
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -6,7 +14,6 @@ require '../PHPMailer/PHPMailer/src/Exception.php';
 require '../PHPMailer/PHPMailer/src/PHPMailer.php';
 require '../PHPMailer/PHPMailer/src/SMTP.php';
 
-session_start();
 
 // Database connection (update with your credentials)
 include '../includes/db_connect.php';
@@ -78,6 +85,7 @@ $conn->close();
     <title>Forgot Password - Meat-To-Door Delivery</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="icon" href="../img/mtdd_logo.png" type="image/x-icon">
     <style>
         body {
@@ -203,45 +211,7 @@ $conn->close();
     </style>
 </head>
 <body>
- <!-- Navigation Bar -->
-<nav class="navbar navbar-expand-lg">
-    <a class="navbar-brand" href="#">
-        <img class="logo" src="../img/logo.ico" alt="Meat-To-Door Logo">
-        Meat-To-Door
-    </a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-                <a class="nav-link" href="../index.php">
-                    <i class="fas fa-home"></i> Home <span class="sr-only">(current)</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-info-circle"></i> About Us
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-envelope"></i> Contact
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="login.php">
-                    <i class="fas fa-sign-in-alt"></i> Login
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="register.php">
-                    <i class="fas fa-user-plus"></i> Register
-                </a>
-            </li>
-        </ul>
-    </div>
-</nav>
+
 
     
     <div class="background-animation"></div>

@@ -1,30 +1,107 @@
 <?php
 session_start();
 
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require '../PHPMailer/PHPMailer/src/Exception.php';
+require '../PHPMailer/PHPMailer/src/PHPMailer.php';
+require '../PHPMailer/PHPMailer/src/SMTP.php';
+
 // Database connection (update with your credentials)
 include '../includes/db_connect.php';
 
+if (isset($_SESSION['verified']) && $_SESSION['verified'] === true) {
+    // Redirect to another page, e.g., login page or home page
+    header('Location: reset-password.php');
+    exit();
+}
+
+// Function to delete expired verification codes
+function cleanUpExpiredCodes($conn) {
+    $stmt = $conn->prepare("DELETE FROM password_resets WHERE created_at < NOW() - INTERVAL 1 MINUTE");
+    $stmt->execute();
+    $stmt->close();
+}
+
+
 // Handle form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $code = $_POST['code'];
     $email = $_SESSION['email'] ?? '';
 
-    // Check if the code matches
-    $stmt = $conn->prepare("SELECT id FROM password_resets WHERE email = ? AND code = ?");
-    $stmt->bind_param("si", $email, $code);
-    $stmt->execute();
-    $stmt->bind_result($reset_id);
-    $stmt->fetch();
-    $stmt->close();
+       // Clean up expired codes
+       cleanUpExpiredCodes($conn);
 
-    if ($reset_id) {
-        // Code is correct, proceed to reset password
-        $_SESSION['verified'] = true;
-        header('Location: reset-password.php');
+    if (isset($_POST['resend_code'])) {
+        // Resend code logic
+        generateAndSendCode($email, $conn);
+        header('Location: verify-code.php'); // Redirect to refresh the page
         exit();
     } else {
-        $error = "Invalid verification code.";
+        $code = $_POST['code'];
+
+        // Check if the code matches and is within the valid time frame
+        $stmt = $conn->prepare("SELECT id FROM password_resets WHERE email = ? AND code = ? AND created_at >= NOW() - INTERVAL 1 MINUTE");
+        $stmt->bind_param("si", $email, $code);
+        $stmt->execute();
+        $stmt->bind_result($reset_id);
+        $stmt->fetch();
+        $stmt->close();
+
+        if ($reset_id) {
+            // Code is correct, proceed to reset password
+            $_SESSION['verified'] = true;
+            header('Location: reset-password.php');
+            exit();
+        } else {
+            $error = "Invalid or expired verification code.";
+        }
     }
+}
+
+// Function to send verification code using PHPMailer
+function sendVerificationCode($email, $code) {
+    $mail = new PHPMailer(true);
+
+    try {
+        // Server settings
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.gmail.com'; // Set the SMTP server to send through
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'arieldohinogbusiness@gmail.com'; // SMTP username
+        $mail->Password   = 'lystrtavajrupmnq'; // SMTP password
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
+
+        // Recipients
+        $mail->setFrom('no-reply@meat-to-door.com', 'Meat-To-Door Delivery');
+        $mail->addAddress($email);
+
+        // Content
+        $mail->isHTML(true);
+        $mail->Subject = 'Password Reset Verification Code';
+        $mail->Body    = 'Your verification code is: ' . $code;
+
+        $mail->send();
+    } catch (Exception $e) {
+        // Handle error if email sending fails
+        echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+    }
+}
+
+// Generate and send the code when needed
+function generateAndSendCode($email, $conn) {
+    $code = rand(100000, 999999); // Generate a 6-digit code
+
+    // Insert or update the code in the database
+    $stmt = $conn->prepare("REPLACE INTO password_resets (email, code, created_at) VALUES (?, ?, NOW())");
+    $stmt->bind_param("si", $email, $code);
+    $stmt->execute();
+    $stmt->close();
+
+    // Send the code via email using PHPMailer
+    sendVerificationCode($email, $code);
 }
 
 $conn->close();
@@ -152,73 +229,52 @@ $conn->close();
             height: 40px;
             margin-right: 10px;
         }
+        .btn-primary {
+            background-color: #FF8225;
+            border-color: #FF8225;
+        }
+        .btn-primary:hover {
+            background-color: #e36f10;
+            border-color: #e36f10;
+        }
+
     </style>
 </head>
 <body>
- <!-- Navigation Bar -->
-<nav class="navbar navbar-expand-lg">
-    <a class="navbar-brand" href="#">
-        <img class="logo2" src="../img/logo.ico" alt="Meat-To-Door Logo">
-        Meat-To-Door
-    </a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-                <a class="nav-link" href="../index.php">
-                    <i class="fas fa-home"></i> Home <span class="sr-only">(current)</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-info-circle"></i> About Us
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-envelope"></i> Contact
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="login.php">
-                    <i class="fas fa-sign-in-alt"></i> Login
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="register.php">
-                    <i class="fas fa-user-plus"></i> Register
-                </a>
-            </li>
-        </ul>
-    </div>
-</nav>
+ 
 
     <div class="background-animation"></div>
     <div class="container login-container">
-        <div class="login-header">
-            <img src="../img/logo.ico" alt="Meat-To-Door Logo">
-            <h1>Verify Code</h1>
-            <p>Enter the verification code sent to your email</p>
-        </div>
-        <form class="login-form" action="verify-code.php" method="post">
-            <?php if (isset($error)): ?>
-                <div class="alert alert-danger" role="alert" id="errorAlert">
-                    <?php echo $error; ?>
-                </div>
-            <?php endif; ?>
-            <div class="form-group">
-                <label for="code">Verification Code</label>
-                <input type="text" class="form-control" id="code" name="code" placeholder="Enter the verification code" required>
+    <div class="login-header">
+        <img src="../img/logo.ico" alt="Meat-To-Door Logo">
+        <h1>Verify Code</h1>
+        <p>Enter the verification code sent to your email</p>
+    </div>
+    <form class="login-form" action="verify-code.php" method="post">
+        <?php if (isset($error)): ?>
+            <div class="alert alert-danger" role="alert" id="errorAlert">
+                <?php echo $error; ?>
             </div>
-            <button type="submit" class="btn btn-primary btn-block">Verify Code</button>
-        </form>
-        <div class="login-footer">
-            <p>Remembered your password? <a href="login.php">Login here</a></p>
+        <?php endif; ?>
+        <div class="form-group">
+            <label for="code">Verification Code</label>
+            <input type="text" class="form-control" id="code" name="code" placeholder="Enter the verification code" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Verify Code</button>
+    </form>
+    <div class="countdown-timer">
+        <p id="countdown">You can request a new code in <span id="timer">1:00</span></p>
+        <div id="expiredMessage" style="display: none;">
+            <p class="alert alert-danger">The verification code has expired. Please request a new code.</p>
         </div>
     </div>
-
+    <form class="resend-form" action="verify-code.php" method="post">
+        <button type="submit" class="btn btn-secondary btn-block" name="resend_code" id="resendButton" style="display: none;">Resend Code</button>
+    </form>
+    <div class="login-footer">
+        <p>Remembered your password? <a href="login.php">Login here</a></p>
+    </div>
+</div>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
@@ -236,7 +292,43 @@ $conn->close();
                     }); // Time to complete fade out effect
                 }, 5000); // Time to show error (5 seconds)
             }
+
+
+            // Countdown timer logic
+        var countdownElement = document.getElementById('timer');
+        var resendButton = document.getElementById('resendButton');
+        var expiredMessage = document.getElementById('expiredMessage');
+        var endTime = new Date().getTime() + 60000; // 1 minute from now
+
+        function updateTimer() {
+            var now = new Date().getTime();
+            var distance = endTime - now;
+
+            if (distance < 0) {
+                countdownElement.innerHTML = "00:00";
+                expiredMessage.style.display = 'block'; // Show expired message
+                resendButton.style.display = 'block'; // Show resend button
+                clearInterval(timerInterval);
+                return;
+            }
+
+            var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            minutes = (minutes < 10) ? "0" + minutes : minutes;
+            seconds = (seconds < 10) ? "0" + seconds : seconds;
+
+            countdownElement.innerHTML = minutes + ":" + seconds;
+        }
+
+        var timerInterval = setInterval(updateTimer, 1000);
+
+        // Hide resend button initially
+        resendButton.style.display = 'none';
+        expiredMessage.style.display = 'none';
         });
+
+        
     </script>
 </body>
 </html>

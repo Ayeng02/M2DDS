@@ -1,8 +1,10 @@
 <?php
 session_start();
 
+
 // Database connection (update with your credentials)
 include '../includes/db_connect.php';
+
 
 // Handle form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -10,6 +12,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Handle verification code input
         $code = $_POST['code'];
         $email = $_SESSION['email'] ?? '';
+
 
         // Check if the code matches
         $stmt = $conn->prepare("SELECT id FROM password_resets WHERE email = ? AND code = ?");
@@ -44,6 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->close();
 
         unset($_SESSION['verified']);
+        unset($_SESSION['email']);
         $_SESSION['password_reset_success'] = true;
         header('Location: reset-success.php');
         exit();
@@ -175,49 +179,28 @@ $conn->close();
             height: 40px;
             margin-right: 10px;
         }
+        .btn-primary {
+            background-color: #FF8225;
+            border-color: #FF8225;
+        }
+        .btn-primary:hover {
+            background-color: #e36f10;
+            border-color: #e36f10;
+        }
+        .password-feedback {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        .password-feedback.valid {
+            color: #28a745;
+        }
+
 
     </style>
 </head>
 <body>
- <!-- Navigation Bar -->
-<nav class="navbar navbar-expand-lg">
-    <a class="navbar-brand" href="#">
-        <img class="logo" src="../img/logo.ico" alt="Meat-To-Door Logo">
-        Meat-To-Door
-    </a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-                <a class="nav-link" href="../index.php">
-                    <i class="fas fa-home"></i> Home <span class="sr-only">(current)</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-info-circle"></i> About Us
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-envelope"></i> Contact
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="login.php">
-                    <i class="fas fa-sign-in-alt"></i> Login
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="register.php">
-                    <i class="fas fa-user-plus"></i> Register
-                </a>
-            </li>
-        </ul>
-    </div>
-</nav>
+
     <div class="background-animation"></div>
     <div class="container login-container">
         <div class="login-header">
@@ -241,6 +224,7 @@ $conn->close();
                 <div class="form-group">
                     <label for="new_password">New Password</label>
                     <input type="password" class="form-control" id="new_password" name="new_password" placeholder="Enter your new password" required>
+                    <div id="passwordFeedback" class="password-feedback"></div>
                 </div>
                 <button type="submit" class="btn btn-primary btn-block">Reset Password</button>
             <?php endif; ?>
@@ -253,21 +237,75 @@ $conn->close();
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
-        // Show error alert for 5 seconds if it exists
-        document.addEventListener('DOMContentLoaded', function() {
-            var errorAlert = document.getElementById('errorAlert');
-            if (errorAlert) {
-                errorAlert.style.display = 'block';
+    document.addEventListener('DOMContentLoaded', function() {
+        var errorAlert = document.getElementById('errorAlert');
+        if (errorAlert) {
+            errorAlert.style.display = 'block';
+            setTimeout(function() {
+                errorAlert.style.opacity = '0';
                 setTimeout(function() {
-                    errorAlert.style.opacity = '0';
-                    setTimeout(function() {
-                        errorAlert.style.display = 'none';
-                        errorAlert.style.opacity = '1';
-                    }); // Time to complete fade out effect
-                }, 5000); // Time to show error (5 seconds)
+                    errorAlert.style.display = 'none';
+                    errorAlert.style.opacity = '1';
+                }); // Time to complete fade out effect
+            }, 5000); // Time to show error (5 seconds)
+        }
+
+        var passwordForm = document.querySelector('.login-form');
+        var passwordInput = document.getElementById('new_password');
+        var feedback = document.getElementById('passwordFeedback');
+
+        passwordInput.addEventListener('input', function() {
+            var password = passwordInput.value;
+            var strength = checkPasswordStrength(password);
+
+            if (strength === 'Strong') {
+                feedback.textContent = 'Password strength: Strong';
+                feedback.className = 'password-feedback valid';
+            } else if (strength === 'Medium') {
+                feedback.textContent = 'Password strength: Medium';
+                feedback.className = 'password-feedback';
+            } else {
+                feedback.textContent = 'Password strength: Weak';
+                feedback.className = 'password-feedback';
             }
         });
-    </script>
+
+        passwordForm.addEventListener('submit', function(event) {
+            var password = passwordInput.value;
+            var strength = checkPasswordStrength(password);
+
+            if (strength === 'Weak') {
+                event.preventDefault(); // Prevent form submission
+                Swal.fire({
+                    title: 'Weak Password',
+                    text: 'Your password is too weak. Please enter a stronger password.',
+                    icon: 'warning',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+
+        function checkPasswordStrength(password) {
+            var strength = 'Weak';
+            if (password.length >= 8 &&
+                /[A-Z]/.test(password) &&
+                /[a-z]/.test(password) &&
+                /[0-9]/.test(password) &&
+                /[!@#$%^&*()_+{}\[\]:;"'<>,.?~`-]/.test(password)) {
+                strength = 'Strong';
+            } else if (password.length >= 6 &&
+                       /[A-Z]/.test(password) &&
+                       /[a-z]/.test(password) &&
+                       /[0-9]/.test(password)) {
+                strength = 'Medium';
+            }
+            return strength;
+        }
+    });
+</script>
+
 </body>
 </html>
