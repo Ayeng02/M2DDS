@@ -206,7 +206,7 @@ $conn->close();
         <div class="login-header">
             <img src="../img/logo.ico" alt="Meat-To-Door Logo">
             <h1>LOGIN</h1>
-            <p class="tagline-txt">Where Quality Meets Affordability</p>
+            <p>Where Quality Meets Affordability</p>
         </div>
         <form class="login-form" action="login.php" method="post">
             <?php if (isset($error)): ?>
