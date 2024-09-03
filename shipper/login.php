@@ -256,4 +256,4 @@ $conn->close();
     </script>
 </body>
 
-</html>gwapa si lyka
+</html>gwapa si joan
