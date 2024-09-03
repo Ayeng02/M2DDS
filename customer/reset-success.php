@@ -1,14 +1,10 @@
 <?php
 session_start();
 
-// Redirect to verification page if password reset success session variable is not set
-if (!isset($_SESSION['password_reset_success']) || $_SESSION['password_reset_success'] !== true) {
-    header('Location: verify-code.php');
-    exit();
-}
 
 // Unset the session variable to prevent multiple redirects
 unset($_SESSION['password_reset_success']);
+unset($_SESSION['email']); // Unset the email session variable
 ?>
 
 <!DOCTYPE html>

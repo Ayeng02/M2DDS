@@ -1,6 +1,31 @@
 <?php 
 error_reporting(E_ALL & ~E_NOTICE) ;
 
+
+session_start();
+include '../includes/db_connect.php'; // Adjust the path as needed
+
+// Retrieve customer data based on session user ID
+$cust_id = $_SESSION['cust_id']; // Ensure this session variable is set
+$query = "SELECT f_name, l_name, phone_num FROM Customers WHERE cust_id = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("s", $cust_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$customer = $result->fetch_assoc();
+$stmt->close();
+
+
+
+    // Fetch barangay data
+    $barangayQuery = "SELECT Brgy_Name, Brgy_df FROM Brgy_Tbl";
+    $barangayResult = mysqli_query($conn, $barangayQuery);
+
+    // Retrieve cart data from session
+    $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
+    $selectedItems = $cart['selected_items'] ?? 0;
+    $total = $cart['total'] ?? 0;
+    $productDetails = $cart['product_details'] ?? [];
 ?>
 
 <!DOCTYPE html>
@@ -143,20 +168,7 @@ error_reporting(E_ALL & ~E_NOTICE) ;
 </head>
 <body>
     <?php include '../includes/header.php'; ?>
-    <?php
-    session_start();
-    include '../includes/db_connect.php'; 
 
-    // Fetch barangay data
-    $barangayQuery = "SELECT Brgy_Name, Brgy_df FROM Brgy_Tbl";
-    $barangayResult = mysqli_query($conn, $barangayQuery);
-
-    // Retrieve cart data from session
-    $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
-    $selectedItems = $cart['selected_items'] ?? 0;
-    $total = $cart['total'] ?? 0;
-    $productDetails = $cart['product_details'] ?? [];
-    ?>
     <div class="container checkout-container">
         <h2 class="titCheckout">Checkout</h2>
         <h4 class="text-center mb-4">Contact and Delivery Address Information</h4>
@@ -166,11 +178,11 @@ error_reporting(E_ALL & ~E_NOTICE) ;
                     <input type="hidden" id="prod-codes" name="prod-codes" value="<?php echo implode(',', array_column($productDetails, 'code')); ?>">
                     <div class="form-group">
                         <label for="full-name" class="required">Full Name</label>
-                        <input type="text" class="form-control" id="full-name" name="full-name" placeholder="Enter Full Name" required>
+                        <input type="text" class="form-control" id="full-name" name="full-name" placeholder="Enter Full Name" value="<?php echo htmlspecialchars($customer['f_name'] . ' ' . $customer['l_name']); ?>"required>
                     </div>
                     <div class="form-group">
                         <label for="phone-number" class="required">Phone Number</label>
-                        <input type="tel" class="form-control" id="phone-number" name="phone-number" placeholder="Enter Phone Number" required>
+                        <input type="tel" class="form-control" id="phone-number" name="phone-number" placeholder="Enter Phone Number" value="<?php echo htmlspecialchars($customer['phone_num']); ?>" required>
                     </div>
                     <div class="form-group">
                         <label for="barangay" class="required">Barangay</label>
@@ -186,9 +198,9 @@ error_reporting(E_ALL & ~E_NOTICE) ;
                         <input type="text" class="form-control" id="purok" name="purok" placeholder="Enter Purok/Street" required>
                     </div>
                     <div class="form-group">
-                        <label for="province" class="required">Province</label>
+                        <label for="province" class="required">City/Province</label>
                         <select class="form-control" id="province" name="province" required>
-                            <option value="Davao del Norte">Davao del Norte</option>
+                            <option value="Tagum,Davao del Norte">Tagum, Davao del Norte</option>
                         </select>
                     </div>
                     <div class="form-group">
