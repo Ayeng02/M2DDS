@@ -256,8 +256,4 @@ $conn->close();
     </script>
 </body>
 
-<<<<<<< Updated upstream
-</html>gwapa si joan
-=======
 </html>
->>>>>>> Stashed changes
