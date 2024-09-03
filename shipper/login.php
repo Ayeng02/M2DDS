@@ -60,7 +60,7 @@ $conn->close();
             top: 0;
             left: 0;
             width: 100%;
-            height: 110%;
+            height: 150%;
             background: linear-gradient(135deg, #ff6b6b, #f7d08a, #6b5b95, #d4e157);
             background-size: 400% 400%;
             animation: gradientAnimation 15s ease infinite;
@@ -195,7 +195,7 @@ $conn->close();
             background-color: #e36f10;
             border-color: #e36f10;
         }
-
+        
 
     </style>
 </head>
@@ -206,7 +206,7 @@ $conn->close();
         <div class="login-header">
             <img src="../img/logo.ico" alt="Meat-To-Door Logo">
             <h1>LOGIN</h1>
-            <p>Where Quality Meets Affordability</p>
+            <p class="tagline-txt">Where Quality Meets Affordability</p>
         </div>
         <form class="login-form" action="login.php" method="post">
             <?php if (isset($error)): ?>
@@ -256,4 +256,8 @@ $conn->close();
     </script>
 </body>
 
+<<<<<<< Updated upstream
 </html>gwapa si joan
+=======
+</html>
+>>>>>>> Stashed changes
