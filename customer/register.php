@@ -2,123 +2,135 @@
 session_start();
 include '../includes/db_connect.php';
 
+
+if (isset($_SESSION['email'])) {
+    header('Location: reg-authentication.php');
+    exit();
+}
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require '../PHPMailer/PHPMailer/src/Exception.php';
+require '../PHPMailer/PHPMailer/src/PHPMailer.php';
+require '../PHPMailer/PHPMailer/src/SMTP.php';
+
 // Encryption key (must be kept secret and secure)
 $encryption_key = 'your-secret-key';
 
-// Helper function to validate phone number
-function validatePhoneNumber($phone)
-{
+// Helper functions
+function validatePhoneNumber($phone) {
     return preg_match('/^(09\d{9})$/', $phone);
 }
 
-// Helper function to validate address
-function validateAddress($address)
-{
+function validateAddress($address) {
     return preg_match('/^[\w\s\.,\-#]+, [\w\s]+, [\w\s]+$/', $address);
 }
 
-// Helper function to check username format
-function validateUsername($username)
-{
+function validateUsername($username) {
     return preg_match('/^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{6,}$/', $username);
 }
 
-// Helper function to validate names
-function validateName($name)
-{
+function validateName($name) {
     return preg_match('/^[A-Z][a-zA-Z\s]*$/', $name);
 }
 
-// Encryption and decryption functions
-function encrypt($data, $key)
-{
-    $method = 'aes-256-cbc';
-    $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($method));
-    $encrypted = openssl_encrypt($data, $method, $key, 0, $iv);
-    return base64_encode($encrypted . '::' . $iv);
-}
-
-function decrypt($data, $key)
-{
-    $method = 'aes-256-cbc';
-    list($encrypted_data, $iv) = explode('::', base64_decode($data), 2);
-    return openssl_decrypt($encrypted_data, $method, $key, 0, $iv);
+function validateEmail($email) {
+    return filter_var($email, FILTER_VALIDATE_EMAIL);
 }
 
 $error = '';
 $success = false;
 
-// Handle form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $f_name = $_POST['f_name'];
-    $l_name = $_POST['l_name'];
-    $username = $_POST['username'];
-    $add_ress = $_POST['add_ress'];
-    $email = $_POST['email'];
-    $phone_num = $_POST['phone_num'];
+    $f_name = trim($_POST['f_name']);
+    $l_name = trim($_POST['l_name']);
+    $username = trim($_POST['username']);
+    $add_ress = trim($_POST['add_ress']);
+    $email = trim($_POST['email']);
+    $phone_num = trim($_POST['phone_num']);
     $cust_pass = $_POST['cust_pass'];
     $confirm_pass = $_POST['confirm_pass'];
 
-    // Basic validation
     if (!empty($f_name) && !empty($l_name) && !empty($username) && !empty($add_ress) && !empty($email) && !empty($phone_num) && !empty($cust_pass) && !empty($confirm_pass)) {
-
-        // Validate first and last names
         if (validateName($f_name) && validateName($l_name)) {
-            // Check if passwords match
-            if ($cust_pass === $confirm_pass) {
-
-                // Validate password strength
-                if (strlen($cust_pass) >= 8 && preg_match('/[A-Z]/', $cust_pass) && preg_match('/[a-z]/', $cust_pass) && preg_match('/\d/', $cust_pass) && preg_match('/[\W_]/', $cust_pass)) {
-
-                    // Validate username format
-                    if (validateUsername($username)) {
-
-                        // Validate phone number format
-                        if (validatePhoneNumber($phone_num)) {
-
-                            // Validate address format
-                            if (validateAddress($add_ress)) {
-
-                                // Check if email or username already exists
-                                $stmt = $conn->prepare("SELECT COUNT(*) FROM Customers WHERE email = ? OR username = ?");
-                                $stmt->bind_param("ss", $email, $username);
-                                $stmt->execute();
-                                $stmt->bind_result($count);
-                                $stmt->fetch();
-                                $stmt->close();
-
-                                if ($count == 0) {
-                                    // Encrypt password
-                                    $encrypted_pass = password_hash($cust_pass, PASSWORD_BCRYPT);
-
-                                    // Call stored procedure
-                                    $stmt = $conn->prepare("CALL InsertCustomer(?, ?, ?, ?, ?, ?, ?)");
-                                    $stmt->bind_param("sssssss", $f_name, $l_name, $username, $add_ress, $email, $phone_num, $encrypted_pass);
-
-                                    if ($stmt->execute()) {
-                                        $success = true;
-                                    } else {
-                                        $error = 'Error: ' . $stmt->error;
-                                    }
-
+            if (validateEmail($email)) {
+                if ($cust_pass === $confirm_pass) {
+                    if (strlen($cust_pass) >= 8 && preg_match('/[A-Z]/', $cust_pass) && preg_match('/[a-z]/', $cust_pass) && preg_match('/\d/', $cust_pass) && preg_match('/[\W_]/', $cust_pass)) {
+                        if (validateUsername($username)) {
+                            if (validatePhoneNumber($phone_num)) {
+                                if (validateAddress($add_ress)) {
+                                    // Check if email or username already exists
+                                    $stmt = $conn->prepare("SELECT COUNT(*) FROM Customers WHERE email = ? OR username = ?");
+                                    $stmt->bind_param("ss", $email, $username);
+                                    $stmt->execute();
+                                    $stmt->bind_result($count);
+                                    $stmt->fetch();
                                     $stmt->close();
+
+                                    if ($count == 0) {
+                                        // Generate a random verification code
+                                        $verification_code = rand(100000, 999999);
+
+                                        // Save the verification code to the database
+                                        $stmt = $conn->prepare("INSERT INTO password_resets (email, code, created_at) VALUES (?, ?, NOW()) ON DUPLICATE KEY UPDATE code = ?, created_at = NOW()");
+                                        $stmt->bind_param("ssi", $email, $verification_code, $verification_code);
+                                        $stmt->execute();
+                                        $stmt->close();
+
+                                        // Send the verification code to the user's email using PHPMailer
+                                        $mail = new PHPMailer(true);
+
+                                        try {
+                                            // Server settings
+                                            $mail->isSMTP();
+                                            $mail->Host       = 'smtp.gmail.com'; // Set the SMTP server to send through
+                                            $mail->SMTPAuth   = true;
+                                            $mail->Username   = 'arieldohinogbusiness@gmail.com'; // SMTP username
+                                            $mail->Password   = 'lystrtavajrupmnq'; // SMTP password
+                                            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                                            $mail->Port       = 587;
+
+                                            $mail->setFrom('no-reply@yourdomain.com', 'Your Website Name');
+                                            $mail->addAddress($email);
+
+                                            $mail->isHTML(true);
+                                            $mail->Subject = 'Email Verification Code';
+                                            $mail->Body    = 'Your verification code is: <b>' . $verification_code . '</b>';
+
+                                            $mail->send();
+                                            $_SESSION['email'] = $email;
+                                            $_SESSION['f_name'] = $f_name;
+                                            $_SESSION['l_name'] = $l_name;
+                                            $_SESSION['username'] = $username;
+                                            $_SESSION['add_ress'] = $add_ress;
+                                            $_SESSION['phone_num'] = $phone_num;
+                                            $_SESSION['cust_pass'] = $cust_pass;
+                                            header('Location: reg-authentication.php');
+                                            exit();
+                                        } catch (Exception $e) {
+                                            $error = "Failed to send verification code. Please try again. Error: " . $mail->ErrorInfo;
+                                        }
+                                    } else {
+                                        $error = 'Email or username already exists.';
+                                    }
                                 } else {
-                                    $error = 'Email or username already exists.';
+                                    $error = 'Address format is invalid. Please use a more flexible format.';
                                 }
                             } else {
-                                $error = 'Address format is invalid. Please use a more flexible format.';
+                                $error = 'Phone number must be in Philippine cellular format (09xxxxxxxxx).';
                             }
                         } else {
-                            $error = 'Phone number must be in Philippine cellular format (09xxxxxxxxx).';
+                            $error = 'Username must be at least 6 characters long and include both letters and numbers.';
                         }
                     } else {
-                        $error = 'Username must be at least 6 characters long and include both letters and numbers.';
+                        $error = 'Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character.';
                     }
                 } else {
-                    $error = 'Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character.';
+                    $error = 'Passwords do not match.';
                 }
             } else {
-                $error = 'Passwords do not match.';
+                $error = 'Invalid email format.';
             }
         } else {
             $error = 'First name and last name must start with a capital letter and contain only letters.';
@@ -130,6 +142,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 $conn->close();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

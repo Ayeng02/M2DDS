@@ -7,6 +7,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
     exit();
 }
 
+
 // Database connection
 include '../includes/db_connect.php';
 
