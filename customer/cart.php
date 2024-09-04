@@ -7,7 +7,7 @@
     <title>Cart - Meat-To-Door Delivery</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="../css/home.css">
-    <link rel="icon" href="../img/logo.ico" type="image/x-icon">
+    <link rel="icon" href="../img/mtdd_logo.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <style>

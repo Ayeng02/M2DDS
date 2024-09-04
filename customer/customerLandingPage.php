@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="stylesheet" href="../css/home.css">
-    <link rel="icon" href="../img/logo.ico" type="image/x-icon">
+    <link rel="icon" href="../img/mtdd_logo.png" type="image/x-icon">
     <style>
         body {
             background-color: #f0f0f0;

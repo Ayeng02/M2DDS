@@ -131,6 +131,7 @@ $conn->close();
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="stylesheet" href="./css/home.css">
+    <link rel="icon" href="../img/mtdd_logo.png" type="image/x-icon">
     <style>
         body {
             justify-content: center;
@@ -291,7 +292,7 @@ $conn->close();
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg">
         <a class="navbar-brand" href="#">
-            <img class="logo2" src="../img/logo.ico" alt="Meat-To-Door Logo">
+            <img class="logo2" src="../img/mtdd_logo.png" alt="Meat-To-Door Logo">
             Meat-To-Door
         </a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
