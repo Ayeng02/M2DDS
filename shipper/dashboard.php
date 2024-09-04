@@ -11,7 +11,8 @@
     <style>
         body {
             display: flex;
-            margin-left: 200px;
+            flex-direction: column;
+            margin: 0;
         }
 
         .background-animation {
@@ -46,21 +47,21 @@
             left: 0;
             background-color: #FF8225;
             z-index: 999;
-            overflow-y: auto; 
+            overflow-y: auto;
         }
 
         .navbar-nav {
-            flex-direction: row; 
-            width: 100%; 
-            justify-content: space-around; 
-            flex-wrap: wrap; 
+            flex-direction: row;
+            width: 100%;
+            justify-content: space-around;
+            flex-wrap: wrap;
         }
 
         .nav-link {
             color: black;
             transition: color 0.3s;
-            padding: 0.5rem 1rem; 
-            text-align: left; 
+            padding: 0.5rem 1rem;
+            text-align: left;
         }
 
         .nav-link:hover,
@@ -87,26 +88,23 @@
             flex-grow: 1;
         }
 
-        @media (max-width: 100%) {
+        @media (max-width: 768px) {
             .navbar {
-                width: 75%;
-                height: auto; /* Allow height to adjust based on content */
-                position: static; /* Make the navbar scrollable with the rest of the content */
-            }
-
-            body {
-                margin-left: 0; /* Reset margin for small screens */
-            }
-        }
-
-            .main-content {
-                margin-left: 0;
+                height: auto;
+                width: 100%;
+                position: static;
             }
 
             .navbar-nav {
-                justify-content: space-around;
+                justify-content: flex-end;
             }
-        
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+                text-align: left;
+            }
+        }
     </style>
 </head>
 
@@ -115,9 +113,6 @@
 
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg">
-        <!-- <a class="navbar-brand" href="#">
-
-        </a> -->
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -125,27 +120,27 @@
             <ul class="navbar-nav">
                 <li class="nav-item active">
                     <a class="nav-link" href="#">
-                        <i class="fas fa-home"></i> Home <span class="sr-only">(current)</span>
+                        <i class="fas fa-home"></i> Joan1 <span class="sr-only">(current)</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">
-                        <i class="fas fa-info-circle"></i> About Us
+                        <i class="fas fa-info-circle"></i> Joan2
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">
-                        <i class="fas fa-envelope"></i> Contact
+                        <i class="fas fa-envelope"></i> Joan3
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">
-                        <i class="fas fa-sign-in-alt"></i> Login
+                        <i class="fas fa-sign-in-alt"></i> Joan4
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">
-                        <i class="fas fa-user-plus"></i> Register
+                        <i class="fas fa-user-plus"></i> Joan5
                     </a>
                 </li>
                 <li class="nav-item">
@@ -164,11 +159,13 @@
 
     <!-- Main Content Area -->
     <div class="main-content">
-        <!-- Your main content goes here -->
         <h1>Welcome to Meat-To-Door Delivery</h1>
-        <p>This is where you can include more information, login forms, etc.</p>
+        <p>wetsa wa pani</p>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 
 </html>
