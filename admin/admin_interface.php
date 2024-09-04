@@ -170,6 +170,9 @@ include '../includes/db_connect.php';
     font-size: 1.5rem;
     margin-top: 10px; 
 }
+.rating_scale-container{
+    display: flex;
+}
 .container-rate{
     display: flex;
     background-color: white;
@@ -177,13 +180,27 @@ include '../includes/db_connect.php';
     width: 50%;
     height: 45vh;
     color: #a72828;
-    margin-top: 40px;
+    margin-top: 20px;
     margin-left: 30px;
     border-radius: 10px;
     justify-content: center;
     text-align: center;
     align-items: center;
 
+}
+.scale-nav{
+    display: flex;
+    flex-direction: column;
+    color: green;
+    border: 2px solid #8c1c1c;
+    width: 40%;
+    margin-left: 60px;
+    margin-top: 20px;
+    border-radius: 10px;
+    height: 45vh;
+    align-content: center;
+    text-align: center;
+    justify-content: center;
 }
 
     </style>
@@ -249,13 +266,20 @@ $conn->close();
                  <span class="sales-amount"><?php echo number_format($total_customers); ?></span>
                 <span class="sales-label">Customer</span>
             </div>
-            <div class="container-box">Staff</div>
+            <div class="container-box">
+                <span class="sales-amount"><?php echo number_format($total_customers); ?></span>
+                <span class="sales-label">Employee</span>
+            </div>
             
         </div>
         <br>
         <hr>
+        <div class="rating_scale-container">
         <div class="container-rate"> Rating Card</div>
-    
+        <div class="scale-nav">
+            Table Top Products
+        </div>
+    </div>
     </div>
     <!-- /#page-content-wrapper -->
 </div>
