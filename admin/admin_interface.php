@@ -210,6 +210,9 @@
                 <button class="btn btn-toggle" id="menu-toggle-top">☰</button>
                 <div class="collapse navbar-collapse">
                     <ul class="navbar-nav ml-auto">
+                         <li class="nav-item">
+                            <a class="nav-link" href="#notification">Notification</a>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#profile">Admin Profile</a>
                         </li>
@@ -227,13 +230,12 @@
             </div>
             <div class="container-box">first card</div>
             <div class="container-box">second card</div>
-             <div class="container-box">third card</div>
-
+            <div class="container-box">third card</div>
             
-          
 
         </div>
         <div class="container-rate"> Rating Card</div>
+    
     </div>
     <!-- /#page-content-wrapper -->
 </div>
