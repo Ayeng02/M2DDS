@@ -207,7 +207,7 @@ $conn->close();
     <div class="background-animation"></div>
     <div class="container login-container">
         <div class="login-header">
-            <img src="../img/logo.ico" alt="Meat-To-Door Logo">
+            <img src="../img/mtdd_logo.png" alt="Meat-To-Door Logo">
             <h1>Forgot Password</h1>
             <p>Enter your email address to receive a verification code</p>
         </div>
