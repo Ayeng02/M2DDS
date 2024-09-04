@@ -23,6 +23,12 @@ function validateUsername($username)
     return preg_match('/^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{6,}$/', $username);
 }
 
+// Helper function to validate names
+function validateName($name)
+{
+    return preg_match('/^[A-Z][a-zA-Z\s]*$/', $name);
+}
+
 // Encryption and decryption functions
 function encrypt($data, $key)
 {
@@ -56,61 +62,66 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Basic validation
     if (!empty($f_name) && !empty($l_name) && !empty($username) && !empty($add_ress) && !empty($email) && !empty($phone_num) && !empty($cust_pass) && !empty($confirm_pass)) {
 
-        // Check if passwords match
-        if ($cust_pass === $confirm_pass) {
+        // Validate first and last names
+        if (validateName($f_name) && validateName($l_name)) {
+            // Check if passwords match
+            if ($cust_pass === $confirm_pass) {
 
-            // Validate password strength
-            if (strlen($cust_pass) >= 8 && preg_match('/[A-Z]/', $cust_pass) && preg_match('/[a-z]/', $cust_pass) && preg_match('/\d/', $cust_pass) && preg_match('/[\W_]/', $cust_pass)) {
+                // Validate password strength
+                if (strlen($cust_pass) >= 8 && preg_match('/[A-Z]/', $cust_pass) && preg_match('/[a-z]/', $cust_pass) && preg_match('/\d/', $cust_pass) && preg_match('/[\W_]/', $cust_pass)) {
 
-                // Validate username format
-                if (validateUsername($username)) {
+                    // Validate username format
+                    if (validateUsername($username)) {
 
-                    // Validate phone number format
-                    if (validatePhoneNumber($phone_num)) {
+                        // Validate phone number format
+                        if (validatePhoneNumber($phone_num)) {
 
-                        // Validate address format
-                        if (validateAddress($add_ress)) {
+                            // Validate address format
+                            if (validateAddress($add_ress)) {
 
-                            // Check if email or username already exists
-                            $stmt = $conn->prepare("SELECT COUNT(*) FROM Customers WHERE email = ? OR username = ?");
-                            $stmt->bind_param("ss", $email, $username);
-                            $stmt->execute();
-                            $stmt->bind_result($count);
-                            $stmt->fetch();
-                            $stmt->close();
-
-                            if ($count == 0) {
-                                // Encrypt password
-                                $encrypted_pass = password_hash($cust_pass, PASSWORD_BCRYPT);
-
-                                // Call stored procedure
-                                $stmt = $conn->prepare("CALL InsertCustomer(?, ?, ?, ?, ?, ?, ?)");
-                                $stmt->bind_param("sssssss", $f_name, $l_name, $username, $add_ress, $email, $phone_num, $encrypted_pass);
-
-                                if ($stmt->execute()) {
-                                    $success = true;
-                                } else {
-                                    $error = 'Error: ' . $stmt->error;
-                                }
-
+                                // Check if email or username already exists
+                                $stmt = $conn->prepare("SELECT COUNT(*) FROM Customers WHERE email = ? OR username = ?");
+                                $stmt->bind_param("ss", $email, $username);
+                                $stmt->execute();
+                                $stmt->bind_result($count);
+                                $stmt->fetch();
                                 $stmt->close();
+
+                                if ($count == 0) {
+                                    // Encrypt password
+                                    $encrypted_pass = password_hash($cust_pass, PASSWORD_BCRYPT);
+
+                                    // Call stored procedure
+                                    $stmt = $conn->prepare("CALL InsertCustomer(?, ?, ?, ?, ?, ?, ?)");
+                                    $stmt->bind_param("sssssss", $f_name, $l_name, $username, $add_ress, $email, $phone_num, $encrypted_pass);
+
+                                    if ($stmt->execute()) {
+                                        $success = true;
+                                    } else {
+                                        $error = 'Error: ' . $stmt->error;
+                                    }
+
+                                    $stmt->close();
+                                } else {
+                                    $error = 'Email or username already exists.';
+                                }
                             } else {
-                                $error = 'Email or username already exists.';
+                                $error = 'Address format is invalid. Please use a more flexible format.';
                             }
                         } else {
-                            $error = 'Address format is invalid. Please use a more flexible format.';
+                            $error = 'Phone number must be in Philippine cellular format (09xxxxxxxxx).';
                         }
                     } else {
-                        $error = 'Phone number must be in Philippine cellular format (09xxxxxxxxx).';
+                        $error = 'Username must be at least 6 characters long and include both letters and numbers.';
                     }
                 } else {
-                    $error = 'Username must be at least 6 characters long and include both letters and numbers.';
+                    $error = 'Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character.';
                 }
             } else {
-                $error = 'Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character.';
+                $error = 'Passwords do not match.';
             }
         } else {
-            $error = 'Passwords do not match.';
+            $error = 'First name and last name must start with a capital letter and contain only letters.';
         }
     } else {
         $error = 'All fields are required.';
@@ -345,11 +356,11 @@ $conn->close();
             <div class="form-row">
                 <div class="form-group col-md-6">
                     <label for="f_name">First Name</label>
-                    <input type="text" class="form-control" id="f_name" name="f_name" placeholder="Enter your first name" required>
+                    <input type="text" class="form-control" id="f_name" name="f_name" placeholder="Enter your first name" required oninput="validateName(this)">
                 </div>
                 <div class="form-group col-md-6">
                     <label for="l_name">Last Name</label>
-                    <input type="text" class="form-control" id="l_name" name="l_name" placeholder="Enter your last name" required>
+                    <input type="text" class="form-control" id="l_name" name="l_name" placeholder="Enter your last name" required oninput="validateName(this)">
                 </div>
             </div>
             <div class="form-row">
@@ -420,6 +431,16 @@ $conn->close();
                 }
             <?php endif; ?>
         });
+
+        function validateName(input) {
+        // Remove numbers and keep letters only
+        input.value = input.value.replace(/[^a-zA-Z\s]/g, '');
+
+        // Capitalize the first letter of each word
+        input.value = input.value.replace(/\b\w/g, function(char) {
+            return char.toUpperCase();
+        });
+    }
     </script>
 </body>
 
