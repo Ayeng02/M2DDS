@@ -1,6 +1,12 @@
 <?php
 session_start();
 
+// Redirect to landing page if already logged in
+if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
+    header('Location: customerLandingPage.php');
+    exit();
+}
+
 // Database connection
 include '../includes/db_connect.php';
 
@@ -48,6 +54,7 @@ $conn->close();
     <title>Login - Meat-To-Door Delivery</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="icon" href="../img/mtdd_logo.png" type="image/x-icon">
     <style>
         body {
             display: flex;
@@ -201,7 +208,7 @@ $conn->close();
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg">
         <a class="navbar-brand" href="#">
-            <img class="logo2" src="../img/logo.ico" alt="Meat-To-Door Logo">
+            <img class="logo2" src="../img/mtdd_logo.png" alt="Meat-To-Door Logo">
             Meat-To-Door
         </a>
 
@@ -243,7 +250,7 @@ $conn->close();
  <div class="background-animation"></div>
     <div class="container login-container">
         <div class="login-header">
-            <img src="../img/logo.ico" alt="Meat-To-Door Logo">
+            <img src="../img/mtdd_logo.png" alt="Meat-To-Door Logo">
             <h1>Login</h1>
             <p>Where Quality Meets Affordability</p>
         </div>

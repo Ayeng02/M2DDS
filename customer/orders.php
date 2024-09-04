@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link href="https://cdn.jsdelivr.net/npm/jquery-ui-dist/jquery-ui.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/home.css">
+    <link rel="icon" href="../img/mtdd_logo.png" type="image/x-icon">
     <style>
         .navbar {
             top: 0px;

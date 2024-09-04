@@ -1,4 +1,11 @@
 <?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require '../PHPMailer/PHPMailer/src/Exception.php';
+require '../PHPMailer/PHPMailer/src/PHPMailer.php';
+require '../PHPMailer/PHPMailer/src/SMTP.php';
+
 session_start();
 
 // Database connection (update with your credentials)
@@ -6,47 +13,57 @@ include '../includes/db_connect.php';
 
 // Handle form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    if (isset($_POST['code'])) {
-        // Handle verification code input
-        $code = $_POST['code'];
-        $email = $_SESSION['email'] ?? '';
+    $email = $_POST['email'];
 
-        // Check if the code matches
-        $stmt = $conn->prepare("SELECT id FROM password_resets WHERE email = ? AND code = ?");
-        $stmt->bind_param("si", $email, $code);
+    // Check if the email exists
+    $stmt = $conn->prepare("SELECT cust_id FROM Customers WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $stmt->bind_result($user_id);
+    $stmt->fetch();
+    $stmt->close();
+
+    if ($user_id) {
+        // Generate a random verification code
+        $code = rand(100000, 999999);
+
+        // Save the verification code to the database
+        $stmt = $conn->prepare("INSERT INTO password_resets (email, code) VALUES (?, ?) ON DUPLICATE KEY UPDATE code = ?");
+        $stmt->bind_param("ssi", $email, $code, $code);
         $stmt->execute();
-        $stmt->bind_result($reset_id);
-        $stmt->fetch();
         $stmt->close();
 
-        if ($reset_id) {
-            // Code is correct, proceed to reset password
-            $_SESSION['verified'] = true;
-        } else {
-            $error = "Invalid verification code.";
+        // Send the verification code to the user's email using PHPMailer
+        $mail = new PHPMailer(true);
+
+        try {
+            //Server settings
+            $mail->isSMTP();
+            $mail->Host       = 'smtp.gmail.com'; // Set the SMTP server to send through
+            $mail->SMTPAuth   = true;
+            $mail->Username   = 'arieldohinogbusiness@gmail.com'; // SMTP username
+            $mail->Password   = 'lystrtavajrupmnq'; // SMTP password
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = 587;
+
+            //Recipients
+            $mail->setFrom('no-reply@meat-to-door.com', 'Meat-To-Door Delivery');
+            $mail->addAddress($email);
+
+            // Content
+            $mail->isHTML(true);
+            $mail->Subject = 'Password Reset Verification Code';
+            $mail->Body    = 'Your verification code is: ' . $code;
+
+            $mail->send();
+            $_SESSION['email'] = $email;
+            header('Location: verify-code.php');
+            exit();
+        } catch (Exception $e) {
+            $error = "Failed to send verification code. Please try again. Error: " . $mail->ErrorInfo;
         }
-    } elseif (isset($_POST['new_password']) && isset($_SESSION['verified']) && $_SESSION['verified'] === true) {
-        // Handle new password submission
-        $new_password = $_POST['new_password'];
-        $email = $_SESSION['email'] ?? '';
-
-        // Update the password in the database
-        $hashed_password = password_hash($new_password, PASSWORD_BCRYPT);
-        $stmt = $conn->prepare("UPDATE Customers SET cust_pass = ? WHERE email = ?");
-        $stmt->bind_param("ss", $hashed_password, $email);
-        $stmt->execute();
-        $stmt->close();
-
-        // Remove reset entry and session data
-        $stmt = $conn->prepare("DELETE FROM password_resets WHERE email = ?");
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $stmt->close();
-
-        unset($_SESSION['verified']);
-        $_SESSION['password_reset_success'] = true;
-        header('Location: reset-success.php');
-        exit();
+    } else {
+        $error = "Email not found.";
     }
 }
 
@@ -58,7 +75,7 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Password Reset - Meat-To-Door Delivery</title>
+    <title>Forgot Password - Meat-To-Door Delivery</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="icon" href="../img/mtdd_logo.png" type="image/x-icon">
@@ -66,7 +83,6 @@ $conn->close();
         body {
             display: flex;
             justify-content: center;
-
         }
         .background-animation {
             position: absolute;
@@ -175,75 +191,37 @@ $conn->close();
             height: 40px;
             margin-right: 10px;
         }
+        .btn-primary {
+            background-color: #FF8225;
+            border-color: #FF8225;
+        }
 
+        .btn-primary:hover {
+            background-color: #e36f10;
+            border-color: #e36f10;
+        }
     </style>
 </head>
 <body>
- <!-- Navigation Bar -->
-<nav class="navbar navbar-expand-lg">
-    <a class="navbar-brand" href="#">
-        <img class="logo" src="../img/logo.ico" alt="Meat-To-Door Logo">
-        Meat-To-Door
-    </a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-                <a class="nav-link" href="../index.php">
-                    <i class="fas fa-home"></i> Home <span class="sr-only">(current)</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-info-circle"></i> About Us
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-envelope"></i> Contact
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="login.php">
-                    <i class="fas fa-sign-in-alt"></i> Login
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="register.php">
-                    <i class="fas fa-user-plus"></i> Register
-                </a>
-            </li>
-        </ul>
-    </div>
-</nav>
+
     <div class="background-animation"></div>
     <div class="container login-container">
         <div class="login-header">
             <img src="../img/logo.ico" alt="Meat-To-Door Logo">
-            <h1><?php echo isset($_SESSION['verified']) && $_SESSION['verified'] === true ? 'Reset Password' : 'Verify Code'; ?></h1>
-            <p><?php echo isset($_SESSION['verified']) && $_SESSION['verified'] === true ? 'Enter your new password' : 'Enter the verification code sent to your email'; ?></p>
+            <h1>Forgot Password</h1>
+            <p>Enter your email address to receive a verification code</p>
         </div>
-        <form class="login-form" action="" method="post">
+        <form class="login-form" action="send-reset-email.php" method="post">
             <?php if (isset($error)): ?>
                 <div class="alert alert-danger" role="alert" id="errorAlert">
                     <?php echo $error; ?>
                 </div>
             <?php endif; ?>
-            <?php if (!isset($_SESSION['verified']) || $_SESSION['verified'] !== true): ?>
-                <div class="form-group">
-                    <label for="code">Verification Code</label>
-                    <input type="text" class="form-control" id="code" name="code" placeholder="Enter the verification code" required>
-                </div>
-                <button type="submit" class="btn btn-primary btn-block">Verify Code</button>
-            <?php else: ?>
-                <div class="form-group">
-                    <label for="new_password">New Password</label>
-                    <input type="password" class="form-control" id="new_password" name="new_password" placeholder="Enter your new password" required>
-                </div>
-                <button type="submit" class="btn btn-primary btn-block">Reset Password</button>
-            <?php endif; ?>
+            <div class="form-group">
+                <label for="email">Email address</label>
+                <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Send Verification Code</button>
         </form>
         <div class="login-footer">
             <p>Remembered your password? <a href="login.php">Login here</a></p>
@@ -264,7 +242,7 @@ $conn->close();
                     setTimeout(function() {
                         errorAlert.style.display = 'none';
                         errorAlert.style.opacity = '1';
-                    }); // Time to complete fade out effect
+                    }, 1000); // Time to complete fade out effect
                 }, 5000); // Time to show error (5 seconds)
             }
         });

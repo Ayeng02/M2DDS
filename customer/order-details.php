@@ -112,6 +112,7 @@ $conn->close();
     <!-- DataTables CSS -->
     <link href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css" rel="stylesheet">
     <!-- Custom CSS -->
+    <link rel="icon" href="../img/mtdd_logo.png" type="image/x-icon">
     <style>
         body {
             background-color: #f8f9fa;

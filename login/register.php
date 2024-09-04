@@ -289,52 +289,14 @@ $conn->close();
 </head>
 
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg">
-        <a class="navbar-brand" href="#">
-            <img class="logo2" src="../img/mtdd_logo.png" alt="Meat-To-Door Logo">
-            Meat-To-Door
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="../index.php">
-                        <i class="fas fa-home"></i> Home <span class="sr-only">(current)</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="fas fa-info-circle"></i> About Us
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="fas fa-envelope"></i> Contact
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="login.php">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </a>
-                </li>
-                <li class="nav-item active">
-                    <a class="nav-link" href="register.php">
-                        <i class="fas fa-user-plus"></i> Register
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </nav>
+   
 
     <div class="background-animation"></div>
     <div class="container register-container">
         <div class="register-header">
-            <img src="../img/logo.ico" alt="Meat-To-Door Logo" class="img-fluid">
-            <p>Where Quality Meets Affordability</p>
-            <h1 style="padding: 20px;">Register</h1>
+            <img src="../img/mtdd_logo.png" alt="Meat-To-Door Logo" class="img-fluid">
+            <p style="margin-top:-15px;">Where Quality Meets Affordability</p>
+            <h1 style="padding: 20px;">REGISTER</h1>
         </div>
         <form class="register-form" action="register.php" method="post">
             <?php if ($error): ?>

@@ -78,6 +78,7 @@ $conn->close();
     <title>Forgot Password - Meat-To-Door Delivery</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="icon" href="../img/mtdd_logo.png" type="image/x-icon">
     <style>
         body {
             display: flex;
@@ -246,7 +247,7 @@ $conn->close();
     <div class="background-animation"></div>
     <div class="container login-container">
         <div class="login-header">
-            <img src="../img/logo.ico" alt="Meat-To-Door Logo">
+            <img src="../img/mtdd_logo.png" alt="Meat-To-Door Logo">
             <h1>Forgot Password</h1>
             <p>Enter your email address to receive a verification code</p>
         </div>

@@ -60,7 +60,7 @@ $conn->close();
             top: 0;
             left: 0;
             width: 100%;
-            height: 150%;
+            height: 110%;
             background: linear-gradient(135deg, #ff6b6b, #f7d08a, #6b5b95, #d4e157);
             background-size: 400% 400%;
             animation: gradientAnimation 15s ease infinite;
@@ -204,9 +204,9 @@ $conn->close();
  <div class="background-animation"></div>
     <div class="container login-container">
         <div class="login-header">
-            <img src="../img/logo.ico" alt="Meat-To-Door Logo">
-            <h1>LOGIN</h1>
-            <p>Where Quality Meets Affordability</p>
+            <img src="../img/mtdd_logo.png" alt="Meat-To-Door Logo">
+            <p style="margin-top:-15px;">Where Quality Meets Affordability</p>
+            <h1 style="padding: 20px;">LOGIN</h1>
         </div>
         <form class="login-form" action="login.php" method="post">
             <?php if (isset($error)): ?>
