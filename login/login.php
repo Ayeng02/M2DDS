@@ -230,7 +230,6 @@ $conn->close();
             <button type="submit" class="btn btn-primary btn-block">Login</button>
         </form>
         <div class="login-footer">
-            <p>Don't have an account? <a href="register.php">Register here</a></p>
             <p><a href="send-reset-email.php">Forgot your password?</a></p>
         </div>
     </div>
