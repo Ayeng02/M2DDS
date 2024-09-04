@@ -60,7 +60,7 @@ $conn->close();
             top: 0;
             left: 0;
             width: 100%;
-            height: 150%;
+            height: 110%;
             background: linear-gradient(135deg, #ff6b6b, #f7d08a, #6b5b95, #d4e157);
             background-size: 400% 400%;
             animation: gradientAnimation 15s ease infinite;
