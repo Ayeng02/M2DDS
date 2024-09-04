@@ -204,9 +204,9 @@ $conn->close();
  <div class="background-animation"></div>
     <div class="container login-container">
         <div class="login-header">
-            <img src="../img/logo.ico" alt="Meat-To-Door Logo">
-            <h1>LOGIN</h1>
-            <p>Where Quality Meets Affordability</p>
+            <img src="../img/mtdd_logo.png" alt="Meat-To-Door Logo">
+            <p style="margin-top:-15px;">Where Quality Meets Affordability</p>
+            <h1 style="padding: 20px;">LOGIN</h1>
         </div>
         <form class="login-form" action="login.php" method="post">
             <?php if (isset($error)): ?>
