@@ -214,7 +214,7 @@ include '../includes/db_connect.php';
     text-shadow: 0 8px 10px #8c1c1c;
 }
  #chartContainer {
-    height: 100%; 
+    height: 80%; 
     width: 100%;
     }
         canvas {
@@ -366,17 +366,21 @@ if ($result->num_rows > 0) {
      <script>
     window.onload = function() {
         var chart = new CanvasJS.Chart("chartContainer", {
+            theme: "light2",
             animationEnabled: true,
             title: {
                 text: "Product Purchases for the Current Year"
             },
-            subtitles: [{
-                text: "Current Year"
-            }],
             data: [{
                 type: "pie",
+                indexLabel: "{y}",
                 yValueFormatString: "#,##0.00\"%\"",
-                indexLabel: "{label} ({y})",
+                indexLabelPlacement: "inside",
+                indexLabelFontColor: "#36454F",
+                indexLabelFontSize: 20,
+                indexLabelFontWeight: "bolder",
+                showInLegend: true,
+                legendText: "{label}",
                 dataPoints: <?php echo json_encode($dataPoints, JSON_NUMERIC_CHECK); ?>
             }]
         });
