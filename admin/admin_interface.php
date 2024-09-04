@@ -374,7 +374,7 @@ if ($result->num_rows > 0) {
             data: [{
                 type: "pie",
                 indexLabel: "{y}",
-                yValueFormatString: "#,##0.00\"%\"",
+                yValueFormatString: "#,##0\"%\"",
                 indexLabelPlacement: "inside",
                 indexLabelFontColor: "#36454F",
                 indexLabelFontSize: 20,
