@@ -14,6 +14,8 @@ include '../includes/db_connect.php';
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome for icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+     <script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <!-- Custom CSS -->
     <style>
         body {
@@ -29,10 +31,10 @@ include '../includes/db_connect.php';
         #wrapper {
             display: flex;
             width: 100%;
-            height: 100vh; /* Full viewport height */
+            height: 100%; /* Full viewport height */
         }
         #sidebar-wrapper {
-    min-height: 120vh;
+    min-height: 100%;
     width: 80px; /* Default width for icons only */
     background-color: #a72828;
     color: #fff;
@@ -178,30 +180,90 @@ include '../includes/db_connect.php';
     background-color: white;
     border: 2px solid #a72828;
     width: 50%;
-    height: 45vh;
+    height: 60vh;
     color: #a72828;
     margin-top: 20px;
-    margin-left: 30px;
+    margin-left: 50px;
     border-radius: 10px;
     justify-content: center;
     text-align: center;
     align-items: center;
+    margin-bottom: 30px;
 
 }
 .scale-nav{
     display: flex;
     flex-direction: column;
     color: green;
-    border: 2px solid #8c1c1c;
+  
     width: 40%;
     margin-left: 60px;
-    margin-top: 20px;
+    margin-top: 40px;
     border-radius: 10px;
-    height: 45vh;
+    height: 100%;
     align-content: center;
     text-align: center;
     justify-content: center;
+    
 }
+.scale-nav span{
+    color: #8c1c1c;
+    font-size: 50px;
+    margin-bottom: 10px;
+    font-weight: 700;
+    text-shadow: 0 8px 10px #8c1c1c;
+}
+ #chartContainer {
+    height: 100%; 
+    width: 100%;
+    }
+        canvas {
+            width: 85% !important; 
+        }
+ table {
+            width: 100%;
+            margin: 0 auto;
+            border-collapse: collapse;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            background-color: #fff;
+            border-radius: 30px;
+            border-radius: 10px;
+        }
+
+        th, td {
+            border: 1px solid #dee2e6;
+            padding: 12px 15px;
+            text-align: left;
+            transition: background-color 0.3s;
+            
+        }
+
+        th {
+            background-color: #8c1c1c;
+            color: #fff;
+            text-transform: uppercase;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        td {
+            background-color: #f9f9f9;
+            text-align: center;
+        }
+
+        tr:nth-child(even) td {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover td {
+            background-color: #e2e6ea;
+        }
+
+        .table-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
 
     </style>
 </head>
@@ -256,7 +318,7 @@ if ($result->num_rows > 0) {
     $total_customers = "No data available";
 }
 
-$conn->close();
+
 ?>
            <div class="container-box">
                 <span class="sales-amount">₱<?php echo number_format($monthly_sales); ?></span>
@@ -274,10 +336,97 @@ $conn->close();
         </div>
         <br>
         <hr>
+        <?php 
+        $sql = "SELECT p.prod_name, SUM(o.order_qty) AS total_purchased 
+        FROM order_tbl o
+        JOIN product_tbl p ON o.prod_code = p.prod_code
+        WHERE YEAR(o.order_date) = YEAR(CURDATE())
+         AND o.status_code = '4'
+        GROUP BY p.prod_name";
+            $result = $conn->query($sql);
+            $dataPoints = [];
+            if ($result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
+                    $dataPoints[] = array(
+                        "label" => $row['prod_name'],
+                        "y" => $row['total_purchased']
+                    );
+                }
+            } else {
+                $dataPoints = array(
+                    array("label" => "No data", "y" => 0)
+                );
+            }
+        ?>
+
         <div class="rating_scale-container">
-        <div class="container-rate"> Rating Card</div>
+        <div class="container-rate">
+            <div id="chartContainer" ></div>
+    </div>
+     <script>
+    window.onload = function() {
+        var chart = new CanvasJS.Chart("chartContainer", {
+            animationEnabled: true,
+            title: {
+                text: "Product Purchases for the Current Year"
+            },
+            subtitles: [{
+                text: "Current Year"
+            }],
+            data: [{
+                type: "pie",
+                yValueFormatString: "#,##0.00\"%\"",
+                indexLabel: "{label} ({y})",
+                dataPoints: <?php echo json_encode($dataPoints, JSON_NUMERIC_CHECK); ?>
+            }]
+        });
+        chart.render();
+    }
+    </script>
+    <?php
+     $sql = "SELECT p.prod_name, SUM(o.order_qty) AS total_purchased 
+        FROM order_tbl o
+        JOIN product_tbl p ON o.prod_code = p.prod_code
+        WHERE YEAR(o.order_date) = YEAR(CURDATE())
+         AND o.status_code = '4'
+        GROUP BY p.prod_name
+        ORDER BY total_purchased DESC";
+        $result = $conn->query($sql);
+
+        $topProducts = [];
+
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                 $topProducts[] = array( 
+                    "prod_name" => $row['prod_name'],
+                    "order_qty" => $row['total_purchased']
+                );
+            }
+        } else {
+            $topProducts = [];
+        }
+
+
+    ?>
         <div class="scale-nav">
-            Table Top Products
+            <span>Top Products</span>
+
+            <table>
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Quantity Purchased</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($topProducts as $product): ?>
+            <tr>
+                <td><?php echo htmlspecialchars($product['prod_name']); ?></td>
+                <td><?php echo number_format($product['order_qty']); ?></td>
+            </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
         </div>
     </div>
     </div>

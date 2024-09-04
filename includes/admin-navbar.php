@@ -18,7 +18,7 @@
                             <a class="nav-link" href="#profile"><i class="fas fa-user"></i></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#logout">Logout</a>
+                            <a class="nav-link" href="#logout"><i class="fas fa-right-from-bracket"></i>Logout</a>
                         </li>
                     </ul>
                 </div>
