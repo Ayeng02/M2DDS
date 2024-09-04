@@ -1,3 +1,9 @@
+
+<?php 
+session_start();
+include '../includes/db_connect.php';
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -142,10 +148,12 @@
 }*/
 .container-box{
     display: inline-flex;
-    background-color: #FF8225;
+    flex-direction: column;
+    background-color: white;
+    border: 2px solid #FF8225;
     width: 30%;
     height: 35vh;
-    color: white;
+    color: #FF8225;
     border-radius: 10px;
     align-items: center;
     margin-top: 20px;
@@ -154,13 +162,22 @@
     justify-content: center;
     
 }
+.sales-amount {
+    font-size: 3rem;
+    font-weight: bold; 
+}
+.sales-label {
+    font-size: 1.5rem;
+    margin-top: 10px; 
+}
 .container-rate{
     display: flex;
-    background-color: #a72828;
+    background-color: white;
+    border: 2px solid #a72828;
     width: 50%;
     height: 45vh;
-    color: white;
-    margin-top: 60px;
+    color: #a72828;
+    margin-top: 40px;
     margin-left: 30px;
     border-radius: 10px;
     justify-content: center;
@@ -168,72 +185,75 @@
     align-items: center;
 
 }
+
     </style>
 </head>
 <body>
 
 <div class="d-flex" id="wrapper">
-    <!-- Sidebar -->
-    <div id="sidebar-wrapper">
-        <div class="sidebar-heading">
-            <img src="../img/logo.ico" alt="Logo" class="logo-img">
-            <span class="sidebar-title">Admin Panel</span>
-        </div>
-        <div class="list-group list-group-flush">
-            <a href="#dashboard" class="list-group-item list-group-item-action">
-                <i class="fas fa-tachometer-alt"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="#products" class="list-group-item list-group-item-action">
-                <i class="fas fa-box"></i>
-                <span>Products</span>
-            </a>
-            <a href="#categories" class="list-group-item list-group-item-action">
-                <i class="fas fa-th-large"></i>
-                <span>Categories</span>
-            </a>
-            <a href="#orders" class="list-group-item list-group-item-action">
-                <i class="fas fa-shopping-cart"></i>
-                <span>Orders</span>
-            </a>
-        </div>
-        <button class="toggle-btn" id="menu-toggle">
-            <i class="fas fa-chevron-right"></i>
-        </button>
-    </div>
-    <!-- /#sidebar-wrapper -->
+<?php 
+include '../includes/sidebar.php';
+?>
 
     <!-- Page Content -->
     <div id="page-content-wrapper">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
-            <div class="container-fluid">
-                <button class="btn btn-toggle" id="menu-toggle-top">☰</button>
-                <div class="collapse navbar-collapse">
-                    <ul class="navbar-nav ml-auto">
-                         <li class="nav-item">
-                            <a class="nav-link" href="#notification">Notification</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#profile">Admin Profile</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#logout">Logout</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
+        <?php 
+        include '../includes/admin-navbar.php';
+        ?>
 
         <div class="container-fluid">
             <div class="content-header">
                 <h1 class="mt-4" id="dashboard">Dashboard</h1>
             </div>
-            <div class="container-box">first card</div>
-            <div class="container-box">second card</div>
-            <div class="container-box">third card</div>
-            
+            <?php
 
+$sql = "SELECT SUM(order_total) AS monthly_sales 
+        FROM order_tbl 
+        WHERE MONTH(order_date) = MONTH(CURDATE()) 
+          AND YEAR(order_date) = YEAR(CURDATE())
+          AND status_code = '4'";
+$result = $conn->query($sql);
+
+$monthly_sales = 0;
+
+if ($result->num_rows > 0) {
+   
+    while($row = $result->fetch_assoc()) {
+        $monthly_sales = $row['monthly_sales'];
+    }
+} else {
+    $monthly_sales = "No data available";
+}
+?>
+<?php
+$sql = "SELECT COUNT(cust_id) AS total_customers FROM customers";
+$result = $conn->query($sql);
+
+$total_customers = 0;
+
+if ($result->num_rows > 0) {
+    while($row = $result->fetch_assoc()) {
+        $total_customers = $row['total_customers'];
+    }
+} else {
+    $total_customers = "No data available";
+}
+
+$conn->close();
+?>
+           <div class="container-box">
+                <span class="sales-amount">₱<?php echo number_format($monthly_sales); ?></span>
+                <span class="sales-label">Monthly Sales</span>
+            </div>
+            <div class="container-box">
+                 <span class="sales-amount"><?php echo number_format($total_customers); ?></span>
+                <span class="sales-label">Customer</span>
+            </div>
+            <div class="container-box">Staff</div>
+            
         </div>
+        <br>
+        <hr>
         <div class="container-rate"> Rating Card</div>
     
     </div>
