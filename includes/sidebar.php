@@ -13,11 +13,11 @@
             <span class="sidebar-title">Admin Panel</span>
         </div>
         <div class="list-group list-group-flush">
-            <a href="#dashboard" class="list-group-item list-group-item-action">
+            <a href="admin_interface.php" class="list-group-item list-group-item-action">
                 <i class="fas fa-tachometer-alt"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="#products" class="list-group-item list-group-item-action">
+            <a href="addproducts.php" class="list-group-item list-group-item-action">
                 <i class="fas fa-box"></i>
                 <span>Products</span>
             </a>
@@ -28,6 +28,10 @@
             <a href="#orders" class="list-group-item list-group-item-action">
                 <i class="fas fa-shopping-cart"></i>
                 <span>Orders</span>
+            </a>
+             <a href="#orders" class="list-group-item list-group-item-action">
+                <i class="fas fa-user"></i>
+                <span>Employee</span>
             </a>
         </div>
         <button class="toggle-btn" id="menu-toggle">
