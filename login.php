@@ -21,9 +21,6 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
         case 'Cashier':
             header("Location: cashier_dashboard.php");
             break;
-        case 'Butcher':
-            header("Location: butcher_dashboard.php");
-            break;
         default:
             $error_message = "Invalid role.";
             break;
@@ -92,9 +89,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         break;
                     case 'Cashier':
                         header("Location: cashier_dashboard.php");
-                        break;
-                    case 'Butcher':
-                        header("Location: butcher_dashboard.php");
                         break;
                     default:
                         $error_message = "Invalid role.";
