@@ -125,13 +125,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <!-- Custom CSS -->
     <style>
         body {
-            background: linear-gradient(135deg, #FF8225, #a72828);
+            background: linear-gradient(135deg, #ff6b6b, #f7d08a, #6b5b95, #d4e157);
+            background-size: 400% 400%;
+            animation: gradientAnimation 10s ease infinite;
             font-family: 'Roboto', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
         }
 
         .login-container {
