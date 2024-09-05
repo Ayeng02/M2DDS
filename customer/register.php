@@ -115,7 +115,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                         $error = 'Email or username already exists.';
                                     }
                                 } else {
-                                    $error = 'Address format is invalid. Please use a more flexible format.';
+                                    $error = 'Address format is invalid. Please use a more flexible format. (Purok-5 Apokon, Tagum, Davao del Norte)';
                                 }
                             } else {
                                 $error = 'Phone number must be in Philippine cellular format (09xxxxxxxxx).';

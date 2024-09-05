@@ -156,9 +156,26 @@ $conn->close();
             background-color: #e36f10;
             border-color: #e36f10;
         }
+        .background-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #ff6b6b, #f7d08a, #6b5b95, #d4e157);
+            background-size: 400% 400%;
+            animation: gradientAnimation 15s ease infinite;
+            z-index: -1;
+        }
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+        }
     </style>
 </head>
 <body>
+<div class="background-animation"></div>
 <div class="container verification-container">
         <div class="verification-header">
             <img src="../img/logo.ico" alt="Meat-To-Door Logo" class="img-fluid">

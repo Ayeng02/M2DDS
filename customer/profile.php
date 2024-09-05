@@ -124,13 +124,13 @@ $customer = $result->fetch_assoc();
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="f_name">First Name</label>
-                            <input type="text" class="form-control" id="f_name" name="f_name" value="<?php echo $customer['f_name']; ?>" required>
+                            <input type="text" class="form-control" id="f_name" name="f_name" value="<?php echo $customer['f_name']; ?>" required oninput="validateName(this)">
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="l_name">Last Name</label>
-                            <input type="text" class="form-control" id="l_name" name="l_name" value="<?php echo $customer['l_name']; ?>" required>
+                            <input type="text" class="form-control" id="l_name" name="l_name" value="<?php echo $customer['l_name']; ?>" required  oninput="validateName(this)">
                         </div>
                     </div>
                 </div>
@@ -252,6 +252,16 @@ $customer = $result->fetch_assoc();
                 });
             });
         });
+
+        function validateName(input) {
+        // Remove numbers and keep letters only
+        input.value = input.value.replace(/[^a-zA-Z\s]/g, '');
+
+        // Capitalize the first letter of each word
+        input.value = input.value.replace(/\b\w/g, function(char) {
+            return char.toUpperCase();
+        });
+    }
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
