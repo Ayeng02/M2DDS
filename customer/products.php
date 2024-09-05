@@ -218,7 +218,7 @@ $sort_sql = '';
                     if ($row['prod_discount'] > 0) {
                         $original_price = number_format($row['prod_price'], 2);
                         $discounted_price = number_format($row['prod_price'] - $row['prod_discount'], 2);
-                        echo '<p class="card-text">Price: <span class="price-original">₱' . $original_price . '</span><br><strong class="price-discounted">$' . $discounted_price . '</strong></p>';
+                        echo '<p class="card-text">Price: <span class="price-original">₱' . $original_price . '</span><br><strong class="price-discounted">₱' . $discounted_price . '</strong></p>';
                     } else {
                         $price = number_format($row['prod_price'], 2);
                         echo '<p class="card-text">Price: <strong>₱' . $price . '</strong></p>';

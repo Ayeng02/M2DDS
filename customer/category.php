@@ -225,11 +225,11 @@
 
                     if ($product["prod_discount"] > 0) {
                         echo '<h6 class="discount-info">
-                            <span class="original-price">$' . number_format($product["prod_price"], 2) . '</span>
+                            <span class="original-price">₱' . number_format($product["prod_price"], 2) . '</span>
                             $' . number_format($product["prod_discount"], 2) . '
                         </h6>';
                     } else {
-                        echo '<h6>$' . number_format($product["prod_price"], 2) . '</h6>';
+                        echo '<h6>₱' . number_format($product["prod_price"], 2) . '</h6>';
                     }
 
                     echo '<div class="quantity-control">
