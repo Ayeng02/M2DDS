@@ -16,9 +16,10 @@ $offset = ($page - 1) * $limit;
 $status_query = $status !== 'all' ? "AND status_name = '$status'" : "";
 $search_query = $search ? "AND (order_id LIKE '%$search%' || order_fullname LIKE '%$search%' )" : "";
 $query = "
-    SELECT o.*, s.status_name 
+    SELECT o.*, s.status_name, p.prod_name
     FROM Order_tbl o
     JOIN status_tbl s ON o.status_code = s.status_code
+    JOIN product_tbl p ON o.prod_code = p.prod_code
     WHERE o.cust_id = '$cust_id' $status_query $search_query
     ORDER BY o.order_date DESC
     LIMIT $limit OFFSET $offset
@@ -84,8 +85,12 @@ echo json_encode($response);
 
 function generateOrderCard($order) {
     $cancelButton = '';
+    $orderButton = '';
     if ($order['status_name'] === 'Pending' || $order['status_name'] === 'Processing') {
         $cancelButton = '<button class="btn btn-danger cancel-btn" onclick="cancelOrder(\'' . htmlspecialchars($order['order_id']) . '\')">Cancel Order</button>';
+        
+    }else if ($order['status_name'] === 'Canceled'){
+        $orderButton = '<a href="product-details.php?id=' . htmlspecialchars($order['prod_code']) . '" class="btn btn-primary mt-2" style="background-color: #FF5349; border-color: #FF5349; border-radius: 10px;"> <i class="fas fa-cart-arrow-down"></i>  Order</a>';
     }
     
     return '
@@ -98,6 +103,7 @@ function generateOrderCard($order) {
                     <p><strong>Name:</strong> ' . htmlspecialchars($order['order_fullname']) . '</p>
                     <p><strong>Phone:</strong> ' . htmlspecialchars($order['order_phonenum']) . '</p>
                     <p><strong>Address:</strong> ' . htmlspecialchars($order['order_barangay']) . ', ' . htmlspecialchars($order['order_purok']) . ', ' . htmlspecialchars($order['order_province']) . '</p>
+                    <p><strong>Product Name:</strong> ' . htmlspecialchars($order['prod_name']) . '</p>
                     <p><strong>Quantity:</strong> ' . htmlspecialchars($order['order_qty']) . '</p>
                     <p><strong>Total:</strong> ' . htmlspecialchars($order['order_total']) . '</p>
                     <button class="btn btn-view-details" onclick="toggleDetails(\'' . htmlspecialchars($order['order_id']) . '\')">View Details</button>
@@ -107,6 +113,7 @@ function generateOrderCard($order) {
                         <p><strong>Date:</strong> ' . htmlspecialchars($order['order_date']) . '</p>
                         <p><strong>Status:</strong> <span class="order-status">' . htmlspecialchars($order['status_name']) . '</span></p>
                         ' . $cancelButton . '
+                        ' .$orderButton . '
                         
                     </div>
                     <a href="order-details.php?order_id=' . htmlspecialchars($order['order_id']) . '" class="btn btn-primary mt-3" style="margin-bottom:15px;">Track Order</a>
