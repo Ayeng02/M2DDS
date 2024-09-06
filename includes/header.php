@@ -15,7 +15,7 @@
     // Check if customer_id is set in session
     if (!isset($_SESSION['cust_id'])) {
         echo "Error: Customer ID not set in session.";
-        exit;
+        exit; 
     }
 
     // Retrieve the logged-in user's information

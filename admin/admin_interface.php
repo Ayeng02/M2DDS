@@ -2,6 +2,33 @@
 <?php 
 session_start();
 include '../includes/db_connect.php';
+
+// Redirect to landing page if already logged in
+if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isset($_SESSION['AdminLogExist']) && $_SESSION['AdminLogExist'] === true) {
+    
+    
+    if (isset($_SESSION['emp_role'])) {
+        // Redirect based on employee role
+        switch ($_SESSION['emp_role']) {
+            case 'Shipper':
+                header("Location: ./shipper/shipper.php");
+                exit;
+            case 'Order Manager':
+                header("Location: ./ordr_manager/ordr_manager.php");
+                exit;
+            case 'Cashier':
+                header("Location: ./cashier/cashier.php");
+                exit;
+                break;
+            default:
+        }
+    }
+
+}else{
+    header("Location: ../login.php");
+    exit;
+}
+
 ?>
 
 <!DOCTYPE html>

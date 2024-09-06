@@ -1,115 +1,114 @@
 <?php
 session_start(); // Start the session
 
-// Initialize error message
-$error_message = "";
 
-// Redirect to the landing page if already logged in
-if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
-    $emp_role = $_SESSION['emp_role'];
+
+// Redirect to landing page if already logged in
+if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isset($_SESSION['AdminLogExist']) && $_SESSION['AdminLogExist'] === true) {
     
-    switch ($emp_role) {
-        case 'Admin':
-            header("Location: admin_dashboard.php");
-            break;
-        case 'Shipper':
-            header("Location: shipper_dashboard.php");
-            break;
-        case 'Order Manager':
-            header("Location: order_manager_dashboard.php");
-            break;
-        case 'Cashier':
-            header("Location: cashier_dashboard.php");
-            break;
-        default:
-            $error_message = "Invalid role.";
-            break;
+    
+    if (isset($_SESSION['emp_role'])) {
+        // Redirect based on employee role
+        switch ($_SESSION['emp_role']) {
+            case 'Shipper':
+                header("Location: ./shipper/shipper.php");
+                exit;
+            case 'Order Manager':
+                header("Location: ./ordr_manager/ordr_manager.php");
+                exit;
+            case 'Cashier':
+                header("Location: ./cashier/cashier.php");
+                exit;
+            case 'Admin':
+                header("Location: ./admin/admin_interface.php");
+                exit;
+            default:
+        }
     }
-    exit();
+
 }
 
-// Handle form submission
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+// Database connection
+include './includes/db_connect.php';
+
+// Process form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    // Database connection
-    include './includes/db_connect.php';
-    
     // Check if the email belongs to an admin
-    $stmt = $conn->prepare("SELECT admin_pass FROM admin_tbl WHERE admin_email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $stmt->store_result();
+    $adminSql = "SELECT admin_id, admin_pass FROM admin_tbl WHERE admin_email = ?";
+    $adminStmt = $conn->prepare($adminSql);
+    $adminStmt->bind_param("s", $email);
+    $adminStmt->execute();
+    $adminStmt->store_result();
 
-    if ($stmt->num_rows > 0) {
-        $stmt->bind_result($hashed_password);
-        $stmt->fetch();
+    if ($adminStmt->num_rows > 0) {
+        // Admin found
+        $adminStmt->bind_result($adminId, $adminHashedPassword);
+        $adminStmt->fetch();
 
-        // Verify password for admin
-        if (password_verify($password, $hashed_password)) {
-            // Store session data
-            $_SESSION['loggedin'] = true;
-            $_SESSION['email'] = $email;
-            $_SESSION['emp_role'] = 'Admin'; // Set role to Admin
+        if (password_verify($password, $adminHashedPassword)) {
+            // Password is correct, set session data and redirect to admin directory
+            $_SESSION['AdminLogExist'] = true;
+            $_SESSION['admin_id'] = $adminId;
+            $_SESSION['emp_role'] = 'Admin';
 
-            // Redirect to admin dashboard
-            header("Location: admin_dashboard.php");
+            header('Location: ./admin/admin_interface.php');
             exit();
         } else {
-            // Password mismatch for admin
-            $error_message = "Incorrect password.";
+            $error_message = 'Invalid email or password';
         }
+        $adminStmt->close();
     } else {
-        // Check if email exists in employee table
-        $stmt->close();
-        $stmt = $conn->prepare("SELECT emp_pass, emp_role FROM emp_tbl WHERE emp_email = ?");
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $stmt->store_result();
+        // Admin not found, check if email exists in employee table
+        $empSql = "SELECT emp_id, emp_pass, emp_role FROM emp_tbl WHERE emp_email = ?";
+        $empStmt = $conn->prepare($empSql);
+        $empStmt->bind_param("s", $email);
+        $empStmt->execute();
+        $empStmt->store_result();
 
-        if ($stmt->num_rows > 0) {
-            $stmt->bind_result($hashed_password, $emp_role);
-            $stmt->fetch();
+        if ($empStmt->num_rows > 0) {
+            // Employee found
+            $empStmt->bind_result($empId, $empHashedPassword, $empRole);
+            $empStmt->fetch();
 
-            // Verify password for employee
-            if (password_verify($password, $hashed_password)) {
-                // Store session data
-                $_SESSION['loggedin'] = true;
-                $_SESSION['email'] = $email;
-                $_SESSION['emp_role'] = $emp_role;
+            if (password_verify($password, $empHashedPassword)) {
+                // Password is correct, set session data and redirect based on emp_role
+                $_SESSION['EmpLogExist'] = true;
+                $_SESSION['emp_id'] = $empId;
+                $_SESSION['emp_role'] = $empRole;
 
-                // Redirect based on role
-                switch ($emp_role) {
+                $redirectUrl = '';
+                switch ($empRole) {
                     case 'Shipper':
-                        header("Location: shipper_dashboard.php");
+                        $redirectUrl = 'shipper_dashboard.php';
                         break;
                     case 'Order Manager':
-                        header("Location: order_manager_dashboard.php");
+                        $redirectUrl = 'order_manager_dashboard.php';
                         break;
                     case 'Cashier':
-                        header("Location: cashier_dashboard.php");
+                        $redirectUrl = 'cashier_dashboard.php';
                         break;
                     default:
-                        $error_message = "Invalid role.";
+                        $redirectUrl = 'login.php'; // Default if no role matches
                         break;
                 }
+                header("Location: $redirectUrl");
                 exit();
             } else {
-                // Password mismatch for employee
-                $error_message = "Incorrect password or email";
+                $error_message = 'Invalid email or password';
             }
+            $empStmt->close();
         } else {
-            // Email not found in employee table
-            $error_message = "Email not found.";
+            $error_message = 'Invalid email or password';
         }
     }
 
-    $stmt->close();
     $conn->close();
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -117,7 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Responsive Animated Login Form</title>
+    <title>LOGIN | STAKEHOLDER</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Google Fonts (Optional) -->
@@ -242,42 +241,45 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .show-password input {
             width: auto;
         }
+
+        .alert {
+            margin-top: 20px;
+        }
     </style>
 </head>
 
 <body>
-    <div class="login-container">
-        <!-- Logo Section -->
-        <div class="logo">
-            <img src="./img/mtdd_logo.png" alt="Logo">
-        </div>
-        <h2>Login</h2>
-
-        <!-- Display error message if any -->
-        <?php if ($error_message): ?>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <?= htmlspecialchars($error_message) ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        <?php endif; ?>
-
-        <form action="login.php" method="POST">
-            <div class="mb-3">
-                <label for="email" class="form-label">Email address</label>
-                <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
-            </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
-            </div>
-            <!-- Show Password Checkbox -->
-            <div class="show-password">
-                <input type="checkbox" id="showPassword">
-                <label for="showPassword">Show Password</label>
-            </div>
-            <button type="submit" class="btn btn-custom w-100">Login</button>
-        </form>
+<div class="login-container">
+    <!-- Logo Section -->
+    <div class="logo">
+        <img src="./img/mtdd_logo.png" alt="Logo">
     </div>
+    <h2>Login</h2>
+
+    <!-- Display Error Message -->
+    <?php if (isset($error_message)): ?>
+    <div class="alert alert-danger">
+        <?php echo htmlspecialchars($error_message); ?>
+    </div>
+    <?php endif; ?>
+
+    <form id="loginForm" method="POST">
+        <div class="mb-3">
+            <label for="email" class="form-label">Email address</label>
+            <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+        </div>
+        <!-- Show Password Checkbox -->
+        <div class="show-password">
+            <input type="checkbox" id="showPassword">
+            <label for="showPassword">Show Password</label>
+        </div>
+        <button type="submit" class="btn btn-custom w-100">Login</button>
+    </form>
+</div>
 
     <!-- Bootstrap JS and Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
