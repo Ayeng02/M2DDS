@@ -2,7 +2,6 @@
 session_start(); // Start the session
 
 
-
 // Redirect to landing page if already logged in
 if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isset($_SESSION['AdminLogExist']) && $_SESSION['AdminLogExist'] === true) {
     
@@ -142,7 +141,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .login-container {
-            background: #fff;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
             padding: 40px;
             border-radius: 10px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -258,7 +258,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- Display Error Message -->
     <?php if (isset($error_message)): ?>
-    <div class="alert alert-danger">
+    <div id="error-alert" class="alert alert-danger ">
         <?php echo htmlspecialchars($error_message); ?>
     </div>
     <?php endif; ?>
@@ -293,6 +293,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 passwordInput.type = 'password';
             }
         });
+
+         // JavaScript to hide the alert after 3 seconds
+    setTimeout(function() {
+        var errorAlert = document.getElementById('error-alert');
+        if (errorAlert) {
+            errorAlert.style.display = 'none';
+        }
+    }, 2000); // 3000 milliseconds = 3 seconds
     </script>
 </body>
 

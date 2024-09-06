@@ -46,12 +46,12 @@
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, log out!',
+                confirmButtonText: 'Yes',
                 cancelButtonText: 'Cancel'
             }).then((result) => {
                 if (result.isConfirmed) {
                     // Redirect to logout page if confirmed
-                    window.location.href = 'logout.php';
+                    window.location.href = '../includes/logout.php';
                 }
             });
         });
