@@ -2,10 +2,9 @@
 session_start(); // Start the session
 
 
+
 // Redirect to landing page if already logged in
 if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isset($_SESSION['AdminLogExist']) && $_SESSION['AdminLogExist'] === true) {
-    
-    
     if (isset($_SESSION['emp_role'])) {
         // Redirect based on employee role
         switch ($_SESSION['emp_role']) {
@@ -16,7 +15,7 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                 header("Location: ./ordr_manager/ordr_manager.php");
                 exit;
             case 'Cashier':
-                header("Location: ./cashier/cashier.php");
+                header("Location: ./shipper/dashboard2.php");
                 exit;
             case 'Admin':
                 header("Location: ./admin/admin_interface.php");
@@ -24,9 +23,7 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
             default:
         }
     }
-
 }
-
 
 // Database connection
 include './includes/db_connect.php';
@@ -74,28 +71,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $empStmt->fetch();
 
             if (password_verify($password, $empHashedPassword)) {
-                // Password is correct, set session data and redirect based on emp_role
-                $_SESSION['EmpLogExist'] = true;
-                $_SESSION['emp_id'] = $empId;
-                $_SESSION['emp_role'] = $empRole;
+                // Check if the employee has logged in attendance for the current day
+                $today = date('Y-m-d');
+                $attSql = "SELECT att_id FROM att_tbl WHERE emp_id = ? AND DATE(att_date) = ?";
+                $attStmt = $conn->prepare($attSql);
+                $attStmt->bind_param("ss", $empId, $today);
+                $attStmt->execute();
+                $attStmt->store_result();
 
-                $redirectUrl = '';
-                switch ($empRole) {
-                    case 'Shipper':
-                        $redirectUrl = 'shipper_dashboard.php';
-                        break;
-                    case 'Order Manager':
-                        $redirectUrl = 'order_manager_dashboard.php';
-                        break;
-                    case 'Cashier':
-                        $redirectUrl = 'cashier_dashboard.php';
-                        break;
-                    default:
-                        $redirectUrl = 'login.php'; // Default if no role matches
-                        break;
+                if ($attStmt->num_rows > 0) {
+                    // Employee has already logged in for the day, proceed with redirection
+                    $_SESSION['EmpLogExist'] = true;
+                    $_SESSION['emp_id'] = $empId;
+                    $_SESSION['emp_role'] = $empRole;
+
+                    $redirectUrl = '';
+                    switch ($empRole) {
+                        case 'Shipper':
+                            $redirectUrl = 'shipper_dashboard.php';
+                            break;
+                        case 'Order Manager':
+                            $redirectUrl = '../shipper/dashboard2.php';
+                            break;
+                        case 'Cashier':
+                            $redirectUrl = '../shipper/dashboard2.php';
+                            break;
+                        default:
+                            $redirectUrl = 'login.php'; 
+                            break;
+                    }
+                    header("Location: $redirectUrl");
+                    exit();
+                } else {
+                    // Employee has not logged in for the day, redirect to attendance page
+                   $error_message = 'Ooopss. You did not log your attendance yet!';
                 }
-                header("Location: $redirectUrl");
-                exit();
             } else {
                 $error_message = 'Invalid email or password';
             }
@@ -108,6 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $conn->close();
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -300,7 +311,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (errorAlert) {
             errorAlert.style.display = 'none';
         }
-    }, 2000); // 3000 milliseconds = 3 seconds
+    }, 5000); // 3000 milliseconds = 3 seconds
     </script>
 </body>
 
