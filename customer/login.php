@@ -248,7 +248,7 @@ $conn->close();
         </div>
     </nav>
 
- <div class="background-animation"></div>
+    <div class="background-animation"></div>
     <div class="container login-container">
         <div class="login-header">
             <img src="../img/mtdd_logo.png" alt="Meat-To-Door Logo">
@@ -261,7 +261,7 @@ $conn->close();
                     <?php echo $error; ?>
                 </div>
             <?php endif; ?>
-            
+
             <div class="form-group">
                 <label for="email">Email address</label>
                 <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
@@ -271,8 +271,8 @@ $conn->close();
                 <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
             </div>
             <div class="form-group form-check">
-                <input type="checkbox" class="form-check-input" id="rememberMe" name="rememberMe">
-                <label class="form-check-label" for="rememberMe">Remember me</label>
+                <input type="checkbox" class="form-check-input" id="showPassword">
+                <label class="form-check-label" for="showPassword">Show Password</label>
             </div>
             <button type="submit" class="btn btn-primary btn-block">Login</button>
         </form>
@@ -298,6 +298,15 @@ $conn->close();
                         errorAlert.style.opacity = '1';
                     }); // Time to complete fade out effect
                 }, 5000); // Time to show error (5 seconds)
+            }
+        });
+
+        document.getElementById('showPassword').addEventListener('change', function() {
+            const passwordInput = document.getElementById('password');
+            if (this.checked) {
+                passwordInput.type = 'text';
+            } else {
+                passwordInput.type = 'password';
             }
         });
     </script>
