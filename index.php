@@ -206,6 +206,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
         }
 
         /* Base styles for carousel caption and button */
+        /* Base styles for carousel caption and button */
         .carousel-caption {
             position: absolute;
             top: 50%;
@@ -214,6 +215,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
             text-align: center;
             padding: 15px;
             border-radius: 5px;
+            transition: all 0.5s ease-in-out;
         }
 
         .carousel-caption h5 {
@@ -221,6 +223,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
             font-size: 1.8rem;
             font-weight: bold;
             margin-bottom: 10px;
+            transition: all 0.5s ease-in-out;
         }
 
         .carousel-caption .btn {
@@ -229,6 +232,27 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
             font-size: 1rem;
             background: #a72828;
             border: #a72828;
+            transition: all 0.5s ease-in-out;
+        }
+
+        /* Adjustments for screens between 600px and 900px */
+        @media (min-width: 500px) and (max-width: 1000px) {
+            .carousel-caption h5 {
+                font-size: 1.2rem;
+                /* Adjust name font size */
+                margin-top: -20px;
+                margin-bottom: 20px;
+            }
+
+            .carousel-caption .btn {
+                padding: 10px 20px;
+                /* Adjust button padding */
+                font-size: 1rem;
+                /* Adjust button font size */
+                border-radius: 5px;
+                /* Optional: adjust border-radius */
+                margin-top: -10px;
+            }
         }
 
         /* Responsive adjustments for smaller screens */
