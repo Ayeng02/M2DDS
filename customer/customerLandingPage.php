@@ -29,7 +29,9 @@
             height: 100%;
             display: flex;
             flex-direction: column;
-            
+            margin-left: -5px;  /* Adjust left and right margin */
+    margin-right: -5px;
+    margin-bottom: 10px; /* Adjust vertical space */
         }
 
         .card-body {
