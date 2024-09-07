@@ -30,7 +30,9 @@ $conn->close();
     <style>
         body {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
         }
 
         .background-animation {
@@ -38,7 +40,7 @@ $conn->close();
             top: 0;
             left: 0;
             width: 100%;
-            height: 110%;
+            height: 100%;
             background-color: mistyrose;
             background-size: 400% 400%;
             animation: gradientAnimation 15s ease infinite;
@@ -59,6 +61,16 @@ $conn->close();
             }
         }
 
+        .container {
+            flex: 1;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            padding:1rem;
+        }
+
         .login-container {
             width: 100%;
             max-width: 500px;
@@ -66,10 +78,6 @@ $conn->close();
             background-color: #ffffff;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            position: absolute;
-            z-index: 1;
-            overflow: hidden;
-            margin-top: 75px;
         }
 
         .login-header {
@@ -175,9 +183,9 @@ $conn->close();
         }
 
         .swal2-styled {
-            padding: 1.5rem !important; /* Add padding to make it look more like Bootstrap modals */
-            border-radius: 0.3rem; /* Match Bootstrap's default modal border-radius */
-            font-size: 1.1rem; /* Adjust font size for better readability */
+            padding: 1.5rem !important;
+            border-radius: 0.3rem;
+            font-size: 1.1rem;
         }
     </style>
 </head>
@@ -227,12 +235,24 @@ $conn->close();
     </nav>
 
     <div class="background-animation"></div>
-    <div class="container login-container">
-        <div class="login-header">
-            <img src="../img/mtdd_logo.png" alt="Meat-To-Door Logo">
-            <p>Where Quality Meets Affordability</p>
+    
+    <div class="container">
+    <h1 style="font-family:Georgia, 'Times New Roman', Times, serif;">Welcome, Shipper (name of shipper)!</h1>
+        <div class="login-container">
+            <div class="login-header">
+                <img src="../img/mtdd_logo.png" alt="Meat-To-Door Logo">
+                <p>Where Quality Meets Affordability</p>
+            </div>
+            <div class="login-footer">
+            </div>
         </div>
-        <div class="login-footer">
+        <div class="login-container">
+            <div class="login-header">
+                <img src="../img/mtdd_logo.png" alt="Meat-To-Door Logo">
+                <p>Where Quality Meets Affordability</p>
+            </div>
+            <div class="login-footer">
+            </div>
         </div>
     </div>
 
@@ -241,7 +261,7 @@ $conn->close();
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.5/dist/sweetalert2.all.min.js"></script>
     <script>
-        //  logout confirmation
+        // Logout confirmation
         document.getElementById('logoutBtn').addEventListener('click', function (e) {
             e.preventDefault();
             Swal.fire({
@@ -274,7 +294,7 @@ $conn->close();
                     setTimeout(function () {
                         errorAlert.style.display = 'none';
                         errorAlert.style.opacity = '1';
-                    }); 
+                    }, 500); 
                 }, 5000);
             }
         });
