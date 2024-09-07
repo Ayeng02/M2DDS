@@ -244,6 +244,7 @@ $conn->close();
                 codeInput.disabled = true;
                 codeBtn.hidden = true;
                 resendBtn.disabled = false;
+                resendBtn.hidden = false;
             } else {
                 timerDisplay.innerHTML = `Code expires in ${timeLeft} seconds`;
             }
@@ -252,6 +253,7 @@ $conn->close();
 
         // Resend button should be disabled initially
         resendBtn.disabled = true;
+        resendBtn.hidden = true;
         <?php endif; ?>
     </script>
 </body>
