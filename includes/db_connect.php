@@ -1,8 +1,8 @@
 <?php
 $servername = "localhost";
-$username = "root";
-$password = "";
-$database = "m2dds";
+$username = "u753706103_root_m2dds";
+$password = "@Meattodoor123";
+$database = "u753706103_m2dds";
 
 // Create connection with exception handling
 try {
