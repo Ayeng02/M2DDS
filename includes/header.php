@@ -20,7 +20,7 @@
 
     // Retrieve the logged-in user's information
     $customer_id = $_SESSION['cust_id'];
-    $sql = "SELECT * FROM Customers WHERE cust_id = ?";
+    $sql = "SELECT * FROM customers WHERE cust_id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $customer_id);
     $stmt->execute();
