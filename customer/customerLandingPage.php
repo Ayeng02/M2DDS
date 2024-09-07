@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -29,9 +27,9 @@
             height: 100%;
             display: flex;
             flex-direction: column;
-            margin-left: -5px;  /* Adjust left and right margin */
-    margin-right: -5px;
-    margin-bottom: 10px; /* Adjust vertical space */
+            margin-left: -8px;
+            /* Adjust left and right margin */
+            margin-right: -8px;
         }
 
         .card-body {
@@ -331,14 +329,14 @@
                                 </p>
                                 <div class="d-flex flex-column align-items-center mb-3">
                                     <?php if ($prod_qoh > 0): ?>
-                                    <div class="d-flex align-items-center mb-2">
-                                        <button class="incBtn1 btn btn-outline-secondary btn-sm" onclick="changeQuantity('decrease', '<?php echo $prod_code; ?>')">-</button>
-                                        <input type="text" id="quantity-<?php echo $prod_code; ?>" class="form-control form-control-sm mx-1" value="1" readonly style="width: 50px; text-align: center; background-color: #FF8225; color: #f0f0f0; font-weight: 500; font-size:12px;">
-                                        <button class="incBtn2 btn btn-outline-secondary btn-sm" onclick="changeQuantity('increase', '<?php echo $prod_code; ?>')">+</button>
-                                    </div>
-                                    <button class="btn btn-outline-success" style="margin-top: 10px;" onclick="addToCart('<?php echo $prod_code; ?>')">Add to Cart</button>
+                                        <div class="d-flex align-items-center mb-2">
+                                            <button class="incBtn1 btn btn-outline-secondary btn-sm" onclick="changeQuantity('decrease', '<?php echo $prod_code; ?>')">-</button>
+                                            <input type="text" id="quantity-<?php echo $prod_code; ?>" class="form-control form-control-sm mx-1" value="1" readonly style="width: 50px; text-align: center; background-color: #FF8225; color: #f0f0f0; font-weight: 500; font-size:12px;">
+                                            <button class="incBtn2 btn btn-outline-secondary btn-sm" onclick="changeQuantity('increase', '<?php echo $prod_code; ?>')">+</button>
+                                        </div>
+                                        <button class="btn btn-outline-success" style="margin-top: 10px;" onclick="addToCart('<?php echo $prod_code; ?>')">Add to Cart</button>
                                     <?php else: ?>
-                                    <p class="text-danger" style="font-weight: 800;">Out of Stock</p>
+                                        <p class="text-danger" style="font-weight: 800;">Out of Stock</p>
                                     <?php endif; ?>
                                     <a href="product-details.php?id=<?php echo $prod_code; ?>" class="btn btn-primary mt-2">See Details</a>
                                 </div>
@@ -463,9 +461,9 @@
                                     </div>
                                 -->
                                     <?php if ($prod_qoh > 0): ?>
-                                    <button class="btn btn-outline-success" style="margin-top: 10px;" onclick="addToCart('<?php echo $prod_code; ?>')">Add to Cart</button>
+                                        <button class="btn btn-outline-success" style="margin-top: 10px;" onclick="addToCart('<?php echo $prod_code; ?>')">Add to Cart</button>
                                     <?php else: ?>
-                                    <p class="text-danger" style="font-weight: 800;">Out of Stock</p>
+                                        <p class="text-danger" style="font-weight: 800;">Out of Stock</p>
                                     <?php endif; ?>
                                     <a href="product-details.php?id=<?php echo $prod_code; ?>" class="btn btn-primary mt-2">See Details</a>
                                 </div>
@@ -491,7 +489,7 @@
                 LEFT JOIN ratings_tbl r ON p.prod_code = r.prod_code
                 WHERE p.prod_discount > 0
                 GROUP BY p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_discount, p.prod_img";
-        
+
         $result = $conn->query($sql);
 
         // Check if there are any discounted products
@@ -554,9 +552,9 @@
                                     </div>
                                 -->
                                     <?php if ($prod_qoh > 0): ?>
-                                    <button class="btn btn-outline-success" style="margin-top: 10px;" onclick="addToCart('<?php echo $prod_code; ?>')">Add to Cart</button>
+                                        <button class="btn btn-outline-success" style="margin-top: 10px;" onclick="addToCart('<?php echo $prod_code; ?>')">Add to Cart</button>
                                     <?php else: ?>
-                                    <p class="text-danger" style="font-weight: 800;">Out of Stock</p>
+                                        <p class="text-danger" style="font-weight: 800;">Out of Stock</p>
                                     <?php endif; ?>
                                     <a href="product-details.php?id=<?php echo $prod_code; ?>" class="btn btn-primary mt-2">See Details</a>
                                 </div>
