@@ -75,6 +75,9 @@
             flex-direction: column;
             justify-content: space-between;
             height: 100%;
+            margin-left: -8px;
+            /* Adjust left and right margin */
+            margin-right: -8px;
         }
 
         .quantity-control {

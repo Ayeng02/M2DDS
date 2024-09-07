@@ -12,41 +12,41 @@ $sort_option = isset($_GET['sort']) ? $_GET['sort'] : '';
 
 // Build sorting SQL clause
 $sort_sql = '';
-        switch ($sort_option) {
-            case 'price_asc':
-                $sort_sql = 'ORDER BY prod_price ASC';
-                break;
-            case 'price_desc':
-                $sort_sql = 'ORDER BY prod_price DESC';
-                break;
-            case 'name_asc':
-                $sort_sql = 'ORDER BY prod_name ASC';
-                break;
-            case 'name_desc':
-                $sort_sql = 'ORDER BY prod_name DESC';
-                break;
-            default:
-                $sort_sql = 'ORDER BY prod_name ASC'; // Default sort option
-        }
+switch ($sort_option) {
+    case 'price_asc':
+        $sort_sql = 'ORDER BY prod_price ASC';
+        break;
+    case 'price_desc':
+        $sort_sql = 'ORDER BY prod_price DESC';
+        break;
+    case 'name_asc':
+        $sort_sql = 'ORDER BY prod_name ASC';
+        break;
+    case 'name_desc':
+        $sort_sql = 'ORDER BY prod_name DESC';
+        break;
+    default:
+        $sort_sql = 'ORDER BY prod_name ASC'; // Default sort option
+}
 
-        // Prepare SQL statement with placeholders
-        $product_sql = "SELECT * FROM product_tbl";
-        $params = [];
-        $types = '';
-        if (!empty($selected_category)) {
-            $product_sql .= " WHERE category_code = ?";
-            $params[] = $selected_category;
-            $types .= 's'; // 's' denotes string type
-        }
-        $product_sql .= " " . $sort_sql;
+// Prepare SQL statement with placeholders
+$product_sql = "SELECT * FROM product_tbl";
+$params = [];
+$types = '';
+if (!empty($selected_category)) {
+    $product_sql .= " WHERE category_code = ?";
+    $params[] = $selected_category;
+    $types .= 's'; // 's' denotes string type
+}
+$product_sql .= " " . $sort_sql;
 
-        // Prepare and execute the query
-        $stmt = $conn->prepare($product_sql);
-        if ($params) {
-            $stmt->bind_param($types, ...$params);
-        }
-        $stmt->execute();
-        $products = $stmt->get_result();
+// Prepare and execute the query
+$stmt = $conn->prepare($product_sql);
+if ($params) {
+    $stmt->bind_param($types, ...$params);
+}
+$stmt->execute();
+$products = $stmt->get_result();
 ?>
 
 <!DOCTYPE html>
@@ -86,6 +86,10 @@ $sort_sql = '';
             transition: transform 0.2s, box-shadow 0.2s;
             height: 100%;
             overflow: hidden;
+            margin-left: -8px;
+            /* Adjust left and right margin */
+            margin-right: -8px;
+
         }
 
         .product-card:hover {
