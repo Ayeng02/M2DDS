@@ -112,21 +112,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_submitted'])) 
             overflow: hidden;
             margin-bottom: 20px;
             margin-left: -8px;
-            /* Adjust left and right margin */
             margin-right: -8px;
-            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         .recommendation-card img {
             width: 100%;
             height: 200px;
-            /* Set a fixed height for all images */
             object-fit: cover;
-            /* Ensure the image covers the card without distortion */
         }
 
         .recommendation-card .card-body {
             padding: 15px;
+            flex-grow: 1;
         }
 
         .centered-content {
