@@ -252,6 +252,7 @@ $conn->close();
 
         // Resend button should be disabled initially
         resendBtn.disabled = true;
+        resendBtn.hidden = true;
         <?php endif; ?>
     </script>
 </body>
