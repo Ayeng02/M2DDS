@@ -57,7 +57,7 @@ $sql_items = "SELECT
                     p.prod_discount
                    
               FROM 
-                    Order_tbl o
+                    order_tbl o
               JOIN 
                     product_tbl p ON o.prod_code = p.prod_code
               WHERE 
