@@ -17,7 +17,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
 
     // Prepare and execute query
-    $stmt = $conn->prepare("SELECT cust_id, cust_pass FROM Customers WHERE email = ?");
+    $stmt = $conn->prepare("SELECT cust_id, cust_pass FROM customers WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $stmt->bind_result($user_id, $hashed_password);
