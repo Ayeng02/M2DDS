@@ -1,3 +1,44 @@
+<?php
+session_start();
+
+// Handle logout request
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['logout'])) {
+    // Unset all session variables
+    $_SESSION = array();
+
+    // Destroy the session
+    if (session_id()) {
+        session_destroy();
+    }
+    
+    // Respond with a status to inform the JS the session has been destroyed
+    exit;
+}
+
+// Redirect to landing page if already logged in
+if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isset($_SESSION['AdminLogExist']) && $_SESSION['AdminLogExist'] === true) {
+    if (isset($_SESSION['emp_role'])) {
+        // Redirect based on employee role
+        switch ($_SESSION['emp_role']) {
+            case 'Shipper':
+                header("Location: ../shipper/shipper.php");
+                exit;
+            case 'Cashier':
+                header("Location: ../cashier/cashier.php");
+                exit;
+            case 'Admin':
+                header("Location: ../admin/admin_interface.php");
+                exit;
+            default:
+        }
+    }
+} else {
+    header("Location: ../login.php");
+    exit;
+}
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,251 +48,9 @@
     <title>Order Manager</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <style>
-        /* Sidebar on the left */
-        #sidebar {
-            height: 100vh;
-            width: 200px;
-            background: linear-gradient(380deg,  #ff83259b, #a72828, #343a4043, #343a40af); /* Gradient background */
-            backdrop-filter: 100px;
-            padding-top: 20px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 1000;
-            transition: all 0.3s ease-in-out;
-            display: flex;
-            flex-direction: column;
-        }
+    <link rel="stylesheet" href="../css/ordr_css.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-        #sidebar a {
-            color: #fff;
-            padding: 15px;
-            display: block;
-            text-decoration: none;
-            transition: background 1s ease;
-        }
-
-        .active{
-            background: linear-gradient(180deg, #ff83259b, #a72828);
-        }
-
-        #sidebar a:hover {
-            background: linear-gradient(180deg, #ff83259b, #a72828);
-        }
-
-        #sidebar.collapsed {
-            width: 80px;
-        }
-
-        #sidebar.collapsed a {
-            text-align: center;
-            padding: 10px;
-        }
-
-        #sidebar.collapsed a span {
-            display: none;
-        }
-
-        /* Profile section */
-        .profile {
-            margin: 0 0 20px 0;
-            text-align: center;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #495057;
-        }
-
-        .profile img {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            margin-bottom: 10px;
-        }
-
-        .profile h5 {
-            color: #fff;
-            margin: 0;
-        }
-
-        .profile .role {
-            color: #adb5bd;
-            /* Light grey color for role */
-            font-size: 0.9rem;
-            /* Slightly smaller font size for role */
-            margin: 0;
-        }
-
-        /* Logout at the bottom */
-        .logout {
-            margin-top: auto;
-            padding-bottom: 20px;
-        }
-
-        /* Sidebar toggle button (visible only on small screens) */
-        .toggle-btn {
-            position: fixed;
-            top: 20px;
-            left: 250px;
-            z-index: 1100;
-            cursor: pointer;
-            display: none;
-            transition: all 0.3s;
-        }
-
-        #sidebar.collapsed~.toggle-btn {
-            left: 80px;
-        }
-
-        /* Main content */
-        .content {
-            margin-left: 200px;
-            padding: 20px;
-            transition: margin-left 0.3s;
-        }
-
-        /* Adjust content margin when sidebar is collapsed */
-        #sidebar.collapsed~.content {
-            margin-left: 80px;
-        }
-
-        /* Clock container */
-        #clock-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-            padding: 10px 20px;
-            margin-bottom: 20px;
-            margin-top: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        #clock {
-            font-size: 2rem;
-            font-weight: bold;
-        }
-
-        #date {
-            margin-left: 10px;
-            font-size: 1.2rem;
-            color: #6c757d;
-        }
-
-        /* Container for status cards */
-        .status-container {
-            display: flex;
-            justify-content: center;
-            /* Center cards horizontally */
-            align-items: center;
-            /* Center cards vertically */
-            gap: 20px;
-            /* Adjust gap between cards */
-            flex-wrap: wrap;
-            /* Allow cards to wrap to next line on smaller screens */
-        }
-
-        /* Status card styling */
-        .status-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 15px;
-            border-radius: 5px;
-            color: #fff;
-            background-color: #007bff;
-            /* Default color, will change based on status */
-            height: 150px;
-            /* Fixed height */
-            width: 220px;
-            /* Fixed width */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            /* Optional shadow */
-            font-size: 1rem;
-            /* Consistent font size */
-            transition: all 0.3s ease-in-out;
-        }
-
-        .status-card:hover{
-            transform: scale(1.05);
-        }
-
-        .status-card i {
-            font-size: 2rem;
-            /* Larger icon size */
-            margin-bottom: 10px;
-            /* Space between icon and text */
-        }
-
-        .status-text {
-            font-size: 1.2rem;
-            /* Text size for status */
-            margin-bottom: 5px;
-            /* Space between status text and number */
-        }
-
-        .status-number {
-            font-size: 1.5rem;
-            /* Font size for number */
-            font-weight: bold;
-            /* Bold text for emphasis */
-            color: #fff;
-            /* White text color for contrast */
-        }
-
-        /* For Webkit browsers */
-::-webkit-scrollbar {
-    width: 12px; /* Width of the scrollbar */
-}
-
-::-webkit-scrollbar-track {
-    background: #f1f1f1; /* Color of the track */
-}
-
-::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, #ff83259b, #a72828);
-    border-radius: 10px; /* Rounded corners of the scrollbar thumb */
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(380deg, #a72828, #343a40);
-}
-
-
-        /* Navbar collapse on small screens */
-        @media (max-width: 768px) {
-            #sidebar {
-                display: none;
-            }
-
-            .toggle-btn {
-                display: block;
-            }
-
-            .content {
-                margin-left: 0;
-            }
-
-            #mobile-nav {
-                display: block;
-            }
-
-        }
-
-        @media (min-width: 768px) {
-            #mobile-nav {
-                display: none;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .status-card {
-                width: 150px;
-            }
-        }
-    </style>
 </head>
 
 <body>
@@ -276,7 +75,7 @@
         </a>
 
         <!-- Logout link at the bottom -->
-        <a href="#" class="text-light logout">
+        <a href="#" class="text-light logout" id="logoutBtn">
             <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
         </a>
     </nav>
@@ -436,6 +235,38 @@
 
         setInterval(updateClock, 1000); // Update the clock every second
         updateClock(); // Initial call to display the time immediately
+
+
+
+        document.getElementById('logoutBtn').addEventListener('click', function (e) {
+        e.preventDefault(); // Prevent default anchor behavior
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You will be logged out!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Send a POST request to log out
+                fetch('', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'logout=true'
+                }).then(response => {
+                    // Redirect to the login page after successful logout
+                    window.location.href = '../login.php';
+                });
+            }
+        });
+    });
+
+
     </script>
 </body>
 

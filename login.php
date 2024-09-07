@@ -2,7 +2,6 @@
 session_start(); // Start the session
 
 
-
 // Redirect to landing page if already logged in
 if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isset($_SESSION['AdminLogExist']) && $_SESSION['AdminLogExist'] === true) {
     if (isset($_SESSION['emp_role'])) {
@@ -12,7 +11,7 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                 header("Location: ./shipper/shipper.php");
                 exit;
             case 'Order Manager':
-                header("Location: ./ordr_manager/ordr_manager.php");
+                header("Location: ./ordr_manager/order_manager.php");
                 exit;
             case 'Cashier':
                 header("Location: ./shipper/dashboard2.php");
