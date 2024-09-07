@@ -299,8 +299,8 @@
                     $empty_stars = 5 - $full_stars - ($half_star ? 1 : 0);
             ?>
                     <!-- Product Card -->
-                    <div class="col-6 col-md-3 mb-4">
-                        <div class="card product-card g-2">
+                    <div class="col-6 col-md-3 mb-4 g-2">
+                        <div class="card product-card">
                             <img src="../<?php echo htmlspecialchars($prod_img); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($prod_name); ?>" style="height: 200px; object-fit: cover;">
                             <div class="card-body">
                                 <h5 class="card-title"><?php echo htmlspecialchars($prod_name); ?></h5>
