@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="icon" href="../img/mtdd_logo.png" type="image/x-icon">
     <style>
-        /* Basic styles and responsive layout */
+
         * {
             margin: 0;
             padding: 0;
@@ -26,7 +26,6 @@
             overflow: hidden;
         }
 
-        /* Fullscreen video background */
         video {
             position: absolute;
             top: 0;
@@ -35,18 +34,18 @@
             min-height: 100%;
             z-index: -1;
             object-fit: cover;
-            opacity: 0.65; /* Slight opacity for better contrast */
+            opacity: 0.65; 
         }
 
         .container {
-            background: rgba(255, 255, 255, 0.9); /* Smooth white background */
-            backdrop-filter: blur(10px); /* Smooth blur effect */
+            background: rgba(255, 255, 255, 0.9); 
+            backdrop-filter: blur(10px); 
             border-radius: 15px;
             padding: 30px;
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
             max-width: 450px;
             width: 100%;
-            height: 70%; /* Ensures container takes up full height */
+            height: 70%; 
             display: flex;
             flex-direction: column;
             position: relative;
@@ -55,17 +54,17 @@
         h1.title {
             text-align: center;
             margin-bottom: 25px;
-            font-size: 36px; /* Increased font size for a more prominent title */
-            color: #FF8225; /* Smooth orange color for title */
+            font-size: 36px; 
+            color: #FF8225; 
             font-weight: bold;
-            letter-spacing: 2px; /* Increased spacing between letters for better readability */
+            letter-spacing: 2px; 
         }
 
         form {
             display: flex;
             flex-direction: column;
-            justify-content: flex-end; /* Aligns the input and button to the bottom */
-            height: 100%; /* Makes the form fill the container's height */
+            justify-content: flex-end; 
+            height: 100%; 
         }
 
         input[type="text"] {
@@ -75,7 +74,7 @@
             border-radius: 10px;
             transition: border 0.3s, box-shadow 0.3s;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            margin-top: 5px; /* Adds space between input and button */
+            margin-top: 5px; 
         }
 
         input[type="text"]:focus {
@@ -93,7 +92,7 @@
             border-radius: 10px;
             transition: background-color 0.3s, transform 0.3s;
             box-shadow: 0 4px 12px rgba(255, 130, 37, 0.15);
-            margin-top: 10px; /* Adds some space at the very bottom of the container */
+            margin-top: 10px; 
         }
 
         button:hover {
@@ -102,7 +101,6 @@
             box-shadow: 0 8px 20px rgba(230, 116, 27, 0.3);
         }
 
-        /* Choice button and menu */
         .choice-container {
             position: absolute;
             bottom: 20px;
@@ -136,24 +134,24 @@
             flex-direction: column;
             align-items: stretch;
             position: absolute;
-            bottom: 60px; /* Adjust to position menu above button */
+            bottom: 60px; 
             right: 0;
             background-color: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px); /* Smooth blur effect */
+            backdrop-filter: blur(10px); 
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             padding: 10px;
-            width: 200px; /* Wider container */
+            width: 200px; 
             z-index: 10;
-            transition: opacity 0.3s, transform 0.3s; /* Add transition for smoother appearance */
-            opacity: 0; /* Initially hidden */
-            transform: translateY(10px); /* Start slightly below */
+            transition: opacity 0.3s, transform 0.3s; 
+            opacity: 0; 
+            transform: translateY(10px); 
         }
 
         .choice-menu.show {
             display: flex;
-            opacity: 1; /* Show with opacity */
-            transform: translateY(0); /* Move into place */
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .choice-menu a {
@@ -165,12 +163,12 @@
             padding: 10px;
             border-radius: 5px;
             transition: background-color 0.3s;
-            cursor: pointer; /* Pointer cursor on hover */
+            cursor: pointer; 
         }
 
         .choice-menu a:hover {
-            background-color: #FF8225; /* Change background color on hover */
-            color: white; /* Change text color to white on hover */
+            background-color: #FF8225; 
+            color: white; 
         }
 
         .choice-menu i {
