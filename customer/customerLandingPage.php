@@ -29,6 +29,8 @@
             height: 100%;
             display: flex;
             flex-direction: column;
+            margin-left: -5;
+            margin-right: -5;
         }
 
         .card-body {
@@ -299,7 +301,7 @@
                     $empty_stars = 5 - $full_stars - ($half_star ? 1 : 0);
             ?>
                     <!-- Product Card -->
-                    <div class="col-6 col-md-3 mb-4 g-2">
+                    <div class="col-6 col-md-3 mb-4">
                         <div class="card product-card">
                             <img src="../<?php echo htmlspecialchars($prod_img); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($prod_name); ?>" style="height: 200px; object-fit: cover;">
                             <div class="card-body">
