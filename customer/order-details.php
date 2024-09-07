@@ -21,13 +21,17 @@ $sql = "SELECT
             o.order_total,
             o.order_date,
             s.status_code,
-            s.status_name AS status
+            s.status_name AS status,
+            b.Brgy_df
         FROM 
             order_tbl o
         JOIN 
             status_tbl s ON o.status_code = s.status_code
+        JOIN 
+            brgy_tbl b ON o.order_barangay = b.Brgy_Name
         WHERE 
             o.order_id = ?";
+
 
 $stmt = $conn->prepare($sql);
 if (!$stmt) {
@@ -53,7 +57,7 @@ $sql_items = "SELECT
                     p.prod_discount
                    
               FROM 
-                    order_tbl o
+                    Order_tbl o
               JOIN 
                     product_tbl p ON o.prod_code = p.prod_code
               WHERE 
@@ -76,7 +80,7 @@ $sql_log = "SELECT
                 s_old.status_name AS old_status_name,
                 s_new.status_name AS new_status_name
             FROM 
-                orderstatuslog osl
+                OrderStatusLog osl
             JOIN 
                 status_tbl s_old ON osl.old_status = s_old.status_code
             JOIN 
@@ -226,38 +230,46 @@ $conn->close();
                 <hr>
                 <h5 class="mt-4">Order Items</h5>
                 <div class="table-responsive">
-                    <table id="orderItemsTable" class="table table-striped order-details-table">
-                        <thead>
-                            <tr>
-                                <th>Product</th>
-                                <th>Quantity</th>
-                                <th>Unit Price</th>
-                                <th>Total Price</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            if ($items_result->num_rows > 0) {
-                                while ($item = $items_result->fetch_assoc()) {
-                                    // Determine the unit price to display
-                                    $unit_price = ($item['prod_discount'] > 0) ? $item['prod_discount'] : $item['prod_price'];
-                                    $total_price = $unit_price * $item['order_qty']; // Calculate the total price per item
+    <table id="orderItemsTable" class="table table-striped order-details-table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Delivery Fee</th> <!-- New column for delivery fee -->
+                <th>Total Price (Including Delivery Fee)</th> <!-- Column for total price including delivery fee -->
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            if ($items_result->num_rows > 0) {
+                while ($item = $items_result->fetch_assoc()) {
+                    // Determine the unit price to display
+                    $unit_price = ($item['prod_discount'] > 0) ? $item['prod_discount'] : $item['prod_price'];
+                    $total_price = $unit_price * $item['order_qty']; // Calculate the total price per item
+                    
+                    // Fetch the delivery fee (Brgy_df) from the order details
+                    $delivery_fee = $order['Brgy_df'] ?? 0;
 
-                                    echo "<tr>";
-                                    echo "<td>" . htmlspecialchars($item['prod_name']) . "</td>";
-                                    echo "<td>" . htmlspecialchars($item['order_qty']) . "</td>";
-                                    echo "<td>₱" . number_format($unit_price, 2) . "</td>";
-                                    echo "<td>₱" . number_format($total_price, 2) . "</td>"; // Display the calculated total price
-                                    echo "</tr>";
-                                }
-                            } else {
-                                echo "<tr><td colspan='4' class='text-center'>No items found.</td></tr>";
-                            }
-                            ?>
-                        </tbody>
+                    // Calculate the total price including the delivery fee
+                    $total_price_including_fee = $total_price + $delivery_fee;
 
-                    </table>
-                </div>
+                    echo "<tr>";
+                    echo "<td>" . htmlspecialchars($item['prod_name']) . "</td>";
+                    echo "<td>" . htmlspecialchars($item['order_qty']) . "</td>";
+                    echo "<td>₱" . number_format($unit_price, 2) . "</td>";
+                    echo "<td>₱" . number_format($delivery_fee, 2) . "</td>"; // Display the delivery fee
+                    echo "<td>₱" . number_format($total_price_including_fee, 2) . "</td>"; // Display the total price including delivery fee
+                    echo "</tr>";
+                }
+            } else {
+                echo "<tr><td colspan='5' class='text-center'>No items found.</td></tr>";
+            }
+            ?>
+        </tbody>
+    </table>
+</div>
+
 
                 <hr>
 

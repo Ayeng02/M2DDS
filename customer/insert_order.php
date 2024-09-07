@@ -41,12 +41,24 @@ try {
         $successfullyOrderedProducts = [];
         $productUpdates = []; 
 
+        // Fetch the Brgy_df from the brgy_tbl
+        $stmt = $conn->prepare("SELECT Brgy_df FROM brgy_tbl WHERE Brgy_Name = ?");
+        $stmt->bind_param('s', $barangay);
+        $stmt->execute();
+        $stmt->bind_result($brgy_df);
+        $stmt->fetch();
+        $stmt->close();
+
+        if ($brgy_df === null) {
+            throw new Exception("Invalid barangay selected.");
+        }
+
         // Ensure $productDetails is an array and not empty
         if (is_array($productDetails) && count($productDetails) > 0) {
             foreach ($productDetails as $product) {
                 $prod_code = $product['code'];
                 $order_qty = $product['quantity'];
-                $order_total = $product['price'] * $order_qty;
+                $order_total = ($product['price'] * $order_qty) + $brgy_df; // Add Brgy_df to order total
                 $order_change = 0;
 
                 // Lock the row for update
@@ -80,7 +92,6 @@ try {
                     $status_code
                 );
                 
-
                 if ($stmt->execute()) {
                     $successfullyOrderedProducts[] = $prod_code;
                     $productUpdates[] = [
