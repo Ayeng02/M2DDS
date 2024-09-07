@@ -333,11 +333,6 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">
-                        |
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
                         <i class="fas fa-book"></i> User Manual
                     </a>
                 </li>
