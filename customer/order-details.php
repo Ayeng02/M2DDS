@@ -76,7 +76,7 @@ $sql_log = "SELECT
                 s_old.status_name AS old_status_name,
                 s_new.status_name AS new_status_name
             FROM 
-                orderStatusLog osl
+                orderstatuslog osl
             JOIN 
                 status_tbl s_old ON osl.old_status = s_old.status_code
             JOIN 
