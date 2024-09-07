@@ -111,6 +111,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_submitted'])) 
             border-radius: 5px;
             overflow: hidden;
             margin-bottom: 20px;
+            margin-left: -8px;
+            /* Adjust left and right margin */
+            margin-right: -8px;
         }
 
         .recommendation-card img {
@@ -123,6 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_submitted'])) 
 
         .recommendation-card .card-body {
             padding: 15px;
+            flex-grow: 1;
         }
 
         .centered-content {
