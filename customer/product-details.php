@@ -287,7 +287,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_submitted'])) 
                     $sql_reviews = "
                         SELECT r.rev_message, r.rev_star, c.f_name, c.l_name, r.rev_date
                         FROM ratings_tbl r
-                        JOIN Customers c ON r.cust_id = c.cust_id
+                        JOIN customers c ON r.cust_id = c.cust_id
                         WHERE r.prod_code = '$prod_code'
                         ORDER BY r.rev_date DESC
                     ";
