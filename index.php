@@ -1,12 +1,12 @@
 <?php
- session_start();
+session_start();
 
- // Redirect to landing page if already logged in
+// Redirect to landing page if already logged in
 if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
     header('Location: ./customer/customerLandingPage.php');
     exit();
 }
- ?>
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -17,12 +17,13 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
     <title>Meat-To-Door Delivery</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="icon" href="../img/mtdd_logo.png" type="image/x-icon">
     <style>
         body {
             background-color: #f0f0f0;
         }
+
         .navbar {
             width: 100%;
             z-index: 999;
@@ -204,6 +205,62 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
             font-size: 13px;
         }
 
+        /* Base styles for carousel caption and button */
+        .carousel-caption {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .carousel-caption h5 {
+            color: #fff;
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .carousel-caption .btn {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            background: #a72828;
+            border: #a72828;
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 768px) {
+            .carousel-caption h5 {
+                font-size: 1rem;
+                /* Reduce caption font size for medium screens */
+            }
+
+            .carousel-caption .btn {
+                padding: 8px 16px;
+                /* Reduce button size for medium screens */
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .carousel-caption h5 {
+                font-size: 0.8rem;
+                /* Further reduce caption font size for small screens */
+                margin-top: -20px;
+            }
+
+            .carousel-caption .btn {
+                padding: 8px;
+                font-size: 0.7rem;
+                margin-top: -10px;
+                border-radius: 10px;
+            }
+        }
+
+
 
         @media (max-width: 768px) {
             .card {
@@ -288,7 +345,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
                     $first = false;
                     echo '<div class="carousel-item ' . $activeClass . '">';
                     echo '<img src="' . htmlspecialchars($row['category_img']) . '" class="d-block w-100" alt="' . htmlspecialchars($row['category_name']) . '">';
-                    echo '<div class="carousel-caption d-none d-md-block">';
+                    echo '<div class="carousel-caption">';
                     echo '<h5>' . htmlspecialchars($row['category_name']) . '</h5>';
                     echo '<a href="./customer/login.php" class="btn btn-primary">Shop Now</a>';
                     echo '</div>';
@@ -308,6 +365,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
             </a>
         </div>
     </div>
+
 
     <?php
     // Database connection
