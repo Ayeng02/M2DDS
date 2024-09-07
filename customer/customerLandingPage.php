@@ -265,7 +265,7 @@
         <!-- Product Cards for what's New-->
         <h3 class="mb-4" style="text-align: center; padding-top: 20px; font-weight: bold; color: crimson;">What's New</h3>
         <hr class="under">
-        <div class="row g-0">
+        <div class="row gx-1 gy-2">
             <?php
             include '../includes/db_connect.php';
 
