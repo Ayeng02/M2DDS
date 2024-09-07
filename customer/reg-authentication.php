@@ -244,6 +244,7 @@ $conn->close();
                 codeInput.disabled = true;
                 codeBtn.hidden = true;
                 resendBtn.disabled = false;
+                resendBtn.hidden = true;
             } else {
                 timerDisplay.innerHTML = `Code expires in ${timeLeft} seconds`;
             }
