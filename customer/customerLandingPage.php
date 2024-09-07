@@ -300,7 +300,7 @@
             ?>
                     <!-- Product Card -->
                     <div class="col-6 col-md-3 mb-4">
-                        <div class="card product-card">
+                        <div class="card product-card g-3">
                             <img src="../<?php echo htmlspecialchars($prod_img); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($prod_name); ?>" style="height: 200px; object-fit: cover;">
                             <div class="card-body">
                                 <h5 class="card-title"><?php echo htmlspecialchars($prod_name); ?></h5>
