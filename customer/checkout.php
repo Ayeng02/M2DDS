@@ -7,7 +7,7 @@ include '../includes/db_connect.php'; // Adjust the path as needed
 
 // Retrieve customer data based on session user ID
 $cust_id = $_SESSION['cust_id']; // Ensure this session variable is set
-$query = "SELECT f_name, l_name, phone_num FROM Customers WHERE cust_id = ?";
+$query = "SELECT f_name, l_name, phone_num FROM customers WHERE cust_id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("s", $cust_id);
 $stmt->execute();
@@ -18,7 +18,7 @@ $stmt->close();
 
 
     // Fetch barangay data
-    $barangayQuery = "SELECT Brgy_Name, Brgy_df FROM Brgy_Tbl";
+    $barangayQuery = "SELECT Brgy_Name, Brgy_df FROM brgy_tbl";
     $barangayResult = mysqli_query($conn, $barangayQuery);
 
     // Retrieve cart data from session

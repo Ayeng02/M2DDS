@@ -17,7 +17,7 @@ $status_query = $status !== 'all' ? "AND status_name = '$status'" : "";
 $search_query = $search ? "AND (order_id LIKE '%$search%' || order_fullname LIKE '%$search%' )" : "";
 $query = "
     SELECT o.*, s.status_name, p.prod_name
-    FROM Order_tbl o
+    FROM order_tbl o
     JOIN status_tbl s ON o.status_code = s.status_code
     JOIN product_tbl p ON o.prod_code = p.prod_code
     WHERE o.cust_id = '$cust_id' $status_query $search_query
@@ -35,7 +35,7 @@ while ($order = mysqli_fetch_assoc($result)) {
 // Pagination
 $total_query = "
     SELECT COUNT(*) as total
-    FROM Order_tbl o
+    FROM order_tbl o
     JOIN status_tbl s ON o.status_code = s.status_code
     WHERE o.cust_id = '$cust_id' $status_query $search_query
 ";

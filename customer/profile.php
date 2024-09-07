@@ -16,7 +16,7 @@ if (!isset($_SESSION['cust_id'])) {
 
 // Fetch the customer's current information
 $cust_id = $_SESSION['cust_id'];
-$sql = "SELECT f_name, l_name, username, address, email, phone_num FROM Customers WHERE cust_id = ?";
+$sql = "SELECT f_name, l_name, username, address, email, phone_num FROM customers WHERE cust_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param('s', $cust_id);
 $stmt->execute();

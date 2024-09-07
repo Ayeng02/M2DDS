@@ -23,7 +23,7 @@ $sql = "SELECT
             s.status_code,
             s.status_name AS status
         FROM 
-            Order_tbl o
+            order_tbl o
         JOIN 
             status_tbl s ON o.status_code = s.status_code
         WHERE 
@@ -53,7 +53,7 @@ $sql_items = "SELECT
                     p.prod_discount
                    
               FROM 
-                    Order_tbl o
+                    order_tbl o
               JOIN 
                     product_tbl p ON o.prod_code = p.prod_code
               WHERE 
@@ -76,7 +76,7 @@ $sql_log = "SELECT
                 s_old.status_name AS old_status_name,
                 s_new.status_name AS new_status_name
             FROM 
-                OrderStatusLog osl
+                orderStatusLog osl
             JOIN 
                 status_tbl s_old ON osl.old_status = s_old.status_code
             JOIN 

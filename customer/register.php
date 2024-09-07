@@ -61,7 +61,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             if (validatePhoneNumber($phone_num)) {
                                 if (validateAddress($add_ress)) {
                                     // Check if email or username already exists
-                                    $stmt = $conn->prepare("SELECT COUNT(*) FROM Customers WHERE email = ? OR username = ?");
+                                    $stmt = $conn->prepare("SELECT COUNT(*) FROM customers WHERE email = ? OR username = ?");
                                     $stmt->bind_param("ss", $email, $username);
                                     $stmt->execute();
                                     $stmt->bind_result($count);

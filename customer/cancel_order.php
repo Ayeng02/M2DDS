@@ -10,7 +10,7 @@ if (isset($_POST['order_id']) && isset($_SESSION['cust_id'])) {
 
     // Update status to 'Canceled'
     $query = "
-        UPDATE Order_tbl
+        UPDATE order_tbl
         SET status_code = (SELECT status_code FROM status_tbl WHERE status_name = 'Canceled')
         WHERE order_id = '$order_id' AND cust_id = '$cust_id' AND status_code IN (
             SELECT status_code FROM status_tbl WHERE status_name IN ('Pending', 'Processing')

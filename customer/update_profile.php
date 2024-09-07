@@ -42,7 +42,7 @@ if (!validatePhoneNumber($phone_num) || !validateAddress($address) || !validateU
 }
 
 // Check for existing email and username
-$sql = "SELECT COUNT(*) FROM Customers WHERE (email = ? OR username = ?) AND cust_id != ?";
+$sql = "SELECT COUNT(*) FROM customers WHERE (email = ? OR username = ?) AND cust_id != ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param('sss', $email, $username, $cust_id);
 $stmt->execute();
@@ -56,7 +56,7 @@ if ($count > 0) {
 }
 
 // Update the customer's information
-$sql = "UPDATE Customers SET f_name = ?, l_name = ?, username = ?, address = ?, email = ?, phone_num = ? WHERE cust_id = ?";
+$sql = "UPDATE customers SET f_name = ?, l_name = ?, username = ?, address = ?, email = ?, phone_num = ? WHERE cust_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param('sssssss', $f_name, $l_name, $username, $address, $email, $phone_num, $cust_id);
 if ($stmt->execute()) {

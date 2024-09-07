@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Update the password in the database
         $hashed_password = password_hash($new_password, PASSWORD_BCRYPT);
-        $stmt = $conn->prepare("UPDATE Customers SET cust_pass = ? WHERE email = ?");
+        $stmt = $conn->prepare("UPDATE customers SET cust_pass = ? WHERE email = ?");
         $stmt->bind_param("ss", $hashed_password, $email);
         $stmt->execute();
         $stmt->close();
