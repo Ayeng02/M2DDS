@@ -148,8 +148,8 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            margin-left: -8;
-            margin-right: -8;
+            margin-left: -8px;
+            margin-right: -8px;
         }
 
 
