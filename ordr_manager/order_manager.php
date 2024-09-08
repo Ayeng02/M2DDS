@@ -75,7 +75,8 @@ if ($statusResult && $statusResult->num_rows > 0) {
         $statusCounts[$row['status_name']] = $row['total_orders'];
     }
 } else {
- 
+    // Handle case where no rows are returned or query fails
+    echo "Error: " . $conn->error;
 }
 
 // Now you have both $pendingResult for the pending orders and $statusCounts for status totals
@@ -251,6 +252,7 @@ if ($statusResult && $statusResult->num_rows > 0) {
                 </tr>
             </thead>
             <tbody>
+                <!-- PHP to populate table rows -->
                 <?php if ($pendingResult->num_rows > 0): ?>
                     <?php while ($row = $pendingResult->fetch_assoc()): ?>
                         <tr>
@@ -265,13 +267,10 @@ if ($statusResult && $statusResult->num_rows > 0) {
                             <td><?php echo htmlspecialchars(date('F j, Y g:i A', strtotime($row['order_date']))); ?></td>
                         </tr>
                     <?php endwhile; ?>
-                <?php else: ?>
-                <?php endif; ?>
             </tbody>
         </table>
     </div>
 </div>
-
 
 
 
