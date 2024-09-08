@@ -269,6 +269,14 @@ if ($statusResult && $statusResult->num_rows > 0) {
                 <?php else: ?>
                     <tr>
                         <td colspan="9" class="text-center">No pending orders found.</td>
+                        <td colspan="9" class="text-center">No pending orders found.</td>
+                        <td colspan="9" class="text-center">No pending orders found.</td>
+                        <td colspan="9" class="text-center">No pending orders found.</td>
+                        <td colspan="9" class="text-center">No pending orders found.</td>
+                        <td colspan="9" class="text-center">No pending orders found.</td>
+                        <td colspan="9" class="text-center">No pending orders found.</td>
+                        <td colspan="9" class="text-center">No pending orders found.</td>
+                        <td colspan="9" class="text-center">No pending orders found.</td>
                     </tr>
                 <?php endif; ?>
             </tbody>
