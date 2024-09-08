@@ -7,7 +7,7 @@ include '../includes/db_connect.php';
 header('Content-Type: application/json');
 
 // Query to get the latest order ID
-$query = "SELECT MAX(order_id) AS latest_order_id FROM Order_tbl";
+$query = "SELECT MAX(order_id) AS latest_order_id FROM order_tbl";
 $result = mysqli_query($conn, $query);
 
 if ($result) {

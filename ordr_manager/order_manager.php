@@ -62,7 +62,7 @@ $statusCounts = [
 // Query to get the count of orders for each status on the current day
 $statusQuery = "
     SELECT s.status_name, COUNT(o.order_id) AS total_orders 
-    FROM Order_tbl o 
+    FROM order_tbl o 
     JOIN status_tbl s ON o.status_code = s.status_code 
     WHERE DATE(o.order_date) = CURDATE() 
     GROUP BY s.status_name";
