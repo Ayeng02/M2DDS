@@ -45,7 +45,7 @@ $pendingQuery = "
            o.order_qty, o.order_total, o.order_date, p.prod_name 
     FROM order_tbl o
     JOIN product_tbl p ON o.prod_code = p.prod_code 
-    WHERE status_code = 1
+    WHERE status_code = 1 AND DATE(o.order_date) = CURDATE()
     ORDER BY order_date DESC";
 
 $pendingResult = $conn->query($pendingQuery);
