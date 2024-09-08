@@ -75,8 +75,7 @@ if ($statusResult && $statusResult->num_rows > 0) {
         $statusCounts[$row['status_name']] = $row['total_orders'];
     }
 } else {
-    // Handle case where no rows are returned or query fails
-    echo "Error: " . $conn->error;
+
 }
 ?>
 
