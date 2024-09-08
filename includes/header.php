@@ -1,76 +1,76 @@
-    
-    
-    <?php
-    session_start();
+<?php
+session_start();
 
-    // Check if the user is logged in
-    if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
-        header("Location: ../customer/login.php");
-        exit;
-    }
+// Check if the user is logged in
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+    header("Location: ../customer/login.php");
+    exit;
+}
 
-    // Include database connection
-    include 'db_connect.php';
+// Include database connection
+include 'db_connect.php';
 
-    // Check if customer_id is set in session
-    if (!isset($_SESSION['cust_id'])) {
-        echo "Error: Customer ID not set in session.";
-        exit; 
-    }
+// Check if customer_id is set in session
+if (!isset($_SESSION['cust_id'])) {
+    echo "Error: Customer ID not set in session.";
+    exit;
+}
 
-    // Retrieve the logged-in user's information
-    $customer_id = $_SESSION['cust_id'];
-    $sql = "SELECT * FROM customers WHERE cust_id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $customer_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $customer = $result->fetch_assoc();
+// Retrieve the logged-in user's information
+$customer_id = $_SESSION['cust_id'];
+$sql = "SELECT * FROM customers WHERE cust_id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $customer_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$customer = $result->fetch_assoc();
 
-    // Check if customer data is retrieved
-    if (!$customer) {
-        echo "Error: Customer not found.";
-        exit;
-    }
+// Check if customer data is retrieved
+if (!$customer) {
+    echo "Error: Customer not found.";
+    exit;
+}
 
-    // Get cart item count
-    $sql_cart = "SELECT COUNT(*) as item_count FROM cart_table WHERE cust_id = ?";
-    $stmt_cart = $conn->prepare($sql_cart);
-    $stmt_cart->bind_param("s", $customer_id);
-    $stmt_cart->execute();
-    $result_cart = $stmt_cart->get_result();
-    $cart_data = $result_cart->fetch_assoc();
-    $item_count = $cart_data['item_count'];
+// Get cart item count
+$sql_cart = "SELECT COUNT(*) as item_count FROM cart_table WHERE cust_id = ?";
+$stmt_cart = $conn->prepare($sql_cart);
+$stmt_cart->bind_param("s", $customer_id);
+$stmt_cart->execute();
+$result_cart = $stmt_cart->get_result();
+$cart_data = $result_cart->fetch_assoc();
+$item_count = $cart_data['item_count'];
 
-
-    // Retrieve notifications from the last day
-    $one_day_ago = date('Y-m-d H:i:s', strtotime('-1 day'));
-    $sql_notifications = "SELECT * FROM notifications WHERE cust_id = ? AND created_at >= ? ORDER BY created_at DESC";
-    $stmt_notifications = $conn->prepare($sql_notifications);
-    $stmt_notifications->bind_param("ss", $customer_id, $one_day_ago);
-    $stmt_notifications->execute();
-    $result_notifications = $stmt_notifications->get_result();
-    $notifications = $result_notifications->fetch_all(MYSQLI_ASSOC);
+// Define the time range for the last 24 hours
+date_default_timezone_set('Asia/Manila'); // Set timezone to Philippine Time
+$now = date('Y-m-d H:i:s');
+$one_day_ago = date('Y-m-d H:i:s', strtotime('-1 day'));
 
 
-    // Calculate the number of unread notifications
-    $unread_count = array_reduce($notifications, function ($count, $notification) {
-        return $notification['status'] === 'unread' ? $count + 1 : $count;
-    }, 0);
+// Retrieve notifications from the last 24 hours
+$sql_notifications = "SELECT * FROM notifications WHERE cust_id = ? AND created_at BETWEEN ? AND ? ORDER BY created_at DESC";
+$stmt_notifications = $conn->prepare($sql_notifications);
+$stmt_notifications->bind_param("sss", $customer_id, $one_day_ago, $now);
+$stmt_notifications->execute();
+$result_notifications = $stmt_notifications->get_result();
+$notifications = $result_notifications->fetch_all(MYSQLI_ASSOC);
 
-    // Handle logout request
-    if (isset($_POST['logout']) && $_POST['logout'] === 'true') {
-        // Destroy all session data
-        session_unset();
-        session_destroy();
+// Calculate the number of unread notifications
+$unread_count = array_reduce($notifications, function ($count, $notification) {
+    return $notification['status'] === 'unread' ? $count + 1 : $count;
+}, 0);
 
-        // Redirect to the index page
-        header("Location: ../index.php");
-        exit;
-    }
+// Handle logout request
+if (isset($_POST['logout']) && $_POST['logout'] === 'true') {
+    // Destroy all session data
+    session_unset();
+    session_destroy();
 
+    // Redirect to the index page
+    header("Location: ../index.php");
+    exit;
+}
+?>
 
-    ?>
 
     <!DOCTYPE html>
     <html lang="en">
