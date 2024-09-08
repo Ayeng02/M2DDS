@@ -230,39 +230,33 @@ if ($statusResult && $statusResult->num_rows > 0) {
 
 
         <hr>
-
-<!-- Recent Orders -->
-<div class="container-fluid mt-4">
+        <div class="container-fluid mt-4">
     <h2 class="mb-4">Recent Pending Orders</h2>
-
-    <!-- Checkbox, Input, and Button Section -->
     <div class="d-flex justify-content-start align-items-center mb-3">
         <input type="number" id="processingNumber" placeholder="Enter Number" class="form-control me-2 w-auto" />
         <button class="btn accBtn" id="acceptBtn">Accept Order(s)</button>
     </div>
-
-    <!-- Scrollable Table Wrapper -->
     <div class="table-responsive overflow-auto">
-        <!-- Table -->
         <table class="table table-bordered table-striped" id="ordersTable">
-            <thead >
+            <thead>
                 <tr>
-                    <th style="background-color: #ce3434bd; color: white;"><input type="checkbox" id="checkAll"></th>
-                    <th style="background-color: #ce3434bd; color: white;">Order ID</th>
-                    <th style="background-color: #ce3434bd; color: white;">Product</th>
-                    <th style="background-color: #ce3434bd; color: white;">Full Name</th>
-                    <th style="background-color: #ce3434bd; color: white;">Phone Number</th>
-                    <th style="background-color: #ce3434bd; color: white;">Address</th>
-                    <th style="background-color: #ce3434bd; color: white;">Quantity</th>
-                    <th style="background-color: #ce3434bd; color: white;">Total</th>
-                    <th style="background-color: #ce3434bd; color: white;">Date</th>
+                    <th><input type="checkbox" id="checkAll"></th>
+                    <th>Order ID</th>
+                    <th>Product</th>
+                    <th>Full Name</th>
+                    <th>Phone Number</th>
+                    <th>Address</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
+                    <th>Date</th>
                 </tr>
             </thead>
             <tbody>
-                <?php if ($pendingResult ->num_rows > 0): ?>
-                    <?php while ($row = $pendingResult ->fetch_assoc()): ?>
+                <!-- PHP to populate table rows -->
+                <?php if ($pendingResult->num_rows > 0): ?>
+                    <?php while ($row = $pendingResult->fetch_assoc()): ?>
                         <tr>
-                            <td><input type="checkbox" class="orderCheckbox" value="<?php echo $row['order_id']; ?>"></td>
+                            <td><input type="checkbox" class="orderCheckbox" value="<?php echo htmlspecialchars($row['order_id']); ?>"></td>
                             <td><?php echo htmlspecialchars($row['order_id']); ?></td>
                             <td><?php echo htmlspecialchars($row['prod_name']); ?></td>
                             <td><?php echo htmlspecialchars($row['order_fullname']); ?></td>
@@ -271,7 +265,6 @@ if ($statusResult && $statusResult->num_rows > 0) {
                             <td><?php echo htmlspecialchars($row['order_qty']); ?></td>
                             <td><?php echo htmlspecialchars(number_format($row['order_total'], 2)); ?></td>
                             <td><?php echo htmlspecialchars(date('F j, Y g:i A', strtotime($row['order_date']))); ?></td>
-
                         </tr>
                     <?php endwhile; ?>
                 <?php else: ?>
@@ -283,6 +276,7 @@ if ($statusResult && $statusResult->num_rows > 0) {
         </table>
     </div>
 </div>
+
 
 
 
