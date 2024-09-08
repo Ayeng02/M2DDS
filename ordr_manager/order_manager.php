@@ -77,6 +77,8 @@ if ($statusResult && $statusResult->num_rows > 0) {
 } else {
 
 }
+
+// Now you have both $pendingResult for the pending orders and $statusCounts for status totals
 ?>
 
 
