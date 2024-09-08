@@ -241,14 +241,14 @@ if ($statusResult && $statusResult->num_rows > 0) {
             <thead>
                 <tr>
                     <th><input type="checkbox" id="checkAll"></th>
-                    <th>Order ID</th>
-                    <th>Product</th>
-                    <th>Full Name</th>
-                    <th>Phone Number</th>
-                    <th>Address</th>
-                    <th>Quantity</th>
-                    <th>Total</th>
-                    <th>Date</th>
+                    <th style="background-color: #ce3434bd; color: white;">Order ID</th>
+                    <th style="background-color: #ce3434bd; color: white;">Product</th>
+                    <th style="background-color: #ce3434bd; color: white;">Full Name</th>
+                    <th style="background-color: #ce3434bd; color: white;">Phone Number</th>
+                    <th style="background-color: #ce3434bd; color: white;">Address</th>
+                    <th style="background-color: #ce3434bd; color: white;">Quantity</th>
+                    <th style="background-color: #ce3434bd; color: white;">Total</th>
+                    <th style="background-color: #ce3434bd; color: white;">Date</th>
                 </tr>
             </thead>
             <tbody>
