@@ -2,6 +2,35 @@
 session_start();
 include '../includes/db_connect.php';
 
+// Error and Exception Handling Setup
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
+function handleError($error_message) {
+    // Log the error message to a file or an error monitoring system
+    error_log($error_message, 3, '../logs/error.log');
+    // Display a generic message to the user
+    echo "An error occurred. Please try again later.";
+}
+
+function handleException($exception) {
+    // Log the exception message
+    error_log($exception->getMessage(), 3, '../logs/exception.log');
+    // Display a generic message to the user
+    echo "An unexpected error occurred. Please try again later.";
+}
+
+// Set error handler
+set_error_handler(function($severity, $message, $file, $line) {
+    if (!(error_reporting() & $severity)) {
+        return;
+    }
+    handleError("Error [$severity]: $message in $file on line $line");
+    return true;
+});
+
+// Set exception handler
+set_exception_handler('handleException');
+
 // Handle logout request
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['logout'])) {
     // Unset all session variables
@@ -31,6 +60,7 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                 header("Location: ../admin/admin_interface.php");
                 exit;
             default:
+                handleError('Invalid role specified.');
         }
     }
 } else {
@@ -48,7 +78,14 @@ $pendingQuery = "
     WHERE status_code = 1 AND DATE(o.order_date) = CURDATE()
     ORDER BY order_date DESC";
 
-$pendingResult = $conn->query($pendingQuery);
+try {
+    $pendingResult = $conn->query($pendingQuery);
+    if (!$pendingResult) {
+        throw new Exception("Database query failed: " . $conn->error);
+    }
+} catch (Exception $e) {
+    handleException($e);
+}
 
 // Initialize an array to store the counts for each status
 $statusCounts = [
@@ -67,20 +104,29 @@ $statusQuery = "
     WHERE DATE(o.order_date) = CURDATE() 
     GROUP BY s.status_name";
 
-$statusResult = $conn->query($statusQuery);
-
-// Check if $statusResult is valid before accessing num_rows
-if ($statusResult && $statusResult->num_rows > 0) {
-    while ($row = $statusResult->fetch_assoc()) {
-        $statusCounts[$row['status_name']] = $row['total_orders'];
+try {
+    $statusResult = $conn->query($statusQuery);
+    if (!$statusResult) {
+        throw new Exception("Database query failed: " . $conn->error);
     }
-} else {
-    // Handle case where no rows are returned or query fails
-    echo "Error: " . $conn->error;
+
+    // Check if $statusResult is valid before accessing num_rows
+    if ($statusResult->num_rows > 0) {
+        while ($row = $statusResult->fetch_assoc()) {
+            // Ensure the status exists in the array before updating
+            if (array_key_exists($row['status_name'], $statusCounts)) {
+                $statusCounts[$row['status_name']] = $row['total_orders'];
+            }
+        }
+    } else {
+        echo "No orders found for today.";
+    }
+} catch (Exception $e) {
+    handleException($e);
 }
 
-// Now you have both $pendingResult for the pending orders and $statusCounts for status totals
 ?>
+
 
 
 <!DOCTYPE html>
