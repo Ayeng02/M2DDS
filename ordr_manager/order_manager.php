@@ -1,5 +1,6 @@
 <?php
 session_start();
+include '../includes/db_connect.php';
 
 // Handle logout request
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['logout'])) {
@@ -10,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['logout'])) {
     if (session_id()) {
         session_destroy();
     }
-    
+
     // Respond with a status to inform the JS the session has been destroyed
     exit;
 }
@@ -36,6 +37,49 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
     header("Location: ../login.php");
     exit;
 }
+
+// Query to fetch recent "Pending" orders
+$pendingQuery = "
+    SELECT o.order_id, o.prod_code, o.order_fullname, o.order_phonenum, 
+           CONCAT(o.order_purok, ', ', o.order_barangay, ', ', o.order_province) AS order_address, 
+           o.order_qty, o.order_total, o.order_date, p.prod_name 
+    FROM order_tbl o
+    JOIN product_tbl p ON o.prod_code = p.prod_code 
+    WHERE status_code = 1
+    ORDER BY order_date DESC";
+
+$pendingResult = $conn->query($pendingQuery);
+
+// Initialize an array to store the counts for each status
+$statusCounts = [
+    'Pending' => 0,
+    'Processing' => 0,
+    'Shipped' => 0,
+    'Delivered' => 0,
+    'Canceled' => 0
+];
+
+// Query to get the count of orders for each status on the current day
+$statusQuery = "
+    SELECT s.status_name, COUNT(o.order_id) AS total_orders 
+    FROM Order_tbl o 
+    JOIN status_tbl s ON o.status_code = s.status_code 
+    WHERE DATE(o.order_date) = CURDATE() 
+    GROUP BY s.status_name";
+
+$statusResult = $conn->query($statusQuery);
+
+// Check if $statusResult is valid before accessing num_rows
+if ($statusResult && $statusResult->num_rows > 0) {
+    while ($row = $statusResult->fetch_assoc()) {
+        $statusCounts[$row['status_name']] = $row['total_orders'];
+    }
+} else {
+    // Handle case where no rows are returned or query fails
+    echo "Error: " . $conn->error;
+}
+
+// Now you have both $pendingResult for the pending orders and $statusCounts for status totals
 ?>
 
 
@@ -46,14 +90,35 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Manager</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+       <!-- Bootstrap CSS -->
+       <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="../css/ordr_css.css">
+    
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    
+    <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
 </head>
 
 <body>
+
     <!-- Sidebar on the left -->
     <nav id="sidebar" class="bg-dark">
         <div class="profile">
@@ -119,37 +184,105 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
         </div>
 
         <hr>
-        <!-- Status Cards Section -->
-        <div class="container-fluid">
-            <h2 class="my-4">Total Order Statuses</h2>
-            <div class="status-container">
-                <div class="status-card bg-warning">
-                    <i class="fas fa-clock"></i>
-                    <div class="status-text">Pending</div>
-                    <div class="status-number">12</div> <!-- Example number -->
-                </div>
-                <div class="status-card bg-primary">
-                    <i class="fas fa-cogs"></i>
-                    <div class="status-text">Processing</div>
-                    <div class="status-number">8</div> <!-- Example number -->
-                </div>
-                <div class="status-card bg-success">
-                    <i class="fas fa-truck"></i>
-                    <div class="status-text">Shipped</div>
-                    <div class="status-number">15</div> <!-- Example number -->
-                </div>
-                <div class="status-card bg-info">
-                    <i class="fas fa-check-circle"></i>
-                    <div class="status-text">Delivered</div>
-                    <div class="status-number">22</div> <!-- Example number -->
-                </div>
-                <div class="status-card bg-danger">
-                    <i class="fas fa-times-circle"></i>
-                    <div class="status-text">Canceled</div>
-                    <div class="status-number">5</div> <!-- Example number -->
-                </div>
-            </div>
+<!-- Status Cards Section -->
+<div class="container-fluid">
+    <h2 class="my-4">Total Order Statuses</h2>
+    <div class="status-container">
+        <!-- Pending -->
+        <div class="status-card bg-warning">
+            <i class="fas fa-clock"></i>
+            <div class="status-text">Pending</div>
+            <div class="status-number"><?php echo $statusCounts['Pending']; ?></div>
         </div>
+        
+        <!-- Processing -->
+        <div class="status-card bg-primary">
+            <i class="fas fa-cogs"></i>
+            <div class="status-text">Processing</div>
+            <div class="status-number"><?php echo $statusCounts['Processing']; ?></div>
+        </div>
+        
+        <!-- Shipped -->
+        <div class="status-card bg-success">
+            <i class="fas fa-truck"></i>
+            <div class="status-text">Shipped</div>
+            <div class="status-number"><?php echo $statusCounts['Shipped']; ?></div>
+        </div>
+        
+        <!-- Delivered -->
+        <div class="status-card bg-info">
+            <i class="fas fa-check-circle"></i>
+            <div class="status-text">Delivered</div>
+            <div class="status-number"><?php echo $statusCounts['Delivered']; ?></div>
+        </div>
+        
+        <!-- Canceled -->
+        <div class="status-card bg-danger">
+            <i class="fas fa-times-circle"></i>
+            <div class="status-text">Canceled</div>
+            <div class="status-number"><?php echo $statusCounts['Canceled']; ?></div>
+        </div>
+    </div>
+</div>
+
+
+
+
+        <hr>
+
+<!-- Recent Orders -->
+<div class="container-fluid mt-4">
+    <h2 class="mb-4">Recent Pending Orders</h2>
+
+    <!-- Checkbox, Input, and Button Section -->
+    <div class="d-flex justify-content-start align-items-center mb-3">
+        <input type="number" id="processingNumber" placeholder="Enter Number" class="form-control me-2 w-auto" />
+        <button class="btn accBtn" id="acceptBtn">Accept Order(s)</button>
+    </div>
+
+    <!-- Scrollable Table Wrapper -->
+    <div class="table-responsive overflow-auto">
+        <!-- Table -->
+        <table class="table table-bordered table-striped" id="ordersTable">
+            <thead >
+                <tr>
+                    <th style="background-color: #ce3434bd; color: white;"><input type="checkbox" id="checkAll"></th>
+                    <th style="background-color: #ce3434bd; color: white;">Order ID</th>
+                    <th style="background-color: #ce3434bd; color: white;">Product</th>
+                    <th style="background-color: #ce3434bd; color: white;">Full Name</th>
+                    <th style="background-color: #ce3434bd; color: white;">Phone Number</th>
+                    <th style="background-color: #ce3434bd; color: white;">Address</th>
+                    <th style="background-color: #ce3434bd; color: white;">Quantity</th>
+                    <th style="background-color: #ce3434bd; color: white;">Total</th>
+                    <th style="background-color: #ce3434bd; color: white;">Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if ($pendingResult ->num_rows > 0): ?>
+                    <?php while ($row = $pendingResult ->fetch_assoc()): ?>
+                        <tr>
+                            <td><input type="checkbox" class="orderCheckbox" value="<?php echo $row['order_id']; ?>"></td>
+                            <td><?php echo htmlspecialchars($row['order_id']); ?></td>
+                            <td><?php echo htmlspecialchars($row['prod_name']); ?></td>
+                            <td><?php echo htmlspecialchars($row['order_fullname']); ?></td>
+                            <td><?php echo htmlspecialchars($row['order_phonenum']); ?></td>
+                            <td><?php echo htmlspecialchars($row['order_address']); ?></td>
+                            <td><?php echo htmlspecialchars($row['order_qty']); ?></td>
+                            <td><?php echo htmlspecialchars(number_format($row['order_total'], 2)); ?></td>
+                            <td><?php echo htmlspecialchars(date('F j, Y g:i A', strtotime($row['order_date']))); ?></td>
+
+                        </tr>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="9" class="text-center">No pending orders found.</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+
 
 
         <hr>
@@ -200,6 +333,8 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Include DataTables JS -->
+
     <script>
         function updateClock() {
             const now = new Date();
@@ -236,36 +371,121 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
         setInterval(updateClock, 1000); // Update the clock every second
         updateClock(); // Initial call to display the time immediately
 
-
-
-        document.getElementById('logoutBtn').addEventListener('click', function (e) {
-        e.preventDefault(); // Prevent default anchor behavior
-
-        Swal.fire({
-            title: 'Are you sure?',
-            text: "You will be logged out!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Send a POST request to log out
-                fetch('', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: 'logout=true'
-                }).then(response => {
-                    // Redirect to the login page after successful logout
-                    window.location.href = '../login.php';
-                });
-            }
-        });
+        $(document).ready(function() {
+    // Initialize DataTables with pagination, and set page length to 10
+    $('#ordersTable').DataTable({
+        "pageLength": 10,
+        "ordering": true,
+        "autoWidth": false,
+        "responsive": true
     });
 
+    // Check All Checkbox functionality
+    $('#checkAll').on('change', function() {
+        var checkboxes = $('.orderCheckbox');
+        checkboxes.prop('checked', this.checked);
+    });
+
+    // Accept Button functionality
+    $('#acceptBtn').on('click', function() {
+        const selectedOrders = [];
+        const checkboxes = $('.orderCheckbox:checked');
+        const totalOrders = $('.orderCheckbox');
+        const processingNumber = $('#processingNumber').val();
+
+        // If the user inputs a number
+        if (processingNumber && processingNumber > 0) {
+            // Automatically select the first `n` checkboxes based on input
+            for (let i = 0; i < processingNumber && i < totalOrders.length; i++) {
+                if (!totalOrders[i].checked) {
+                    totalOrders[i].checked = true; // Mark the first `n` orders
+                    selectedOrders.push(totalOrders[i].value);
+                }
+            }
+        } else {
+            // If no number is input, use manually checked boxes
+            checkboxes.each(function() {
+                selectedOrders.push($(this).val());
+            });
+        }
+
+        // Validate if `selectedOrders` is not empty
+        if (selectedOrders.length > 0) {
+            // Send selected order IDs to the server using AJAX
+            fetch('update_PenStatus.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    order_ids: selectedOrders,
+                    processing_number: processingNumber // Include processing_number if needed
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Success',
+                        text: 'Order(s) pdated to Processing!',
+                        icon: 'success'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire('Error', 'Failed to update orders: ' + data.error, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire('Error', 'An error occurred while updating orders.', 'error');
+            });
+        } else {
+            Swal.fire('Warning', 'Please select or specify the number of orders to accept.', 'warning');
+        }
+    });
+});
+
+
+document.addEventListener('DOMContentLoaded', function() {
+        const statusCards = document.querySelectorAll('.status-number');
+
+        function animateNumbers() {
+            statusCards.forEach(card => {
+                // Add animation class
+                card.classList.add('animate');
+
+                // Remove the class after the animation ends
+                card.addEventListener('animationend', function() {
+                    card.classList.remove('animate');
+                }, { once: true });
+            });
+        }
+
+        // Trigger animation on page load
+        animateNumbers();
+    });
+
+     // Track the last order ID or timestamp
+     let lastOrderId = null;
+
+function checkForNewOrders() {
+    fetch('check_new_orders.php')
+        .then(response => response.json())
+        .then(data => {
+            // Assuming 'latest_order_id' is the field returned by the server
+            if (data.latest_order_id && data.latest_order_id !== lastOrderId) {
+                lastOrderId = data.latest_order_id;
+                window.location.reload(); // Refresh the page if new orders are found
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+// Check for new orders every 1 minute (60000 milliseconds)
+setInterval(checkForNewOrders, 60000);
+
+    
 
     </script>
 </body>

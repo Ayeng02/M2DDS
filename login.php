@@ -1,5 +1,6 @@
 <?php
-session_start(); // Start the session
+session_start(); // Start the sessiona
+
 
 
 // Redirect to landing page if already logged in
@@ -24,7 +25,7 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
     }
 }
 
-// Database connection
+// Database connections
 include './includes/db_connect.php';
 
 // Process form submission
@@ -90,10 +91,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $redirectUrl = 'shipper_dashboard.php';
                             break;
                         case 'Order Manager':
-                            $redirectUrl = '../shipper/dashboard2.php';
+                            $redirectUrl = './ordr_manager/order_manager.php';
                             break;
                         case 'Cashier':
-                            $redirectUrl = '../shipper/dashboard2.php';
+                            $redirectUrl = './shipper/dashboard2.php';
                             break;
                         default:
                             $redirectUrl = 'login.php'; 
@@ -130,6 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Google Fonts (Optional) -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+
     <!-- Custom CSS -->
     <style>
         body {
