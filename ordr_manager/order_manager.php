@@ -373,7 +373,7 @@ if ($statusResult && $statusResult->num_rows > 0) {
         updateClock(); // Initial call to display the time immediately
 
         $(document).ready(function() {
-    // Initialize DataTables with pagination, and set page length to 10
+    // Initialize DataTables with pagination and set page length to 10
     $('#ordersTable').DataTable({
         "pageLength": 10,
         "ordering": true,
@@ -392,10 +392,10 @@ if ($statusResult && $statusResult->num_rows > 0) {
         const selectedOrders = [];
         const checkboxes = $('.orderCheckbox:checked');
         const totalOrders = $('.orderCheckbox');
-        const processingNumber = $('#processingNumber').val();
+        const processingNumber = parseInt($('#processingNumber').val(), 10); // Ensure it's a number
 
-        // If the user inputs a number
-        if (processingNumber && processingNumber > 0) {
+        // Validate the processingNumber
+        if (processingNumber > 0) {
             // Automatically select the first `n` checkboxes based on input
             for (let i = 0; i < processingNumber && i < totalOrders.length; i++) {
                 if (!totalOrders[i].checked) {
@@ -404,7 +404,7 @@ if ($statusResult && $statusResult->num_rows > 0) {
                 }
             }
         } else {
-            // If no number is input, use manually checked boxes
+            // Use manually checked boxes if processingNumber is not valid
             checkboxes.each(function() {
                 selectedOrders.push($(this).val());
             });
@@ -423,15 +423,20 @@ if ($statusResult && $statusResult->num_rows > 0) {
                     processing_number: processingNumber // Include processing_number if needed
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     Swal.fire({
                         title: 'Success',
-                        text: 'Order(s) pdated to Processing!',
+                        text: 'Order(s) updated to Processing!',
                         icon: 'success'
                     }).then(() => {
-                        window.location.reload();
+                        location.reload(); // Ensure SweetAlert2 is working before reloading
                     });
                 } else {
                     Swal.fire('Error', 'Failed to update orders: ' + data.error, 'error');
@@ -446,6 +451,7 @@ if ($statusResult && $statusResult->num_rows > 0) {
         }
     });
 });
+
 
 
 document.addEventListener('DOMContentLoaded', function() {
