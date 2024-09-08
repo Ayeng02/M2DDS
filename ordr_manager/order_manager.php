@@ -267,6 +267,9 @@ if ($statusResult && $statusResult->num_rows > 0) {
                             <td><?php echo htmlspecialchars(date('F j, Y g:i A', strtotime($row['order_date']))); ?></td>
                         </tr>
                     <?php endwhile; ?>
+                <?php else: ?>
+                
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
