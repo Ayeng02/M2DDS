@@ -252,7 +252,6 @@ if ($statusResult && $statusResult->num_rows > 0) {
                 </tr>
             </thead>
             <tbody>
-                <!-- PHP to populate table rows -->
                 <?php if ($pendingResult->num_rows > 0): ?>
                     <?php while ($row = $pendingResult->fetch_assoc()): ?>
                         <tr>
@@ -276,6 +275,7 @@ if ($statusResult && $statusResult->num_rows > 0) {
         </table>
     </div>
 </div>
+
 
 
 
