@@ -1,16 +1,71 @@
 <?php
-session_start();
+// Database connection
+include '../includes/db_connect.php';
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $employeeId = $_POST['employeeId'] ?? '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $emp_id = $_POST['employeeId'];
 
-    if (isset($_SESSION['user_id']) && !empty($employeeId)) {
-        session_destroy();
-        header("Location: login.php");
-        exit();
+    // Check if employee has a valid entry with time_in but no time_out
+    $query = "SELECT * FROM att_tbl WHERE emp_id = ? AND time_out IS NULL ORDER BY att_date DESC LIMIT 1";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param('s', $emp_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        // Get the current timestamp for logout time
+        $time_out = date('Y-m-d H:i:s');
+
+        // Update the time_out for the corresponding record
+        $row = $result->fetch_assoc();
+        $att_id = $row['att_id'];
+
+        $updateQuery = "UPDATE att_tbl SET time_out = ? WHERE att_id = ?";
+        $updateStmt = $conn->prepare($updateQuery);
+        $updateStmt->bind_param('si', $time_out, $att_id);
+        
+        if ($updateStmt->execute()) {
+            // Fetch employee details to show in SweetAlert
+            $empQuery = "SELECT emp_fname, emp_lname, emp_img FROM emp_tbl WHERE emp_id = ?";
+            $empStmt = $conn->prepare($empQuery);
+            $empStmt->bind_param('s', $emp_id);
+            $empStmt->execute();
+            $empResult = $empStmt->get_result();
+
+            if ($empResult->num_rows > 0) {
+                $empRow = $empResult->fetch_assoc();
+
+                // Prepare the data to send back to the client
+                $response = [
+                    'success' => true,
+                    'success_message' => 'Logout successful!',
+                    'name' => $empRow['emp_fname'] . ' ' . $empRow['emp_lname'],
+                    'image' => $empRow['emp_img']
+                ];
+            } else {
+                $response = [
+                    'success' => false,
+                    'error' => 'Employee details not found.'
+                ];
+            }
+        } else {
+            $response = [
+                'success' => false,
+                'error' => 'Failed to log out.'
+            ];
+        }
+    } else {
+        $response = [
+            'success' => false,
+            'error' => 'No active session found for this employee ID.'
+        ];
     }
+
+    // Return JSON response
+    echo json_encode($response);
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,6 +75,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="icon" href="../img/mtdd_logo.png" type="image/x-icon">
+
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <style>
         * {
             margin: 0;
@@ -192,7 +250,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .choice-menu i {
             margin-right: 10px;
         }
-
     </style>
 </head>
 <body class="animate">
