@@ -2,10 +2,6 @@
 session_start();
 include '../includes/db_connect.php'; // Include your database connection
 
-// Enable error reporting
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $shipper_id = $_POST['shipper_id'];
     $order_ids = $_POST['order_ids'];
@@ -30,8 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $order_ids_array = explode(', ', $order_ids);
 
     // Prepare the SQL call to the stored procedure
-    if (!$stmt = $conn->prepare("CALL sp_insertTransaction(?, ?, ?)")) {
-        error_log("Failed to prepare statement: " . $conn->error);
+    $stmt = $conn->prepare("CALL sp_insertTransaction(?, ?, ?)");
+    if (!$stmt) {
         http_response_code(500);
         echo 'Failed to prepare statement';
         exit;
@@ -41,7 +37,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($order_ids_array as $order_id) {
         $stmt->bind_param('sss', $shipper_id, $order_id, $om_id);
         if (!$stmt->execute()) {
-            error_log("Failed to execute statement: " . $stmt->error);
             $stmt->close();
             $conn->close();
             http_response_code(500);
@@ -53,8 +48,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->close();
 
     // Update status of each order to 'Shipped'
-    if (!$update_stmt = $conn->prepare("UPDATE order_tbl SET status_code = 3 WHERE order_id = ?")) {
-        error_log("Failed to prepare update statement: " . $conn->error);
+    $update_stmt = $conn->prepare("UPDATE order_tbl SET status_code = 3 WHERE order_id = ?");
+    if (!$update_stmt) {
         http_response_code(500);
         echo 'Failed to prepare update statement';
         exit;
@@ -63,7 +58,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($order_ids_array as $order_id) {
         $update_stmt->bind_param('s', $order_id);
         if (!$update_stmt->execute()) {
-            error_log("Failed to update order status: " . $update_stmt->error);
             $update_stmt->close();
             $conn->close();
             http_response_code(500);
@@ -75,8 +69,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $update_stmt->close();
 
     // Update the status of the shipper to 'On Shipped'
-    if (!$update_shipper_stmt = $conn->prepare("UPDATE emp_tbl SET emp_status = 'On Shipped' WHERE emp_id = ?")) {
-        error_log("Failed to prepare shipper update statement: " . $conn->error);
+    $update_shipper_stmt = $conn->prepare("UPDATE emp_tbl SET emp_status = 'On Shipped' WHERE emp_id = ?");
+    if (!$update_shipper_stmt) {
         http_response_code(500);
         echo 'Failed to prepare shipper update statement';
         exit;
@@ -84,7 +78,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $update_shipper_stmt->bind_param('s', $shipper_id);
     if (!$update_shipper_stmt->execute()) {
-        error_log("Failed to update shipper status: " . $update_shipper_stmt->error);
         $update_shipper_stmt->close();
         $conn->close();
         http_response_code(500);

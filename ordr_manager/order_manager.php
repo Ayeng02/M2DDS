@@ -192,150 +192,6 @@ $conn->close();
 
     <link rel="icon" href="../img/logo.ico" type="image/x-icon">
 
-    <style>
-.accBtn,
-.shipBtn,
-.trackBtn{
-    background-color: #FF8225; 
-    color: white;
-    transition: background-color 0.3s ease-in-out;
-    border: none;
-}
-
-.printAllBtn{
-    background-color: #ec4242; 
-    color: white;
-    transition: transform 0.5s ease-in-out, background-color 0.3s ease-in-out;
-    border: none;
-}
-
-.printAllBtn:hover{
-    background-color: #c12e2e; 
-    color: white;
-
-}
-
-.accBtn:hover,
-.shipBtn:hover,
-.trackBtn:hover{
-    background-color: #c12e2e; 
-    color: white;
-}
-
-/* Custom CSS to make the tooltip small */
-.tooltip-inner {
-    font-size: 0.8rem; /* Adjust font size for smaller tooltip */
-    padding: 0.5rem 0.5rem; /* Adjust padding for smaller tooltip */
-    background-color: #414141;
-    color: #fff; 
-  }
-
-  .tooltip-arrow {
-    display: none; 
-  }
-
-  
-.form-control:focus {
-    border-color: #FF8225;
-    box-shadow: 0 0 5px rgba(255, 130, 37, 0.8);
-}
-
-/* For Webkit browsers */
-::-webkit-scrollbar {
-width: 12px; /* Width of the scrollbar */
-}
-
-::-webkit-scrollbar-track {
-background: #f1f1f1; /* Color of the track */
-}
-
-::-webkit-scrollbar-thumb {
-background: linear-gradient(180deg, #ff83259b, #a72828);
-border-radius: 10px; /* Rounded corners of the scrollbar thumb */
-}
-
-::-webkit-scrollbar-thumb:hover {
-background: linear-gradient(380deg, #a72828, #343a40);
-}
-
- /* Custom scrollbar for the table */
- .table-responsive::-webkit-scrollbar {
-    width: 8px;
-}
-
-.table-responsive::-webkit-scrollbar-thumb {
-    background-color: #FF8225;
-    border-radius: 4px;
-
-}
-
-.table-responsive::-webkit-scrollbar-track {
-    background-color: #f1f1f1;
-}
-
-label{
-    margin-bottom: 10px;
-}
-
-.paging_simple_numbers{
-    margin-bottom: 20px;
-
-}
-
-.modal-content {
-    background-color: #fff;
-    color: #333;
-}
-.modal-header {
-    background-color: #FF8225; /* Theme color */
-    border-bottom: none;
-}
-.modal-footer {
-    border-top: none;
-}
-.btn.confirm-btn {
-    background-color: #a72828; /* Theme color */
-    border-color: #a72828;
-    color: #fff;
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    border-radius: 0.25rem;
-}
-.btn-primary{
-    background-color: #a72828; 
-}
-.btn.confirm-btn:hover,
-.btn-primary {
-    background-color: #8a1b1b; /* Darker shade for hover effect */
-    border-color: #8a1b1b;
-}
-.btn.cancel-btn {
-    background-color: #fff;
-    color: #FF8225;
-    border: 1px solid #FF8225;
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    border-radius: 10px;
-}
-.btn.cancel-btn:hover {
-    background-color: #FF8225;
-    color: #fff;
-}
-.list_orders{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-title{
-    color: white;
-}
-
-.profile-container img{
-    image-rendering: crisp-edges;
-}
-
-    </style>
 
 
 </head>
@@ -530,43 +386,43 @@ label{
 
             <!-- Checkbox, Input, and Button Section -->
             <div class="row g-2 mb-3 align-items-center">
-                <!-- Dropdown filter -->
-                <div class="col-12 col-sm-auto">
-                    <select id="orderFilter" class="form-select" onchange="applyFilter()" data-bs-toggle="tooltip" data-bs-placement="right" title="Filter orders">
-                        <option value="default">Filter by</option>
-                        <option value="az">A-Z</option>
-                        <option value="za">Z-A</option>
+    <!-- Dropdown filter -->
+    <div class="col-12 col-sm-auto">
+        <select id="orderFilter" class="form-select" onchange="applyFilter()" data-bs-toggle="tooltip" data-bs-placement="right" title="Filter orders">
+            <option value="default">Filter by</option>
+            <option value="az">A-Z</option>
+            <option value="za">Z-A</option>
 
-                        <!-- Populate brgy_route dynamically -->
-                        <?php if ($routeResult->num_rows > 0): ?>
-                            <?php while ($row = $routeResult->fetch_assoc()): ?>
-                                <option value="<?php echo htmlspecialchars($row['brgy_route']); ?>">
-                                    <?php echo htmlspecialchars($row['brgy_route']); ?>
-                                </option>
-                            <?php endwhile; ?>
-                        <?php endif; ?>
-                    </select>
-                </div>
+            <!-- Populate brgy_route dynamically -->
+            <?php if ($routeResult->num_rows > 0): ?>
+                <?php while ($row = $routeResult->fetch_assoc()): ?>
+                    <option value="<?php echo htmlspecialchars($row['brgy_route']); ?>">
+                        <?php echo htmlspecialchars($row['brgy_route']); ?>
+                    </option>
+                <?php endwhile; ?>
+            <?php endif; ?>
+        </select>
+    </div>
 
-                <!-- Number input -->
-                <div class="col-12 col-sm-auto">
-                    <input type="number" id="processOrderNumber" placeholder="Enter Number" class="form-control" data-bs-toggle="tooltip" data-bs-placement="right" title="Enter # to ship orders" />
-                </div>
+    <!-- Number input -->
+    <div class="col-12 col-sm-auto">
+        <input type="number" id="processOrderNumber" placeholder="Enter Number" class="form-control" data-bs-toggle="tooltip" data-bs-placement="right" title="Enter # to ship orders" />
+    </div>
 
-                <!-- Ship button -->
-                <div class="col-12 col-sm-auto">
-                    <button class="btn shipBtn w-100 w-sm-auto" id="shipBtn" data-bs-toggle="tooltip" data-bs-placement="right" title="Click to ship selected orders" style="color: #ffffff;">
-                        <i class="fa fa-truck" style="color: #ffffff;"></i> Ship Order(s)
-                    </button>
-                </div>
+    <!-- Ship button -->
+    <div class="col-12 col-sm-auto">
+        <button class="btn shipBtn w-100 w-sm-auto" id="shipBtn" data-bs-toggle="tooltip" data-bs-placement="right" title="Click to ship selected orders" style="color: #ffffff;">
+            <i class="fa fa-truck" style="color: #ffffff;"></i> Ship Order(s)
+        </button>
+    </div>
 
-                <!-- Print button -->
-                <div class="col-12 col-sm-auto">
-                    <button class="btn printAllBtn w-100 w-sm-auto" id="printAllBtn" data-bs-toggle="tooltip" data-bs-placement="right" title="Print orders" style="color: #ffffff;">
-                        <i class="fas fa-print" style="color: #ffffff;"></i> Print Order(s)
-                    </button>
-                </div>
-            </div>
+    <!-- Print button -->
+    <div class="col-12 col-sm-auto">
+        <button class="btn printAllBtn w-100 w-sm-auto" id="printAllBtn" data-bs-toggle="tooltip" data-bs-placement="right" title="Print orders" style="color: #ffffff;">
+            <i class="fas fa-print" style="color: #ffffff;"></i> Print Order(s)
+        </button>
+    </div>
+</div>
 
 
             <div class="table-responsive overflow-auto">
@@ -800,7 +656,7 @@ label{
     </div>
 
     <!-- Modal for Official Receipt Confirmation -->
-    <div class="modal fade" id="officialReceiptModal" tabindex="-1" aria-labelledby="officialReceiptLabel" aria-hidden="true">
+    <div class="modal fade" id="officialReceiptModal" tabindex="1" aria-labelledby="officialReceiptLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content border-0" style="border-radius: 0.5rem;">
                 <div class="modal-header text-white">
@@ -844,453 +700,10 @@ label{
     <script src="https://cdn.datatables.net/2.1.5/js/dataTables.js"></script>
     <script src="https://cdn.datatables.net/2.1.5/js/dataTables.bootstrap5.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/order_manager.js"></script>
     <!-- Include DataTables JS -->
 
     <script>
-
-function updateClock() {
-    const now = new Date();
-
-    // Format hours, minutes, and seconds
-    let hours = now.getHours();
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
-
-    // Determine AM/PM
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-
-    // Convert hours from 24-hour to 12-hour format
-    hours = hours % 12;
-    hours = hours ? hours : 12; // the hour '0' should be '12'
-
-    // Format time
-    const timeString = `${String(hours).padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
-
-    // Update the clock and date elements
-    document.getElementById('clock').textContent = timeString;
-
-    // Format the date
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const day = days[now.getDay()];
-    const date = now.toLocaleDateString('en-US', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    });
-    document.getElementById('date').textContent = `${day}, ${date}`;
-}
-
-setInterval(updateClock, 1000); // Update the clock every second
-updateClock(); // Initial call to display the time immediately
-
-//Pending Table
-$(document).ready(function() {
-    // Initialize DataTables with pagination, and set page length to 10
-    $('#ordersTable').DataTable({
-        "pageLength": 10,
-        "ordering": true,
-        "autoWidth": false,
-        "responsive": true
-    });
-
-    // Check All Checkbox functionality
-    $('#checkAll').on('change', function() {
-        var checkboxes = $('.orderCheckbox');
-        checkboxes.prop('checked', this.checked);
-    });
-
-    // Accept Button functionality
-    $('#acceptBtn').on('click', function() {
-        const selectedOrders = [];
-        const checkboxes = $('.orderCheckbox:checked');
-        const totalOrders = $('.orderCheckbox');
-        const processingNumber = $('#processingNumber').val();
-
-        // If the user inputs a number
-        if (processingNumber && processingNumber > 0) {
-            // Automatically select the first `n` checkboxes based on input
-            for (let i = 0; i < processingNumber && i < totalOrders.length; i++) {
-                if (!totalOrders[i].checked) {
-                    totalOrders[i].checked = true; // Mark the first `n` orders
-                    selectedOrders.push(totalOrders[i].value);
-                }
-            }
-        } else {
-            // If no number is input, use manually checked boxes
-            checkboxes.each(function() {
-                selectedOrders.push($(this).val());
-            });
-        }
-
-        // Validate if `selectedOrders` is not empty
-        if (selectedOrders.length > 0) {
-            // Send selected order IDs to the server using AJAX
-            fetch('update_PenStatus.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        order_ids: selectedOrders,
-                        processing_number: processingNumber // Include processing_number if needed
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        Swal.fire({
-                            title: 'Success',
-                            text: 'Order(s) pdated to Processing!',
-                            icon: 'success'
-                        }).then(() => {
-                            window.location.reload();
-                        });
-                    } else {
-                        Swal.fire('Error', 'Failed to update orders: ' + data.error, 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Swal.fire('Error', 'An error occurred while updating orders.', 'error');
-                });
-        } else {
-            Swal.fire('Warning', 'Please select or specify the number of orders to accept.', 'warning');
-        }
-    });
-});
-
-//Processing Order
-$(document).ready(function() {
-    // Initialize DataTables with pagination, and set page length to 10
-    $('#processingTable').DataTable({
-        "pageLength": 10,
-        "ordering": true,
-        "autoWidth": false,
-        "responsive": true
-    });
-
-    // Check All Checkbox functionality
-    $('#processingCheck').on('change', function() {
-        var checkboxes = $('.processingCheckbox');
-        checkboxes.prop('checked', this.checked);
-    });
-
-    // Ship Button functionality
-    $('#shipBtn').on('click', function() {
-        const selectedOrders = [];
-        const checkboxes = $('.processingCheckbox:checked');
-        const totalOrders = $('.processingCheckbox');
-        const processingNumber = $('#processOrderNumber').val();
-
-        // If the user inputs a number
-        if (processingNumber && processingNumber > 0) {
-            for (let i = 0; i < processingNumber && i < totalOrders.length; i++) {
-                if (!totalOrders[i].checked) {
-                    totalOrders[i].checked = true; // Mark the first `n` orders
-                    selectedOrders.push(totalOrders[i].value);
-                }
-            }
-        } else {
-            checkboxes.each(function() {
-                selectedOrders.push($(this).val());
-            });
-        }
-
-        // Ensure at least one order is selected
-        if (selectedOrders.length === 0) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Select Order',
-                text: 'Please select at least one order to ship.',
-            });
-            return;
-        }
-
-        // Display the selected orders in the modal
-        $('#orderId').val(selectedOrders.join(', '));
-
-        // Load employees dynamically using AJAX
-        $.ajax({
-            url: 'get_shippers.php', // PHP file to fetch employee data
-            method: 'GET',
-            success: function(response) {
-                const employees = JSON.parse(response);
-                let options = '<option selected disabled>Select Employee</option>';
-
-                employees.forEach(function(employee) {
-                    options += `<option value="${employee.emp_id}">${employee.emp_name}</option>`;
-                });
-
-                $('#empId').html(options);
-            },
-            error: function() {
-                console.error('Failed to fetch employees');
-            }
-        });
-
-        // Show the modal
-        $('#shipModal').modal('show');
-    });
-
-    // Confirm shipping process with Swal confirmation
-    $('#confirmShip').on('click', function() {
-        const empId = $('#empId').val();
-        const orderIds = $('#orderId').val();
-        const omId = "<?php echo $_SESSION['emp_id']; ?>"; // Pass the session emp_id
-
-        // Ensure employee and order IDs are selected
-        if (!empId || empId === 'Select Employee') {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Select Shipper',
-                text: 'Please select an employee to ship the orders.',
-            });
-            return;
-        }
-
-        if (!orderIds || orderIds.trim() === '') {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Select Order',
-                text: 'Please select at least one order to ship.',
-            });
-            return;
-        }
-
-        // Show SweetAlert confirmation
-        Swal.fire({
-            title: 'Are you sure?',
-            text: `You are about to ship Order IDs: ${orderIds}`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, ship it!',
-            cancelButtonText: 'Cancel',
-            reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Send data to PHP script to insert into the database
-                $.ajax({
-                    url: 'process_shipping.php', // PHP file to handle the insertion
-                    method: 'POST',
-                    data: {
-                        shipper_id: empId,
-                        order_ids: orderIds,
-                        om_id: omId 
-                    },
-                    success: function(response) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Shipped!',
-                            text: 'The selected orders have been shipped.',
-                        }).then(() => {
-                            // Reload the page after a successful shipment
-                            window.location.reload();
-                        });
-
-                        // Close the modal
-                        $('#shipModal').modal('hide');
-                    },
-                    error: function() {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Failed to ship the orders.',
-                        });
-                    }
-                });
-            }
-        });
-    });
-});
-
-
-
-
-
-document.addEventListener('DOMContentLoaded', function() {
-    const statusCards = document.querySelectorAll('.status-number');
-
-    function animateNumbers() {
-        statusCards.forEach(card => {
-            // Add animation class
-            card.classList.add('animate');
-
-            // Remove the class after the animation ends
-            card.addEventListener('animationend', function() {
-                card.classList.remove('animate');
-            }, {
-                once: true
-            });
-        });
-    }
-
-    // Trigger animation on page load
-    animateNumbers();
-});
-
-// Track the last order ID or timestamp
-let lastOrderId = null;
-
-function checkForNewOrders() {
-    fetch('check_new_orders.php')
-        .then(response => response.json())
-        .then(data => {
-            // Assuming 'latest_order_id' is the field returned by the server
-            if (data.latest_order_id && data.latest_order_id !== lastOrderId) {
-                lastOrderId = data.latest_order_id;
-                window.location.reload(); // Refresh the page if new orders are found
-            }
-        })
-        .catch(error => console.error('Error:', error));
-}
-
-// Check for new orders every 1 minute (60000 milliseconds)
-setInterval(checkForNewOrders, 60000);
-
-
-// Initialize tooltips
-document.addEventListener('DOMContentLoaded', function() {
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
-    })
-});
-
-//logout
-
-$(document).ready(function() {
-    $('#logoutBtn').on('click', function(e) {
-        e.preventDefault(); // Prevent the default link behavior
-
-        // Show SweetAlert confirmation before logging out
-        Swal.fire({
-            title: 'Are you sure?',
-            text: 'You will be logged out of the system.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes',
-            cancelButtonText: 'Cancel',
-            reverseButtons: false
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Perform AJAX call to logout
-                $.ajax({
-                    url: '../includes/logout.php', // Path to your logout PHP script
-                    method: 'POST',
-                    success: function() {
-                        // Show success message and redirect to login page
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Logged out',
-                            text: 'You have been successfully logged out.',
-                        }).then(() => {
-                            window.location.href = '../login.php';
-                        });
-                    },
-                    error: function() {
-                        // Show error message if logout fails
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Failed to log out. Please try again.',
-                        });
-                    }
-                });
-            }
-        });
-    });
-});
-
-function applyFilter() {
-    var filterValue = document.getElementById('orderFilter').value;
-
-    // Send the filter selection to PHP
-    $.ajax({
-        url: 'filterOrder.php',
-        type: 'POST',
-        data: {
-            filter: filterValue
-        },
-        success: function(data) {
-            $('#processingTable tbody').html(data); // Update the table content with the response
-        },
-        error: function(xhr, status, error) {
-            console.error('AJAX Error:', status, error); // Log any error to the console
-        }
-    });
-}
-
-//Print Official Receipt
-$(document).ready(function() {
-    $('#printAllBtn').on('click', function() {
-        const selectedOrders = [];
-        const checkboxes = $('.processingCheckbox:checked');
-        const totalOrders = $('.processingCheckbox');
-        const processingNumber = $('#processOrderNumber').val();
-
-        if (processingNumber && processingNumber > 0) {
-            for (let i = 0; i < processingNumber && i < totalOrders.length; i++) {
-                if (!totalOrders[i].checked) {
-                    totalOrders[i].checked = true;
-                    selectedOrders.push(totalOrders[i].value);
-                }
-            }
-        } else {
-            checkboxes.each(function() {
-                selectedOrders.push($(this).val());
-            });
-        }
-
-        if (selectedOrders.length === 0) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Select Order',
-                text: 'Please select at least one order to print the Official Receipt.',
-            });
-            return;
-        }
-
-        // Show selected orders in modal
-        const ordersList = $('#selectedOrdersList');
-        ordersList.empty();
-        selectedOrders.forEach(function(order) {
-            ordersList.append('<li class="list_orders">Order ID: ' + order + '</li>');
-        });
-
-        // Show the confirmation modal
-        $('#officialReceiptModal').modal('show');
-    });
-
-    // Handle confirm button click in the modal
-    $('#confirmPrintBtn').on('click', function() {
-        const selectedOrders = [];
-        $('.processingCheckbox:checked').each(function() {
-            selectedOrders.push($(this).val());
-        });
-
-        if (selectedOrders.length > 0) {
-            // Group selected orders by cust_id and call the server to generate receipts
-            $.ajax({
-                url: 'generateReceipt.php',
-                type: 'POST',
-                data: {
-                    orders: selectedOrders
-                },
-                success: function(response) {
-                    // Call print receipt directly, grouping by cust_id and separating by page
-                    const orderIds = selectedOrders.join(',');
-                    window.open('printReceipt.php?orders=' + orderIds, '_blank');
-                },
-                error: function(err) {
-                    console.error('Error generating receipts:', err);
-                }
-            });
-        }
-        // Close the modal after confirming
-        $('#officialReceiptModal').modal('hide');
-    });
-});
-
         $(document).ready(function() {
             $('.trackBtn').on('click', function() {
                 var shipperId = $(this).data('shipper-id'); // Get shipper_id from button data attribute
