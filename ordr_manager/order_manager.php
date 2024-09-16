@@ -192,8 +192,7 @@ $conn->close();
     <link rel="icon" href="../img/logo.ico" type="image/x-icon">
 
     
-        <!-- Custom CSS -->
-        <link rel="stylesheet" href="../css/ordr_css.css">
+      
 
 </head>
 
@@ -696,6 +695,8 @@ $conn->close();
 
 
     <!-- DataTables JS -->
+      <!-- Custom CSS -->
+    <link rel="stylesheet" href="../css/ordr_css.css">
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.datatables.net/2.1.5/js/dataTables.js"></script>
