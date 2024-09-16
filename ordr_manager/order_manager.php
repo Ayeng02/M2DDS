@@ -193,15 +193,19 @@ $conn->close();
     <link rel="icon" href="../img/logo.ico" type="image/x-icon">
 
     <style>
-        .accBtn,
+.accBtn,
 .shipBtn,
 .trackBtn{
+    background-color: #FF8225; 
+    color: white;
     transition: background-color 0.3s ease-in-out;
     border: none;
 }
 
 .printAllBtn{
-    transition: background-color 0.3s ease-in-out;
+    background-color: #ec4242; 
+    color: white;
+    transition: transform 0.5s ease-in-out, background-color 0.3s ease-in-out;
     border: none;
 }
 
