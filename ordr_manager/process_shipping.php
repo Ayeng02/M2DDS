@@ -6,10 +6,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $shipper_id = $_POST['shipper_id'];
     $order_ids = $_POST['order_ids'];
 
+    // Debug inputs
+    error_log("Shipper ID: " . $shipper_id);
+    error_log("Order IDs: " . $order_ids);
+
     // Ensure session is started and emp_id is available
     if (!isset($_SESSION['emp_id'])) {
         http_response_code(403);
         echo 'Unauthorized';
+        error_log("Unauthorized access attempt, emp_id not set in session.");
         exit;
     }
 
@@ -19,17 +24,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($shipper_id) || empty($order_ids) || empty($om_id)) {
         http_response_code(400);
         echo 'Invalid input';
+        error_log("Invalid input: shipper_id or order_ids or om_id is empty.");
         exit;
     }
 
     // Split order_ids into an array
     $order_ids_array = explode(', ', $order_ids);
 
+    // Debug array of order IDs
+    error_log("Order IDs Array: " . print_r($order_ids_array, true));
+
     // Prepare the SQL call to the stored procedure
     $stmt = $conn->prepare("CALL sp_insertTransaction(?, ?, ?)");
     if (!$stmt) {
         http_response_code(500);
         echo 'Failed to prepare statement';
+        error_log("Failed to prepare statement: " . $conn->error);
         exit;
     }
 
@@ -41,6 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $conn->close();
             http_response_code(500);
             echo 'Failed to insert transaction';
+            error_log("Failed to insert transaction for order ID: $order_id - " . $stmt->error);
             exit;
         }
     }
@@ -52,6 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$update_stmt) {
         http_response_code(500);
         echo 'Failed to prepare update statement';
+        error_log("Failed to prepare order update statement: " . $conn->error);
         exit;
     }
 
@@ -62,6 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $conn->close();
             http_response_code(500);
             echo 'Failed to update order status';
+            error_log("Failed to update order status for order ID: $order_id - " . $update_stmt->error);
             exit;
         }
     }
@@ -73,6 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$update_shipper_stmt) {
         http_response_code(500);
         echo 'Failed to prepare shipper update statement';
+        error_log("Failed to prepare shipper update statement: " . $conn->error);
         exit;
     }
 
@@ -82,6 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $conn->close();
         http_response_code(500);
         echo 'Failed to update shipper status';
+        error_log("Failed to update shipper status for emp_id: $shipper_id - " . $update_shipper_stmt->error);
         exit;
     }
 
@@ -89,5 +104,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $conn->close();
 
     echo 'Success';
+    error_log("Transaction and updates completed successfully.");
 }
-?>
