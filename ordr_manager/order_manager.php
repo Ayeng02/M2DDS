@@ -228,7 +228,6 @@ $conn->close();
     padding: 0.5rem 0.5rem; /* Adjust padding for smaller tooltip */
     background-color: #414141;
     color: #fff; 
-    opacity: 0.65;
   }
 
   .tooltip-arrow {
