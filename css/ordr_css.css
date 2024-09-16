@@ -263,19 +263,6 @@ label{
 
 }
 
-/* Custom CSS to make the tooltip small */
-.tooltip-inner {
-    font-size: 0.8rem; /* Adjust font size for smaller tooltip */
-    padding: 0.5rem 0.5rem; /* Adjust padding for smaller tooltip */
-    background-color: #414141;
-    color: #fff; 
-    opacity: 0.65;
-  }
-
-  .tooltip-arrow {
-    display: none; 
-  }
-
 .modal-content {
     background-color: #fff;
     color: #333;
