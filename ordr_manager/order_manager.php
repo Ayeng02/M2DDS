@@ -406,7 +406,7 @@ $conn->close();
                                     <?php } else { ?>
                                         <td><?php echo htmlspecialchars($row['prod_price']); ?></td>
                                     <?php } ?>
-                                    <td><?php echo htmlspecialchars($row['brgy_df']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['Brgy_df']); ?></td>
                                     <td><?php echo htmlspecialchars($row['order_qty']); ?></td>
                                     <td><?php echo htmlspecialchars(number_format($row['order_total'], 2)); ?></td>
                                     <td><?php echo htmlspecialchars(date('F j, Y g:i A', strtotime($row['order_date']))); ?></td>
