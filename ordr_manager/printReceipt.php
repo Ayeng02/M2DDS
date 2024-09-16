@@ -10,7 +10,7 @@ if (isset($_GET['orders'])) {
 
     // Fetch the orders based on the IDs
     $orderQuery = "SELECT *, Brgy_df, prod_name, prod_price, prod_discount
-                   FROM Order_tbl o
+                   FROM order_tbl o
                    JOIN product_tbl p ON o.prod_code = p.prod_code
                    JOIN brgy_tbl b ON o.order_barangay = b.Brgy_name
                    JOIN customers c ON o.cust_id = c.cust_id
