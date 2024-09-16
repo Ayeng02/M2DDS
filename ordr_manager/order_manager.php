@@ -173,9 +173,7 @@ $conn->close();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/2.1.5/css/dataTables.bootstrap5.css">
 
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="../css/ordr_css.css">
-
+   
     <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
@@ -191,6 +189,8 @@ $conn->close();
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/3.0.3/js/responsive.bootstrap5.js">
 
     <link rel="icon" href="../img/logo.ico" type="image/x-icon">
+     <!-- Custom CSS -->
+     <link rel="stylesheet" href="../css/ordr_css.css">
 
 
 
