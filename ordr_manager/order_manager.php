@@ -418,7 +418,7 @@ $conn->close();
 
                 <!-- Print button -->
                 <div class="col-12 col-sm-auto">
-                    <button class="btn printAllBtn" id="printAllBtn" data-bs-toggle="tooltip" data-bs-placement="right" title="Print orders" style="color: #ffffff;">
+                    <button class="btn printAllBtn w-100 w-sm-auto" id="printAllBtn" data-bs-toggle="tooltip" data-bs-placement="right" title="Print orders" style="color: #ffffff; background:#a72828;">
                         <i class="fas fa-print" style="color: #ffffff;"></i> Print Order(s)
                     </button>
                 </div>
