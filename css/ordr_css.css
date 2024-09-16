@@ -219,15 +219,11 @@
 .accBtn,
 .shipBtn,
 .trackBtn{
-    background-color: #FF8225; 
-    color: white;
     transition: background-color 0.3s ease-in-out;
     border: none;
 }
 
 .printAllBtn{
-    background-color: #ec4242; 
-    color: white;
     transition: background-color 0.3s ease-in-out;
     border: none;
 }
