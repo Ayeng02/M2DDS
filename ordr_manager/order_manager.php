@@ -386,43 +386,43 @@ $conn->close();
 
             <!-- Checkbox, Input, and Button Section -->
             <div class="row g-2 mb-3 align-items-center">
-    <!-- Dropdown filter -->
-    <div class="col-12 col-sm-auto">
-        <select id="orderFilter" class="form-select" onchange="applyFilter()" data-bs-toggle="tooltip" data-bs-placement="right" title="Filter orders">
-            <option value="default">Filter by</option>
-            <option value="az">A-Z</option>
-            <option value="za">Z-A</option>
+                <!-- Dropdown filter -->
+                <div class="col-12 col-sm-auto">
+                    <select id="orderFilter" class="form-select" onchange="applyFilter()" data-bs-toggle="tooltip" data-bs-placement="right" title="Filter orders">
+                        <option value="default">Filter by</option>
+                        <option value="az">A-Z</option>
+                        <option value="za">Z-A</option>
 
-            <!-- Populate brgy_route dynamically -->
-            <?php if ($routeResult->num_rows > 0): ?>
-                <?php while ($row = $routeResult->fetch_assoc()): ?>
-                    <option value="<?php echo htmlspecialchars($row['brgy_route']); ?>">
-                        <?php echo htmlspecialchars($row['brgy_route']); ?>
-                    </option>
-                <?php endwhile; ?>
-            <?php endif; ?>
-        </select>
-    </div>
+                        <!-- Populate brgy_route dynamically -->
+                        <?php if ($routeResult->num_rows > 0): ?>
+                            <?php while ($row = $routeResult->fetch_assoc()): ?>
+                                <option value="<?php echo htmlspecialchars($row['brgy_route']); ?>">
+                                    <?php echo htmlspecialchars($row['brgy_route']); ?>
+                                </option>
+                            <?php endwhile; ?>
+                        <?php endif; ?>
+                    </select>
+                </div>
 
-    <!-- Number input -->
-    <div class="col-12 col-sm-auto">
-        <input type="number" id="processOrderNumber" placeholder="Enter Number" class="form-control" data-bs-toggle="tooltip" data-bs-placement="right" title="Enter # to ship orders" />
-    </div>
+                <!-- Number input -->
+                <div class="col-12 col-sm-auto">
+                    <input type="number" id="processOrderNumber" placeholder="Enter Number" class="form-control" data-bs-toggle="tooltip" data-bs-placement="right" title="Enter # to ship orders" />
+                </div>
 
-    <!-- Ship button -->
-    <div class="col-12 col-sm-auto">
-        <button class="btn shipBtn w-100 w-sm-auto" id="shipBtn" data-bs-toggle="tooltip" data-bs-placement="right" title="Click to ship selected orders" style="color: #ffffff;">
-            <i class="fa fa-truck" style="color: #ffffff;"></i> Ship Order(s)
-        </button>
-    </div>
+                <!-- Ship button -->
+                <div class="col-12 col-sm-auto">
+                    <button class="btn shipBtn w-100 w-sm-auto" id="shipBtn" data-bs-toggle="tooltip" data-bs-placement="right" title="Click to ship selected orders" style="color: #ffffff; background:#FF8225;">
+                        <i class="fa fa-truck" style="color: #ffffff;"></i> Ship Order(s)
+                    </button>
+                </div>
 
-    <!-- Print button -->
-    <div class="col-12 col-sm-auto">
-        <button class="btn printAllBtn w-100 w-sm-auto" id="printAllBtn" data-bs-toggle="tooltip" data-bs-placement="right" title="Print orders" style="color: #ffffff;">
-            <i class="fas fa-print" style="color: #ffffff;"></i> Print Order(s)
-        </button>
-    </div>
-</div>
+                <!-- Print button -->
+                <div class="col-12 col-sm-auto">
+                    <button class="btn printAllBtn w-100 w-sm-auto" id="printAllBtn" data-bs-toggle="tooltip" data-bs-placement="right" title="Print orders" style="color: #ffffff; background:#a72828;">
+                        <i class="fas fa-print" style="color: #ffffff;"></i> Print Order(s)
+                    </button>
+                </div>
+            </div>
 
 
             <div class="table-responsive overflow-auto">
