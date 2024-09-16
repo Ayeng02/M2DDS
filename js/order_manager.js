@@ -220,7 +220,7 @@ $(document).ready(function() {
             if (result.isConfirmed) {
                 // Send data to PHP script to insert into the database
                 $.ajax({
-                    url: 'process_shipping.php', // PHP file to handle the insertion
+                    url: '../ordr_manager/process_shipping.php', // PHP file to handle the insertion
                     method: 'POST',
                     data: {
                         shipper_id: empId,
