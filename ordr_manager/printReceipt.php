@@ -107,7 +107,7 @@ if (isset($_GET['orders'])) {
             echo "<tbody>";
 
             $totalAmount = 0;
-            $deliveryFee = $orders[0]['brgy_df']; // Use the delivery fee from the first order
+            $deliveryFee = $orders[0]['Brgy_df']; // Use the delivery fee from the first order
 
             foreach ($orders as $order) {
                 // Check if there's a discount
