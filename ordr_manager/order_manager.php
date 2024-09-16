@@ -197,15 +197,11 @@ $conn->close();
 .accBtn,
 .shipBtn,
 .trackBtn{
-    background-color: #FF8225; 
-    color: white;
     transition: background-color 0.3s ease-in-out;
     border: none;
 }
 
 .printAllBtn{
-    background-color: #ec4242; 
-    color: white;
     transition:background-color 0.3s ease-in-out;
     border: none;
 }
@@ -557,7 +553,7 @@ label{
 
     <!-- Print button -->
     <div class="col-12 col-sm-auto">
-        <button class="btn printAllBtn w-100 w-sm-auto" id="printAllBtn" data-bs-toggle="tooltip" data-bs-placement="right" title="Print orders" style="color: #ffffff; background:#a72828;">
+        <button class="btn printAllBtn w-100 w-sm-auto" id="printAllBtn" data-bs-toggle="tooltip" data-bs-placement="right" title="Print orders" style="color: #ffffff; background:#ec4242">
             <i class="fas fa-print" style="color: #ffffff;"></i> Print Order(s)
         </button>
     </div>
