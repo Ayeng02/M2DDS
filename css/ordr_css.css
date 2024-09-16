@@ -216,31 +216,6 @@
     }
 }
 
-.accBtn,
-.shipBtn,
-.trackBtn{
-    transition: background-color 0.3s ease-in-out;
-    border: none;
-}
-
-.printAllBtn{
-    transition: background-color 0.3s ease-in-out;
-    border: none;
-}
-
-.printAllBtn:hover{
-    background-color: #c12e2e; 
-    color: white;
-
-}
-
-.accBtn:hover,
-.shipBtn:hover,
-.trackBtn:hover{
-    background-color: #c12e2e; 
-    color: white;
-}
-
 .form-control:focus {
     border-color: #FF8225;
     box-shadow: 0 0 5px rgba(255, 130, 37, 0.8);
