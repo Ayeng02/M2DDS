@@ -173,8 +173,7 @@ $conn->close();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/2.1.5/css/dataTables.bootstrap5.css">
 
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="../css/ordr_css.css">
+
 
     <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
@@ -191,8 +190,148 @@ $conn->close();
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/3.0.3/js/responsive.bootstrap5.js">
 
     <link rel="icon" href="../img/logo.ico" type="image/x-icon">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../css/ordr_css.css">
+    <style>
+        
+.accBtn,
+.shipBtn,
+.trackBtn{
+    background-color: #FF8225; 
+    color: white;
+    transition: background-color 0.3s ease-in-out;
+    border: none;
+}
+
+.printAllBtn{
+    background-color: #ec4242; 
+    color: white;
+    transition:background-color 0.3s ease-in-out;
+    border: none;
+}
+
+.printAllBtn:hover{
+    background-color: #c12e2e; 
+    color: white;
+
+}
+
+.accBtn:hover,
+.shipBtn:hover,
+.trackBtn:hover{
+    background-color: #c12e2e; 
+    color: white;
+}
 
 
+
+.form-control:focus {
+    border-color: #FF8225;
+    box-shadow: 0 0 5px rgba(255, 130, 37, 0.8);
+}
+
+/* For Webkit browsers */
+::-webkit-scrollbar {
+width: 12px; /* Width of the scrollbar */
+}
+
+::-webkit-scrollbar-track {
+background: #f1f1f1; /* Color of the track */
+}
+
+::-webkit-scrollbar-thumb {
+background: linear-gradient(180deg, #ff83259b, #a72828);
+border-radius: 10px; /* Rounded corners of the scrollbar thumb */
+}
+
+::-webkit-scrollbar-thumb:hover {
+background: linear-gradient(380deg, #a72828, #343a40);
+}
+
+ /* Custom scrollbar for the table */
+ .table-responsive::-webkit-scrollbar {
+    width: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background-color: #FF8225;
+    border-radius: 4px;
+
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+}
+
+label{
+    margin-bottom: 10px;
+}
+
+/* Custom CSS to make the tooltip small */
+.tooltip-inner {
+    font-size: 0.8rem; /* Adjust font size for smaller tooltip */
+    padding: 0.5rem 0.5rem; /* Adjust padding for smaller tooltip */
+    background-color: #414141;
+    color: #fff; 
+  }
+
+  .tooltip-arrow {
+    display: none; 
+  }
+
+.modal-content {
+    background-color: #fff;
+    color: #333;
+}
+.modal-header {
+    background-color: #FF8225; /* Theme color */
+    border-bottom: none;
+}
+.modal-footer {
+    border-top: none;
+}
+.btn.confirm-btn {
+    background-color: #a72828; /* Theme color */
+    border-color: #a72828;
+    color: #fff;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 0.25rem;
+}
+.btn-primary{
+    background-color: #a72828; 
+}
+.btn.confirm-btn:hover,
+.btn-primary {
+    background-color: #8a1b1b; /* Darker shade for hover effect */
+    border-color: #8a1b1b;
+}
+.btn.cancel-btn {
+    background-color: #fff;
+    color: #FF8225;
+    border: 1px solid #FF8225;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 10px;
+}
+.btn.cancel-btn:hover {
+    background-color: #FF8225;
+    color: #fff;
+}
+.list_orders{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-title{
+    color: white;
+}
+
+.profile-container img{
+    image-rendering: crisp-edges;
+}
+    </style>
 
 </head>
 
@@ -411,14 +550,14 @@ $conn->close();
 
     <!-- Ship button -->
     <div class="col-12 col-sm-auto">
-        <button class="btn shipBtn w-100 w-sm-auto" id="shipBtn" data-bs-toggle="tooltip" data-bs-placement="right" title="Click to ship selected orders" style="color: #ffffff;">
+        <button class="btn shipBtn w-100 w-sm-auto" id="shipBtn" data-bs-toggle="tooltip" data-bs-placement="right" title="Click to ship selected orders" style="color: #ffffff; background:#FF8225;">
             <i class="fa fa-truck" style="color: #ffffff;"></i> Ship Order(s)
         </button>
     </div>
 
     <!-- Print button -->
     <div class="col-12 col-sm-auto">
-        <button class="btn printAllBtn w-100 w-sm-auto" id="printAllBtn" data-bs-toggle="tooltip" data-bs-placement="right" title="Print orders" style="color: #ffffff;">
+        <button class="btn printAllBtn w-100 w-sm-auto" id="printAllBtn" data-bs-toggle="tooltip" data-bs-placement="right" title="Print orders" style="color: #ffffff; background:#a72828;">
             <i class="fas fa-print" style="color: #ffffff;"></i> Print Order(s)
         </button>
     </div>
