@@ -58,11 +58,11 @@ try {
             foreach ($productDetails as $product) {
                 $prod_code = $product['code'];
                 $order_qty = $product['quantity'];
-                $order_total = ($product['price'] * $order_qty) + $brgy_df; // Add Brgy_df to order total
+                $order_total = ($product['price'] * $order_qty); // Add Brgy_df to order total
                 $order_change = 0;
 
                 // Lock the row for update
-                $stmt = $conn->prepare("SELECT prod_qoh FROM product_tbl WHERE prod_code = ? FOR UPDATE");
+                $stmt = $conn->prepare("SELECT prod_qoh FROM product_tbl WHERE prod_code = ? FOR UPDATE"); 
                 $stmt->bind_param('s', $prod_code);
                 $stmt->execute();
                 $stmt->bind_result($prod_qoh);

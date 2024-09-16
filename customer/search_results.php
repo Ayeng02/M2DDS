@@ -2,24 +2,55 @@
 include '../includes/db_connect.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-
     $search_query = "%" . $_GET['v'] . "%";
+    $search_term = $_GET['v'];
 
-    $sql = "
-        SELECT p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_img, p.prod_discount, p.prod_qoh,
-               IFNULL(AVG(r.rev_star), 0) as avg_rating, COUNT(r.rev_star) as review_count
-        FROM product_tbl p
-        LEFT JOIN ratings_tbl r ON p.prod_code = r.prod_code
-        WHERE p.prod_name LIKE ? OR p.prod_desc LIKE ?
-        GROUP BY p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_img, p.prod_discount
-    ";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ss", $search_query, $search_query);
+    // Prepare a statement to check if the search term is a valid category name
+    $category_check_sql = "SELECT category_name FROM category_tbl WHERE category_name = ?";
+    $category_check_stmt = $conn->prepare($category_check_sql);
+    $category_check_stmt->bind_param("s", $search_term);
+    $category_check_stmt->execute();
+    $category_check_result = $category_check_stmt->get_result();
+
+    // Check if the search term is a valid category name
+    if ($category_check_result->num_rows > 0) {
+        // If it's a category name, query products associated with that category
+        $sql = "
+            SELECT p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_img, p.prod_discount, p.prod_qoh,
+                   IFNULL(AVG(r.rev_star), 0) as avg_rating, COUNT(r.rev_star) as review_count, c.category_name
+            FROM product_tbl p
+            LEFT JOIN ratings_tbl r ON p.prod_code = r.prod_code
+            JOIN category_tbl c ON p.category_code = c.category_code
+            WHERE c.category_name = ?
+            GROUP BY p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_img, p.prod_discount, c.category_name
+        ";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("s", $search_term);
+    } else {
+        // If not a category name, query products based on name, description, or category name
+        $sql = "
+            SELECT p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_img, p.prod_discount, p.prod_qoh,
+                   IFNULL(AVG(r.rev_star), 0) as avg_rating, COUNT(r.rev_star) as review_count, c.category_name
+            FROM product_tbl p
+            LEFT JOIN ratings_tbl r ON p.prod_code = r.prod_code
+            JOIN category_tbl c ON p.category_code = c.category_code
+            WHERE p.prod_name LIKE ? OR p.prod_desc LIKE ? OR c.category_name LIKE ?
+            GROUP BY p.prod_code, p.prod_name, p.prod_desc, p.prod_price, p.prod_img, p.prod_discount, c.category_name
+        ";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("sss", $search_query, $search_query, $search_query);
+    }
+
     $stmt->execute();
     $result = $stmt->get_result();
     $products = $result->fetch_all(MYSQLI_ASSOC);
-}
 
+    $stmt->close();
+    $category_check_stmt->close();
+    $conn->close();
+}
 ?>
 
 <!DOCTYPE html>
@@ -155,10 +186,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                                 <h5 class="card-title"><?php echo $prod_name; ?></h5>
                                 <p class="card-text">Price:
                                     <?php if ($prod_discount > 0) { ?>
-                                        <span style="text-decoration: line-through;">$<?php echo number_format($prod_price, 2); ?></span>
-                                        <span style="color: #FF8225; font-weight: bold;">$<?php echo number_format($prod_discount, 2); ?></span>
+                                        <span style="text-decoration: line-through;">₱<?php echo number_format($prod_price, 2); ?></span>
+                                        <span style="color: #FF8225; font-weight: bold;">₱<?php echo number_format($prod_discount, 2); ?></span>
                                     <?php } else { ?>
-                                        $<?php echo number_format($prod_price, 2); ?>
+                                        ₱<?php echo number_format($prod_price, 2); ?>
                                     <?php } ?>
                                 </p>
 

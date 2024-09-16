@@ -168,7 +168,17 @@
             <li class="nav-item tabs-section" role="presentation">
                 <button class="nav-link" id="pills-delivered-tab" data-bs-toggle="pill" data-bs-target="#pills-delivered" type="button" role="tab" aria-controls="pills-delivered" aria-selected="false">Delivered</button>
             </li>
+            <li class="nav-item tabs-section" role="presentation">
+                <button class="nav-link" id="pills-failed-tab" data-bs-toggle="pill" data-bs-target="#pills-failed" type="button" role="tab" aria-controls="pills-failed" aria-selected="false">Failed</button>
+            </li>
         </ul>
+
+        <!-- Date Picker -->
+        <!-- Date Picker -->
+        <div class="input-group mb-4">
+            <input type="text" id="orderDate" class="form-control" placeholder="Select a date">
+            <button class="btn btn-outline-secondary" type="button" onclick="loadOrders($('.nav-link.active').attr('data-bs-target').replace('#pills-', ''), 1, $('#orderSearch').val(), $('#orderDate').val())">Filter by Date</button>
+        </div>
 
         <!-- Search Bar -->
         <div class="input-group mb-4">
@@ -237,6 +247,16 @@
                     <!-- Pagination links will be loaded here via AJAX -->
                 </nav>
             </div>
+
+            <!-- Failed Orders -->
+            <div class="tab-pane fade" id="pills-failed" role="tabpanel" aria-labelledby="pills-failed-tab">
+                <div class="row" id="failed-orders">
+                    <!-- Orders will be loaded here via AJAX -->
+                </div>
+                <nav id="failed-orders-pagination" class="pagination">
+                    <!-- Pagination links will be loaded here via AJAX -->
+                </nav>
+            </div>
         </div>
     </div>
 
@@ -249,6 +269,14 @@
     <script src="../js/notif.js"></script>
     <script>
         $(document).ready(function() {
+
+             // Initialize the date picker
+             $('#orderDate').datepicker({
+                dateFormat: 'yy-mm-dd',
+                changeMonth: true,
+                changeYear: true
+            });
+
             // Initial load of orders
             loadOrders('all');
 
@@ -269,14 +297,15 @@
             });
         });
 
-        function loadOrders(status, page = 1, search = '') {
+         function loadOrders(status, page = 1, search = '', date = '') {
             $.ajax({
                 url: 'fetch_orders.php',
                 type: 'GET',
                 data: {
                     status: status,
                     page: page,
-                    search: search
+                    search: search,
+                    date: date
                 },
                 success: function(response) {
                     let data = JSON.parse(response);
@@ -299,28 +328,72 @@
         }
 
         function cancelOrder(orderId) {
-            if (confirm('Ar     e you sure you want to cancel this order?')) {
-                $.ajax({
-                    url: 'cancel_order.php',
-                    type: 'POST',
-                    data: {
-                        order_id: orderId
-                    },
-                    dataType: 'json',
-                    success: function(response) {
-                        if (response.success) {
-                            // Update the order status on the page without refreshing
-                            $('#order-card-' + orderId).find('.order-status').text('Canceled');
-                            $('#order-card-' + orderId).find('.cancel-btn').remove(); // Remove the cancel button
-                        } else {
-                            alert('Failed to cancel the order: ' + response.error);
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes!',
+                cancelButtonText: 'No'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading spinner
+                    Swal.fire({
+                        title: 'Cancelling...',
+                        text: 'Please wait while we process your request.',
+                        icon: 'info',
+                        showConfirmButton: false, // No OK button
+                        allowOutsideClick: false, // Prevent closing by clicking outside
+                        didOpen: () => {
+                            Swal.showLoading(); // Show the loading spinner
                         }
-                    },
-                    error: function() {
-                        alert('An error occurred while processing your request.');
-                    }
-                });
-            }
+                    });
+
+                    $.ajax({
+                        url: 'cancel_order.php',
+                        type: 'POST',
+                        data: {
+                            order_id: orderId
+                        },
+                        dataType: 'json',
+                        success: function(response) {
+                            Swal.close(); // Close the loading spinner
+                            if (response.success) {
+                                Swal.fire({
+                                    title: 'Cancelled!',
+                                    text: 'Your order has been cancelled.',
+                                    icon: 'success',
+                                    showConfirmButton: false, // No OK button
+                                    timer: 2000 // Auto-close after 2 seconds
+                                });
+                                // Update the order status on the page without refreshing
+                                $('#order-card-' + orderId).find('.order-status').text('Canceled');
+                                $('#order-card-' + orderId).find('.cancel-btn').remove(); // Remove the cancel button
+                            } else {
+                                Swal.fire({
+                                    title: 'Failed!',
+                                    text: 'Failed to cancel the order: ' + response.error,
+                                    icon: 'error',
+                                    showConfirmButton: false, // No OK button
+                                    timer: 3000 // Auto-close after 3 seconds
+                                });
+                            }
+                        },
+                        error: function() {
+                            Swal.close(); // Close the loading spinner
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'An error occurred while processing your request.',
+                                icon: 'error',
+                                showConfirmButton: false, // No OK button
+                                timer: 3000 // Auto-close after 3 seconds
+                            });
+                        }
+                    });
+                }
+            });
         }
     </script>
 </body>

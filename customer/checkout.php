@@ -178,7 +178,7 @@ $stmt->close();
                     <input type="hidden" id="prod-codes" name="prod-codes" value="<?php echo implode(',', array_column($productDetails, 'code')); ?>">
                     <div class="form-group">
                         <label for="full-name" class="required">Full Name</label>
-                        <input type="text" class="form-control" id="full-name" name="full-name" placeholder="Enter Full Name" value="<?php echo htmlspecialchars($customer['f_name'] . ' ' . $customer['l_name']); ?>"required>
+                        <input type="text" class="form-control" id="full-name" name="full-name"  placeholder="Enter Full Name" value="<?php echo htmlspecialchars($customer['f_name'] . ' ' . $customer['l_name']); ?>"required oninput="validateName(this)">
                     </div>
                     <div class="form-group">
                         <label for="phone-number" class="required">Phone Number</label>
@@ -364,7 +364,18 @@ $(document).ready(function() {
 
     // Update the total price on page load in case a barangay is pre-selected
     updateTotalPrice();
+
 });
+
+function validateName(input) {
+        // Remove numbers and keep letters only
+        input.value = input.value.replace(/[^a-zA-Z\s]/g, '');
+
+        // Capitalize the first letter of each word
+        input.value = input.value.replace(/\b\w/g, function(char) {
+            return char.toUpperCase();
+        });
+    }
 </script>
 
 </script>

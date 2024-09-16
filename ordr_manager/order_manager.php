@@ -2,20 +2,6 @@
 session_start();
 include '../includes/db_connect.php';
 
-// Handle logout request
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['logout'])) {
-    // Unset all session variables
-    $_SESSION = array();
-
-    // Destroy the session
-    if (session_id()) {
-        session_destroy();
-    }
-
-    // Respond with a status to inform the JS the session has been destroyed
-    exit;
-}
-
 // Redirect to landing page if already logged in
 if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isset($_SESSION['AdminLogExist']) && $_SESSION['AdminLogExist'] === true) {
     if (isset($_SESSION['emp_role'])) {
@@ -31,6 +17,8 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                 header("Location: ../admin/admin_interface.php");
                 exit;
             default:
+                // Handle unknown roles or add default redirection if needed
+                break;
         }
     }
 } else {
@@ -42,13 +30,31 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
 $pendingQuery = "
     SELECT o.order_id, o.prod_code, o.order_fullname, o.order_phonenum, 
            CONCAT(o.order_purok, ', ', o.order_barangay, ', ', o.order_province) AS order_address, 
-           o.order_qty, o.order_total, o.order_date, p.prod_name 
+           o.order_qty, o.order_total, o.order_date, p.prod_name, b.Brgy_df, p.prod_price, p.prod_discount
     FROM order_tbl o
-    JOIN product_tbl p ON o.prod_code = p.prod_code 
-    WHERE status_code = 1 AND DATE(o.order_date) = CURDATE()
-    ORDER BY order_date DESC";
+    JOIN product_tbl p ON o.prod_code = p.prod_code
+    JOIN brgy_tbl b ON o.order_barangay = b.Brgy_name
+    WHERE o.status_code = 1 AND DATE(o.order_date) = CURDATE()
+    ORDER BY o.order_date DESC";
 
 $pendingResult = $conn->query($pendingQuery);
+
+// Query to fetch recent "Processing" orders
+$processingQuery = "
+    SELECT o.order_id, o.prod_code, o.order_fullname, o.order_phonenum, 
+           CONCAT(o.order_purok, ', ', o.order_barangay, ', ', o.order_province) AS order_address, 
+           o.order_qty, o.order_total, o.order_date, p.prod_name, b.Brgy_df, p.prod_price, p.prod_discount
+    FROM order_tbl o
+    JOIN product_tbl p ON o.prod_code = p.prod_code
+    JOIN brgy_tbl b ON o.order_barangay = b.Brgy_name
+    WHERE o.status_code = 2 AND DATE(o.order_date) = CURDATE()
+    ORDER BY o.order_date DESC";
+
+$processingResult = $conn->query($processingQuery);
+
+// Fetch distinct brgy_route from brgy_tbl
+$routeSql = "SELECT DISTINCT brgy_route FROM brgy_tbl ORDER BY brgy_route ASC";
+$routeResult = $conn->query($routeSql);
 
 // Initialize an array to store the counts for each status
 $statusCounts = [
@@ -70,16 +76,81 @@ $statusQuery = "
 $statusResult = $conn->query($statusQuery);
 
 // Check if $statusResult is valid before accessing num_rows
-if ($statusResult && $statusResult->num_rows > 0) {
+if ($statusResult) {
     while ($row = $statusResult->fetch_assoc()) {
-        $statusCounts[$row['status_name']] = $row['total_orders'];
+        // Update the status counts only if the status name exists in the array
+        if (array_key_exists($row['status_name'], $statusCounts)) {
+            $statusCounts[$row['status_name']] = $row['total_orders'];
+        }
     }
 } else {
-
+    // Handle query failure
+    echo "Error: " . $conn->error;
 }
 
-// Now you have both $pendingResult for the pending orders and $statusCounts for status totals
+// Query to get delivery personnel, total assigned orders, and progress status within the day
+$transactQuery = "SELECT shipper_id, emp_tbl.emp_img, CONCAT(emp_tbl.emp_fname, ' ', emp_tbl.emp_lname) AS full_name,
+                  COUNT(DISTINCT order_id) AS total_orders,
+                  SUM(CASE WHEN transact_status = 'Success' THEN 1 ELSE 0 END) AS completed_orders,
+                  SUM(CASE WHEN transact_status = 'Ongoing' THEN 1 ELSE 0 END) AS ongoing_orders,
+                  SUM(CASE WHEN transact_status = 'Failed' THEN 1 ELSE 0 END) AS failed_orders,
+                  DATE_FORMAT(transact_date, '%H:%i') AS transact_time
+                  FROM delivery_transactbl
+                  INNER JOIN emp_tbl ON delivery_transactbl.shipper_id = emp_tbl.emp_id
+                  WHERE DATE(transact_date) = CURDATE()
+                  GROUP BY shipper_id, transact_time
+                  ORDER BY transact_time DESC";
+
+$transactResult = mysqli_query($conn, $transactQuery);
+
+$ongoingOrders = [];    // Orders that are still ongoing or in progress
+$completedOrders = [];  // Orders that are fully completed
+$failedOrders = [];     // Orders that failed delivery
+
+if (mysqli_num_rows($transactResult) > 0) {
+    while ($row = mysqli_fetch_assoc($transactResult)) {
+        // Calculate progress percentage
+        $progress = ($row['total_orders'] > 0) ? round(($row['completed_orders'] / $row['total_orders']) * 100) : 0;
+
+        // Separate ongoing, completed, and failed orders
+        if ($row['completed_orders'] == $row['total_orders']) {
+            $completedOrders[] = [
+                'shipper_id' => $row['shipper_id'],
+                'full_name' => $row['full_name'],
+                'total_orders' => $row['total_orders'],
+                'completed_orders' => $row['completed_orders'],
+                'progress' => $progress,
+                'shipper_img' => $row['emp_img'],
+            ];
+        } elseif ($row['failed_orders'] > 0) {
+            // Failed orders
+            $failedOrders[] = [
+                'shipper_id' => $row['shipper_id'],
+                'full_name' => $row['full_name'],
+                'total_orders' => $row['total_orders'],
+                'failed_orders' => $row['failed_orders'],
+                'progress' => 0, // Failed orders don't need a progress bar, they are considered 0% completed
+                'shipper_img' => $row['emp_img'],
+            ];
+        } else {
+            // Ongoing orders
+            if ($row['ongoing_orders'] > 0) {
+                $ongoingOrders[] = [
+                    'shipper_id' => $row['shipper_id'],
+                    'full_name' => $row['full_name'],
+                    'total_orders' => $row['total_orders'],
+                    'completed_orders' => $row['completed_orders'],
+                    'progress' => $progress,
+                    'shipper_img' => $row['emp_img'],
+                ];
+            }
+        }
+    }
+}
+// Close the database connection
+$conn->close();
 ?>
+
 
 
 <!DOCTYPE html>
@@ -89,30 +160,38 @@ if ($statusResult && $statusResult->num_rows > 0) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Manager</title>
-       <!-- Bootstrap CSS -->
-       <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    
+
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.5/css/dataTables.bootstrap5.css">
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="../css/ordr_css.css">
-    
+
     <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
-    
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    
 
-    <!-- DataTables JS -->
-    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-    
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/3.0.3/js/responsive.bootstrap5.js">
+
+    <link rel="icon" href="../img/logo.ico" type="image/x-icon">
+
 
 
 </head>
@@ -184,100 +263,319 @@ if ($statusResult && $statusResult->num_rows > 0) {
         </div>
 
         <hr>
-<!-- Status Cards Section -->
-<div class="container-fluid">
-    <h2 class="my-4">Total Order Statuses</h2>
-    <div class="status-container">
-        <!-- Pending -->
-        <div class="status-card bg-warning">
-            <i class="fas fa-clock"></i>
-            <div class="status-text">Pending</div>
-            <div class="status-number"><?php echo $statusCounts['Pending']; ?></div>
+        <!-- Status Cards Section -->
+        <div class="container-fluid">
+            <h2 class="my-4">Today Total Order Statuses</h2>
+            <div class="status-container">
+                <!-- Pending -->
+                <div class="status-card bg-warning">
+                    <i class="fas fa-clock"></i>
+                    <div class="status-text">Pending</div>
+                    <div class="status-number"><?php echo $statusCounts['Pending']; ?></div>
+                </div>
+
+                <!-- Processing -->
+                <div class="status-card bg-primary">
+                    <i class="fas fa-cogs"></i>
+                    <div class="status-text">Processing</div>
+                    <div class="status-number"><?php echo $statusCounts['Processing']; ?></div>
+                </div>
+
+                <!-- Shipped -->
+                <div class="status-card bg-success">
+                    <i class="fas fa-truck"></i>
+                    <div class="status-text">Shipped</div>
+                    <div class="status-number"><?php echo $statusCounts['Shipped']; ?></div>
+                </div>
+
+                <!-- Delivered -->
+                <div class="status-card bg-info">
+                    <i class="fas fa-check-circle"></i>
+                    <div class="status-text">Delivered</div>
+                    <div class="status-number"><?php echo $statusCounts['Delivered']; ?></div>
+                </div>
+
+                <!-- Canceled -->
+                <div class="status-card bg-danger">
+                    <i class="fas fa-times-circle"></i>
+                    <div class="status-text">Canceled</div>
+                    <div class="status-number"><?php echo $statusCounts['Canceled']; ?></div>
+                </div>
+
+
+            </div>
         </div>
-        
-        <!-- Processing -->
-        <div class="status-card bg-primary">
-            <i class="fas fa-cogs"></i>
-            <div class="status-text">Processing</div>
-            <div class="status-number"><?php echo $statusCounts['Processing']; ?></div>
-        </div>
-        
-        <!-- Shipped -->
-        <div class="status-card bg-success">
-            <i class="fas fa-truck"></i>
-            <div class="status-text">Shipped</div>
-            <div class="status-number"><?php echo $statusCounts['Shipped']; ?></div>
-        </div>
-        
-        <!-- Delivered -->
-        <div class="status-card bg-info">
-            <i class="fas fa-check-circle"></i>
-            <div class="status-text">Delivered</div>
-            <div class="status-number"><?php echo $statusCounts['Delivered']; ?></div>
-        </div>
-        
-        <!-- Canceled -->
-        <div class="status-card bg-danger">
-            <i class="fas fa-times-circle"></i>
-            <div class="status-text">Canceled</div>
-            <div class="status-number"><?php echo $statusCounts['Canceled']; ?></div>
-        </div>
-    </div>
-</div>
 
 
 
 
         <hr>
+
+        <!-- Recent Orders -->
         <div class="container-fluid mt-4">
-    <h2 class="mb-4">Recent Pending Orders</h2>
-    <div class="d-flex justify-content-start align-items-center mb-3">
-        <input type="number" id="processingNumber" placeholder="Enter Number" class="form-control me-2 w-auto" />
-        <button class="btn accBtn" id="acceptBtn">Accept Order(s)</button>
-    </div>
-    <div class="table-responsive overflow-auto">
-        <table class="table table-bordered table-striped" id="ordersTable">
-            <thead>
-                <tr>
-                    <th><input type="checkbox" id="checkAll"></th>
-                    <th style="background-color: #ce3434bd; color: white;">Order ID</th>
-                    <th style="background-color: #ce3434bd; color: white;">Product</th>
-                    <th style="background-color: #ce3434bd; color: white;">Full Name</th>
-                    <th style="background-color: #ce3434bd; color: white;">Phone Number</th>
-                    <th style="background-color: #ce3434bd; color: white;">Address</th>
-                    <th style="background-color: #ce3434bd; color: white;">Quantity</th>
-                    <th style="background-color: #ce3434bd; color: white;">Total</th>
-                    <th style="background-color: #ce3434bd; color: white;">Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- PHP to populate table rows -->
-                <?php if ($pendingResult->num_rows > 0): ?>
-                    <?php while ($row = $pendingResult->fetch_assoc()): ?>
-                        <tr>
-                            <td><input type="checkbox" class="orderCheckbox" value="<?php echo htmlspecialchars($row['order_id']); ?>"></td>
-                            <td><?php echo htmlspecialchars($row['order_id']); ?></td>
-                            <td><?php echo htmlspecialchars($row['prod_name']); ?></td>
-                            <td><?php echo htmlspecialchars($row['order_fullname']); ?></td>
-                            <td><?php echo htmlspecialchars($row['order_phonenum']); ?></td>
-                            <td><?php echo htmlspecialchars($row['order_address']); ?></td>
-                            <td><?php echo htmlspecialchars($row['order_qty']); ?></td>
-                            <td><?php echo htmlspecialchars(number_format($row['order_total'], 2)); ?></td>
-                            <td><?php echo htmlspecialchars(date('F j, Y g:i A', strtotime($row['order_date']))); ?></td>
-                        </tr>
-                    <?php endwhile; ?>
-                <?php else: ?>
-                
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
-</div>
+            <h2 class="mb-4">Recent Pending Orders</h2>
 
+            <!-- Checkbox, Input, and Button Section -->
+            <div class="row g-2 mb-3 align-items-center">
+                <div class="col-12 col-sm-auto">
+                    <input type="number" id="processingNumber" placeholder="Enter Number" class="form-control" data-bs-toggle="tooltip" data-bs-placement="right" title="Enter # of accepting orders" />
+                </div>
+                <div class="col-12 col-sm-auto">
+                    <button class="btn accBtn w-100 w-sm-auto" id="acceptBtn" data-bs-toggle="tooltip" data-bs-placement="right" title="Click to accept selected orders" style="color: #ffffff;">
+                        <i class="fa fa-circle-check"></i> Accept Order(s)
+                    </button>
+                </div>
+            </div>
+
+
+            <!-- Scrollable Table Wrapper -->
+            <div class="table-responsive overflow-auto">
+                <!-- Table -->
+                <table class="table table-striped" id="ordersTable">
+                    <thead>
+                        <tr>
+                            <th style="background-color: #ce3434bd; color: white;"><input type="checkbox" id="checkAll" data-bs-toggle="tooltip" data-bs-placement="right" title="Check All"></th>
+                            <th style="background-color: #ce3434bd; color: white;">Order ID</th>
+                            <th style="background-color: #ce3434bd; color: white;">Product</th>
+                            <th style="background-color: #ce3434bd; color: white;">Full Name</th>
+                            <th style="background-color: #ce3434bd; color: white;">Phone Number</th>
+                            <th style="background-color: #ce3434bd; color: white;">Address</th>
+                            <th style="background-color: #ce3434bd; color: white;">Unit Price (kg)</th>
+                            <th style="background-color: #ce3434bd; color: white;">Delivery Fee</th>
+                            <th style="background-color: #ce3434bd; color: white;">Quantity</th>
+                            <th style="background-color: #ce3434bd; color: white;">Total</th>
+                            <th style="background-color: #ce3434bd; color: white;">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if ($pendingResult->num_rows > 0): ?>
+                            <?php while ($row = $pendingResult->fetch_assoc()): ?>
+                                <tr>
+                                    <td><input type="checkbox" class="orderCheckbox" value="<?php echo $row['order_id']; ?>" data-bs-toggle="tooltip" data-bs-placement="right" title="Check to select Order"></td>
+                                    <td><?php echo htmlspecialchars($row['order_id']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['prod_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['order_fullname']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['order_phonenum']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['order_address']); ?></td>
+                                    <?php if ($row['prod_discount'] > 0) { ?>
+                                        <td><?php echo htmlspecialchars($row['prod_discount']); ?></td>
+                                    <?php } else { ?>
+                                        <td><?php echo htmlspecialchars($row['prod_price']); ?></td>
+                                    <?php } ?>
+                                    <td><?php echo htmlspecialchars($row['brgy_df']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['order_qty']); ?></td>
+                                    <td><?php echo htmlspecialchars(number_format($row['order_total'], 2)); ?></td>
+                                    <td><?php echo htmlspecialchars(date('F j, Y g:i A', strtotime($row['order_date']))); ?></td>
+
+                                </tr>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
 
 
         <hr>
+        <!--Processing Orders-->
+        <div class="container-fluid mt-4">
+            <h2 class="mb-4">Processing Orders</h2>
+
+            <!-- Checkbox, Input, and Button Section -->
+            <div class="row g-2 mb-3 align-items-center">
+    <!-- Dropdown filter -->
+    <div class="col-12 col-sm-auto">
+        <select id="orderFilter" class="form-select" onchange="applyFilter()" data-bs-toggle="tooltip" data-bs-placement="right" title="Filter orders">
+            <option value="default">Filter by</option>
+            <option value="az">A-Z</option>
+            <option value="za">Z-A</option>
+
+            <!-- Populate brgy_route dynamically -->
+            <?php if ($routeResult->num_rows > 0): ?>
+                <?php while ($row = $routeResult->fetch_assoc()): ?>
+                    <option value="<?php echo htmlspecialchars($row['brgy_route']); ?>">
+                        <?php echo htmlspecialchars($row['brgy_route']); ?>
+                    </option>
+                <?php endwhile; ?>
+            <?php endif; ?>
+        </select>
+    </div>
+
+    <!-- Number input -->
+    <div class="col-12 col-sm-auto">
+        <input type="number" id="processOrderNumber" placeholder="Enter Number" class="form-control" data-bs-toggle="tooltip" data-bs-placement="right" title="Enter # to ship orders" />
+    </div>
+
+    <!-- Ship button -->
+    <div class="col-12 col-sm-auto">
+        <button class="btn shipBtn w-100 w-sm-auto" id="shipBtn" data-bs-toggle="tooltip" data-bs-placement="right" title="Click to ship selected orders" style="color: #ffffff;">
+            <i class="fa fa-truck" style="color: #ffffff;"></i> Ship Order(s)
+        </button>
+    </div>
+
+    <!-- Print button -->
+    <div class="col-12 col-sm-auto">
+        <button class="btn printAllBtn w-100 w-sm-auto" id="printAllBtn" data-bs-toggle="tooltip" data-bs-placement="right" title="Print orders" style="color: #ffffff;">
+            <i class="fas fa-print" style="color: #ffffff;"></i> Print Order(s)
+        </button>
+    </div>
+</div>
+
+
+            <div class="table-responsive overflow-auto">
+                <!--Table-->
+                <table class="table table-striped" id="processingTable">
+                    <thead>
+                        <tr>
+                            <th style="background-color: #ce3434bd; color: white;"><input type="checkbox" id="processingCheck" data-bs-toggle="tooltip" data-bs-placement="right" title="Check All"></th>
+                            <th style="background-color: #ce3434bd; color: white;">Order ID</th>
+                            <th style="background-color: #ce3434bd; color: white;">Product</th>
+                            <th style="background-color: #ce3434bd; color: white;">Full Name</th>
+                            <th style="background-color: #ce3434bd; color: white;">Phone Number</th>
+                            <th style="background-color: #ce3434bd; color: white;">Address</th>
+                            <th style="background-color: #ce3434bd; color: white;">Unit Price (kg)</th>
+                            <th style="background-color: #ce3434bd; color: white;">Delivery Fee</th>
+                            <th style="background-color: #ce3434bd; color: white;">Quantity</th>
+                            <th style="background-color: #ce3434bd; color: white;">Total</th>
+                            <th style="background-color: #ce3434bd; color: white;">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if ($processingResult->num_rows > 0): ?>
+                            <?php while ($row = $processingResult->fetch_assoc()): ?>
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="processingCheckbox" value="<?php echo htmlspecialchars($row['order_id']); ?>" data-bs-toggle="tooltip" data-bs-placement="right" title="Check to select Order">
+                                    </td>
+                                    <td><?php echo htmlspecialchars($row['order_id']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['prod_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['order_fullname']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['order_phonenum']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['order_address']); ?></td>
+                                    <?php if ($row['prod_discount'] > 0) { ?>
+                                        <td><?php echo htmlspecialchars($row['prod_discount']); ?></td>
+                                    <?php } else { ?>
+                                        <td><?php echo htmlspecialchars($row['prod_price']); ?></td>
+                                    <?php } ?>
+                                    <td><?php echo htmlspecialchars($row['brgy_df']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['order_qty']); ?></td>
+                                    <td><?php echo htmlspecialchars(number_format($row['order_total'], 2)); ?></td>
+                                    <td><?php echo htmlspecialchars(date('F j, Y g:i A', strtotime($row['order_date']))); ?></td>
+                                </tr>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+
+                        <?php endif; ?>
+
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+        <hr>
+        <!-- Order Delivery Tracking -->
+        <div class="container-fluid mt-4">
+            <h2 class="mb-4 text-center">Order Delivery Tracking</h2>
+
+            <!-- Ongoing Orders Section -->
+            <h3 class="mb-4 text-center">Ongoing Orders</h3>
+            <?php if (!empty($ongoingOrders)): ?>
+                <?php foreach ($ongoingOrders as $person): ?>
+                    <div class="card mb-3 shadow-lg" style="background: url('../img/bg.png') no-repeat center; background-size: cover; object-fit:cover;">
+                        <div class="row g-0">
+                            <div class="col-md-4 d-flex justify-content-center align-items-center p-4">
+                                <div class="profile-container">
+                                    <img src="../<?php echo $person['shipper_img']; ?>" class="rounded-circle img-fluid" alt="Employee Profile" style="width: 150px; height: 150px;">
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <h5 class="card-title">Total Orders: <?php echo $person['total_orders']; ?></h5>
+                                    <p class="card-text">Delivery Personnel: <strong><?php echo $person['full_name']; ?></strong></p>
+                                    <p class="card-text">Current Status:
+                                        <span class="badge" style="background: #a72828;">Ongoing Delivery</span>
+                                    </p>
+                                    <div class="progress mt-3" style="height: 20px;">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: <?php echo $person['progress']; ?>%;" aria-valuenow="<?php echo $person['progress']; ?>" aria-valuemin="0" aria-valuemax="100">
+                                            <?php echo $person['progress']; ?>% Completed
+                                        </div>
+                                    </div>
+                                    <button type="button" class="trackBtn btn mt-3" data-shipper-id="<?php echo $person['shipper_id']; ?>" style="color: white;">Track Delivery</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p class="text-center" style="opacity: 0.65;"> <i class="fas fa-box" style="font-size: 50px; color: #495057; opacity: 0.65;"></i> <br> No ongoing orders found for today.</p>
+            <?php endif; ?>
+
+            <!-- Completed Orders Section -->
+            <h3 class="mb-4 text-center" style="margin-top: 50px;">Completed Orders</h3>
+            <?php if (!empty($completedOrders)): ?>
+                <?php foreach ($completedOrders as $person): ?>
+                    <div class="card mb-3 shadow-lg" style="background: url('../img/bg.png') no-repeat center; background-size: cover; object-fit:cover;">
+                        <div class="row g-0">
+                            <div class="col-md-4 d-flex justify-content-center align-items-center p-4">
+                                <div class="profile-container">
+                                    <img src="../<?php echo $person['shipper_img']; ?>" class="rounded-circle img-fluid" alt="Employee Profile" style="width: 150px; height: 150px;">
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <h5 class="card-title">Total Orders: <?php echo $person['total_orders']; ?></h5>
+                                    <p class="card-text">Delivery Personnel: <strong><?php echo $person['full_name']; ?></strong></p>
+                                    <p class="card-text">Current Status:
+                                        <span class="badge" style="background: #a72828;">All Delivered</span>
+                                    </p>
+                                    <div class="progress mt-3" style="height: 20px;">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                                            100% Completed
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p class="text-center" style="opacity: 0.65;"> <i class="fas fa-box" style="font-size: 50px; color: #495057; opacity: 0.65;"></i> <br> No completed orders found for today.</p>
+            <?php endif; ?>
+
+            <!-- Failed Delivery Attempts Section -->
+            <h3 class="mb-4 text-center" style="margin-top: 50px;">Failed Delivery Attempt Orders</h3>
+            <?php if (!empty($failedOrders)): ?>
+                <?php foreach ($failedOrders as $person): ?>
+                    <div class="card mb-3 shadow-lg" style="background: url('../img/bg.png') no-repeat center; background-size: cover; object-fit:cover;">
+                        <div class="row g-0">
+                            <div class="col-md-4 d-flex justify-content-center align-items-center p-4">
+                                <div class="profile-container">
+                                    <img src="../<?php echo $person['shipper_img']; ?>" class="rounded-circle img-fluid" alt="Employee Profile" style="width: 150px; height: 150px;">
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <h5 class="card-title">Total Orders: <?php echo $person['total_orders']; ?></h5>
+                                    <p class="card-text">Delivery Personnel: <strong><?php echo $person['full_name']; ?></strong></p>
+                                    <p class="card-text">Current Status:
+                                        <span class="badge" style="background: #a72828;">Failed Delivery</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p class="text-center" style="opacity: 0.65;"> <i class="fas fa-box" style="font-size: 50px; color: #495057; opacity: 0.65;"></i> <br> No failed delivery attempt orders found for today.</p>
+            <?php endif; ?>
+        </div>
+
+        <hr>
+
+
 
         <!-- Order Cards -->
         <div class="container-fluid">
@@ -300,7 +598,8 @@ if ($statusResult && $statusResult->num_rows > 0) {
                 <!-- More cards can be added here -->
             </div>
         </div>
-    </div>
+
+    </div> <!--End of Container-->
 
     <!-- Order Details Modal -->
     <div class="modal fade" id="orderModal" tabindex="-1" aria-labelledby="orderModalLabel" aria-hidden="true">
@@ -324,167 +623,104 @@ if ($statusResult && $statusResult->num_rows > 0) {
         </div>
     </div>
 
+    <!-- Modal -->
+    <div class="modal fade" id="shipModal" tabindex="-1" aria-labelledby="shipModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="shipModalLabel">Confirm Shipping</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Emp ID (Dropdown) -->
+                    <div class="mb-3">
+                        <label for="empId" class="form-label">Employee</label>
+                        <select class="form-select" id="empId">
+                            <option selected disabled>Select Employee</option>
+                            <!-- Options will be dynamically loaded from the database -->
+                        </select>
+                    </div>
+
+                    <!-- Order IDs (readonly, based on selection) -->
+                    <div class="mb-3">
+                        <label for="orderId" class="form-label">Order IDs</label>
+                        <input type="text" class="form-control" id="orderId" readonly />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmShip" style="background-color: #a72828; border:#a72828;"> <i class="fa fa-truck" style="color: #ffffff;"></i> Ship Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Official Receipt Confirmation -->
+    <div class="modal fade" id="officialReceiptModal" tabindex="1" aria-labelledby="officialReceiptLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content border-0" style="border-radius: 0.5rem;">
+                <div class="modal-header text-white">
+                    <h5 class="modal-title" id="officialReceiptLabel">Confirm Print Order Receipt</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-center">Are you sure you want to print the Order Receipt for the selected orders?</p>
+                    <!-- Display list of orders in modal -->
+                    <ul id="selectedOrdersList" class="list-group list-group-flush">
+
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn cancel-btn" data-bs-dismiss="modal"> <i class="fa-regular fa-rectangle-xmark"></i> Cancel</button>
+                    <button type="button" class="btn confirm-btn" id="confirmPrintBtn"> <i class="fa-solid fa-check-double"></i> Confirm Print</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Track Delivery Modal -->
+    <div class="modal fade" id="trackDeliveryModal" tabindex="-1" aria-labelledby="trackDeliveryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="trackDeliveryModalLabel">Delivery Transaction Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="modalBody">
+                    <!-- Order details will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- DataTables JS -->
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/2.1.5/js/dataTables.js"></script>
+    <script src="https://cdn.datatables.net/2.1.5/js/dataTables.bootstrap5.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/order_manager.js"></script>
     <!-- Include DataTables JS -->
 
     <script>
-        function updateClock() {
-            const now = new Date();
-
-            // Format hours, minutes, and seconds
-            let hours = now.getHours();
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-
-            // Determine AM/PM
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-
-            // Convert hours from 24-hour to 12-hour format
-            hours = hours % 12;
-            hours = hours ? hours : 12; // the hour '0' should be '12'
-
-            // Format time
-            const timeString = `${String(hours).padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
-
-            // Update the clock and date elements
-            document.getElementById('clock').textContent = timeString;
-
-            // Format the date
-            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-            const day = days[now.getDay()];
-            const date = now.toLocaleDateString('en-US', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric'
-            });
-            document.getElementById('date').textContent = `${day}, ${date}`;
-        }
-
-        setInterval(updateClock, 1000); // Update the clock every second
-        updateClock(); // Initial call to display the time immediately
-
         $(document).ready(function() {
-    // Initialize DataTables with pagination and set page length to 10
-    $('#ordersTable').DataTable({
-        "pageLength": 10,
-        "ordering": true,
-        "autoWidth": false,
-        "responsive": true
-    });
-
-    // Check All Checkbox functionality
-    $('#checkAll').on('change', function() {
-        var checkboxes = $('.orderCheckbox');
-        checkboxes.prop('checked', this.checked);
-    });
-
-    // Accept Button functionality
-    $('#acceptBtn').on('click', function() {
-        const selectedOrders = [];
-        const checkboxes = $('.orderCheckbox:checked');
-        const totalOrders = $('.orderCheckbox');
-        const processingNumber = parseInt($('#processingNumber').val(), 10); // Ensure it's a number
-
-        // Validate the processingNumber
-        if (processingNumber > 0) {
-            // Automatically select the first `n` checkboxes based on input
-            for (let i = 0; i < processingNumber && i < totalOrders.length; i++) {
-                if (!totalOrders[i].checked) {
-                    totalOrders[i].checked = true; // Mark the first `n` orders
-                    selectedOrders.push(totalOrders[i].value);
-                }
-            }
-        } else {
-            // Use manually checked boxes if processingNumber is not valid
-            checkboxes.each(function() {
-                selectedOrders.push($(this).val());
+            $('.trackBtn').on('click', function() {
+                var shipperId = $(this).data('shipper-id'); // Get shipper_id from button data attribute
+                console.log("Shipper ID: " + shipperId); // Debugging line to check shipper_id
+                $.ajax({
+                    url: 'fetch_order_details.php',
+                    type: 'POST',
+                    data: {
+                        shipper_id: shipperId
+                    },
+                    success: function(response) {
+                        $('#modalBody').html(response);
+                        $('#trackDeliveryModal').modal('show');
+                    }
+                });
             });
-        }
-
-        // Validate if `selectedOrders` is not empty
-        if (selectedOrders.length > 0) {
-            // Send selected order IDs to the server using AJAX
-            fetch('update_PenStatus.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    order_ids: selectedOrders,
-                    processing_number: processingNumber // Include processing_number if needed
-                })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    Swal.fire({
-                        title: 'Success',
-                        text: 'Order(s) updated to Processing!',
-                        icon: 'success'
-                    }).then(() => {
-                        location.reload(); // Ensure SweetAlert2 is working before reloading
-                    });
-                } else {
-                    Swal.fire('Error', 'Failed to update orders: ' + data.error, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                Swal.fire('Error', 'An error occurred while updating orders.', 'error');
-            });
-        } else {
-            Swal.fire('Warning', 'Please select or specify the number of orders to accept.', 'warning');
-        }
-    });
-});
-
-
-
-document.addEventListener('DOMContentLoaded', function() {
-        const statusCards = document.querySelectorAll('.status-number');
-
-        function animateNumbers() {
-            statusCards.forEach(card => {
-                // Add animation class
-                card.classList.add('animate');
-
-                // Remove the class after the animation ends
-                card.addEventListener('animationend', function() {
-                    card.classList.remove('animate');
-                }, { once: true });
-            });
-        }
-
-        // Trigger animation on page load
-        animateNumbers();
-    });
-
-     // Track the last order ID or timestamp
-     let lastOrderId = null;
-
-function checkForNewOrders() {
-    fetch('check_new_orders.php')
-        .then(response => response.json())
-        .then(data => {
-            // Assuming 'latest_order_id' is the field returned by the server
-            if (data.latest_order_id && data.latest_order_id !== lastOrderId) {
-                lastOrderId = data.latest_order_id;
-                window.location.reload(); // Refresh the page if new orders are found
-            }
-        })
-        .catch(error => console.error('Error:', error));
-}
-
-// Check for new orders every 1 minute (60000 milliseconds)
-setInterval(checkForNewOrders, 60000);
-
-    
-
+        });
     </script>
 </body>
 

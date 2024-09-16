@@ -97,6 +97,9 @@
         <div class="row">
             <div class="col-lg-8 mb-4">
                 <div class="table-responsive">
+                    <div class="mb-3 text-right">
+                        <button id="remove-all" class="btn btn-danger"><i class="fas fa-circle-minus" style="font-size: 14px;"></i>  Remove All</button>
+                    </div>
                     <table class="table table-bordered">
                         <thead>
                             <tr>
@@ -152,7 +155,7 @@
                                     echo '<td><input type="number" class="form-control item-quantity" value="' . htmlspecialchars($row['cart_qty']) . '" min="1"></td>';
                                     echo '<td class="item-total">₱' . number_format($total_price, 2) . '</td>';
                                     echo '<td>';
-                                    echo '<button type="button" class="btn btn-danger btn-sm remove-item" data-prod-code="' . htmlspecialchars($row['prod_code']) . '">Remove</button>';
+                                    echo '<button type="button" class="btn btn-danger btn-sm remove-item" data-prod-code="' . htmlspecialchars($row['prod_code']) . '"> Remove</button>';
                                     echo '</td>';
                                     echo '</tr>';
                                 }
@@ -193,10 +196,12 @@
     <?php include '../includes/footer.php'; ?>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="../js/notif.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var isShopClosed = <?php echo json_encode($is_shop_closed); ?>;
@@ -315,7 +320,62 @@
                 });
             });
 
-            // Checkout button click event
+            // Remove All item button click event
+// Remove All item button click event
+$(document).ready(function() {
+    $('#remove-all').click(function() {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You will remove all items from the cart.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: 'remove_all_cart.php', // Path to your PHP script to handle removal
+                    type: 'POST',
+                    dataType: 'json', // Expect JSON response
+                    success: function(response) {
+                        if (response.success) {
+                            $('#cart-items').empty(); // Clear the cart table
+                            $('#cart-items').append('<tr><td colspan="6" class="text-center">Empty Cart</td></tr>'); // Display empty message
+                            Swal.fire({
+                                title: 'Removed!',
+                                text: response.message,
+                                icon: 'success',
+                                timer: 1500, // Automatically close after 1.5 seconds
+                                showConfirmButton: false // No confirm button
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: response.message || 'An error occurred while removing items.',
+                                icon: 'error',
+                                timer: 1500, // Automatically close after 1.5 seconds
+                                showConfirmButton: false // No confirm button
+                            });
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'An error occurred while sending the request.',
+                            icon: 'error',
+                            timer: 1500, // Automatically close after 1.5 seconds
+                            showConfirmButton: false // No confirm button
+                        });
+                    }
+                });
+            }
+        });
+    });
+});
+
+        // Checkout button click event
             document.querySelector('.CObtn').addEventListener('click', function(event) {
                 let productDetails = document.getElementById('hidden-product-details').value;
 
@@ -355,6 +415,8 @@
                 }
             });
         });
+
+        
 
         document.addEventListener('DOMContentLoaded', function() {
             // Function to validate cart quantities

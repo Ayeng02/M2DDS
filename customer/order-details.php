@@ -9,7 +9,7 @@ if (!$order_id) {
     exit();
 }
 
-// Fetch order details
+// Fetch order details and associated customer ID, order date, and barangay fee
 $sql = "SELECT 
             o.order_id,
             o.order_fullname,
@@ -20,6 +20,7 @@ $sql = "SELECT
             o.order_mop,
             o.order_total,
             o.order_date,
+            o.cust_id,
             s.status_code,
             s.status_name AS status,
             b.Brgy_df
@@ -31,7 +32,6 @@ $sql = "SELECT
             brgy_tbl b ON o.order_barangay = b.Brgy_Name
         WHERE 
             o.order_id = ?";
-
 
 $stmt = $conn->prepare($sql);
 if (!$stmt) {
@@ -47,30 +47,61 @@ if (!$order_result || $order_result->num_rows === 0) {
 }
 
 $order = $order_result->fetch_assoc();
+$cust_id = $order['cust_id'];
+$order_date = $order['order_date'];
+$brgy_df = $order['Brgy_df'];
+$status_code = $order['status_code'];
 
-// Fetch order items
-$sql_items = "SELECT 
-                    p.prod_name,
-                    o.order_qty,
-                    p.prod_price,
-                    o.order_total,
-                    p.prod_discount
-                   
-              FROM 
-                    order_tbl o
-              JOIN 
-                    product_tbl p ON o.prod_code = p.prod_code
-              WHERE 
-                    o.order_id = ?";
+// Fetch order items based on cust_id and order_date, excluding canceled orders
+$sql_items = $status_code == 5 ? 
+    "SELECT 
+        p.prod_name,
+        o.order_qty,
+        p.prod_price,
+        p.prod_discount
+     FROM 
+        order_tbl o
+     JOIN 
+        product_tbl p ON o.prod_code = p.prod_code
+     WHERE 
+        o.order_id = ?" :
+    "SELECT 
+        p.prod_name,
+        o.order_qty,
+        p.prod_price,
+        p.prod_discount
+     FROM 
+        order_tbl o
+     JOIN 
+        product_tbl p ON o.prod_code = p.prod_code
+     WHERE 
+        o.cust_id = ? AND o.order_date = ? AND o.status_code != 5"; // Exclude canceled orders
 
 $stmt_items = $conn->prepare($sql_items);
 if (!$stmt_items) {
     die("<p class='text-danger'>Preparation failed: " . $conn->error . "</p>");
 }
 
-$stmt_items->bind_param("s", $order_id); // Use 's' for VARCHAR type
+// Bind parameters based on the query
+if ($status_code == 5) {
+    $stmt_items->bind_param("s", $order_id); // Only use order_id for canceled orders
+} else {
+    $stmt_items->bind_param("ss", $cust_id, $order_date);
+}
+
 $stmt_items->execute();
 $items_result = $stmt_items->get_result();
+
+// Calculate the total amount including barangay fee
+$total_amount = 0;
+while ($item = $items_result->fetch_assoc()) {
+    // Determine the unit price to display
+    $unit_price = ($item['prod_discount'] > 0) ? $item['prod_discount'] : $item['prod_price'];
+    $total_amount += $unit_price * $item['order_qty']; // Accumulate the total price per item
+}
+
+// Add the barangay fee
+$total_amount += $brgy_df;
 
 // Fetch order status log
 $sql_log = "SELECT 
@@ -218,59 +249,69 @@ $conn->close();
                     <p class="card-text"><strong>Address:</strong> <?php echo htmlspecialchars($order['order_barangay']) . ', ' . htmlspecialchars($order['order_purok']) . ', ' . htmlspecialchars($order['order_province']); ?></p>
                     <p class="card-text"><strong>Mode of Payment:</strong> <?php echo htmlspecialchars($order['order_mop']); ?></p>
                     <p class="card-text"><strong>Date:</strong> <?php echo date('F j, Y, g:i a', strtotime($order['order_date'])); ?></p>
-                    <p class="card-text"><strong>Total:</strong> ₱<?php echo number_format($order['order_total'], 2); ?></p>
-
+                    
                     <?php if ($order['status_code'] == 5): ?>
                         <div class="alert alert-danger mt-4">
                             <h4 class="alert-heading">Order Canceled</h4>
                             <p>You canceled this order!</p>
+                        </div>
+                    <?php elseif ($order['status_code'] == 6): ?>
+                        <div class="alert alert-danger mt-4">
+                            <h4 class="alert-heading">Delivery Attempt Failed!</h4>
+                            <p>You did not picked up the order!</p>
                         </div>
                     <?php endif; ?>
                 </div>
                 <hr>
                 <h5 class="mt-4">Order Items</h5>
                 <div class="table-responsive">
-    <table id="orderItemsTable" class="table table-striped order-details-table">
-        <thead>
-            <tr>
-                <th>Product</th>
-                <th>Quantity</th>
-                <th>Unit Price</th>
-                <th>Delivery Fee</th> <!-- New column for delivery fee -->
-                <th>Total Price (Including Delivery Fee)</th> <!-- Column for total price including delivery fee -->
-            </tr>
-        </thead>
-        <tbody>
-            <?php
-            if ($items_result->num_rows > 0) {
-                while ($item = $items_result->fetch_assoc()) {
-                    // Determine the unit price to display
-                    $unit_price = ($item['prod_discount'] > 0) ? $item['prod_discount'] : $item['prod_price'];
-                    $total_price = $unit_price * $item['order_qty']; // Calculate the total price per item
-                    
-                    // Fetch the delivery fee (Brgy_df) from the order details
-                    $delivery_fee = $order['Brgy_df'] ?? 0;
+                <table id="orderItemsTable" class="table table-striped order-details-table">
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Unit Price</th>
+            <th>Total Price</th> <!-- Updated column for total price without delivery fee -->
+        </tr>
+    </thead>
+    <tbody>
+        <?php
+        if ($items_result->num_rows > 0) {
+            // Reset items_result pointer to start
+            $items_result->data_seek(0);
+            while ($item = $items_result->fetch_assoc()) {
+                // Determine the unit price to display
+                $unit_price = ($item['prod_discount'] > 0) ? $item['prod_discount'] : $item['prod_price'];
+                $total_price = $unit_price * $item['order_qty']; // Calculate the total price per item
+                
 
-                    // Calculate the total price including the delivery fee
-                    $total_price_including_fee = $total_price + $delivery_fee;
-
-                    echo "<tr>";
-                    echo "<td>" . htmlspecialchars($item['prod_name']) . "</td>";
-                    echo "<td>" . htmlspecialchars($item['order_qty']) . "</td>";
-                    echo "<td>₱" . number_format($unit_price, 2) . "</td>";
-                    echo "<td>₱" . number_format($delivery_fee, 2) . "</td>"; // Display the delivery fee
-                    echo "<td>₱" . number_format($total_price_including_fee, 2) . "</td>"; // Display the total price including delivery fee
-                    echo "</tr>";
-                }
-            } else {
-                echo "<tr><td colspan='5' class='text-center'>No items found.</td></tr>";
+                echo "<tr>";
+                echo "<td>" . htmlspecialchars($item['prod_name']) . "</td>";
+                echo "<td>" . htmlspecialchars($item['order_qty']) . "</td>";
+                echo "<td>₱" . number_format($unit_price, 2) . "</td>";
+                echo "<td>₱" . number_format($total_price, 2) . "</td>"; // Display the total price without delivery fee
+                echo "</tr>";
             }
-            ?>
-        </tbody>
-    </table>
+        } else {
+            echo "<tr><td colspan='4' class='text-center'>No items found.</td></tr>";
+        }
+        ?>
+        <!-- Conditionally display total amount and delivery fee -->
+        <?php if ($order['status_code'] != 5): ?>
+                                <tr>
+                                <td colspan="3" class="font-weight-bold text-right">Delivery Fee</td>
+                                    <td>₱<?php echo number_format($brgy_df, 2); ?></td>
+                                </tr>
+                                <tr>
+                                <td colspan="3" class="font-weight-bold text-right">Total Amount</td>
+                                    <td>₱<?php echo number_format($total_amount, 2); ?></td>
+                                </tr>
+                            <?php endif; ?>
+    </tbody>
+</table>
 </div>
 
-
+        
                 <hr>
 
                  <!-- Order Status Log Section -->
@@ -305,47 +346,58 @@ $conn->close();
                 <hr>
                 <!-- Order Status Tracker -->
                 <h5 class="mt-4">Track Order Status</h5>
-                <div class="progress mb-4">
-                    <?php
-                    $statuses = [
-                        1 => 'Pending',
-                        2 => 'Processing',
-                        3 => 'Shipped',
-                        4 => 'Delivered',
-                        5 => 'Canceled'
-                    ];
+<div class="progress mb-4">
+    <?php
+    $statuses = [
+        1 => 'Pending',
+        2 => 'Processing',
+        3 => 'Shipped',
+        4 => 'Delivered',
+        5 => 'Canceled',
+        6 => 'Failed'
+    ];
 
-                    $current_status = $order['status_code'];
-                    $progress = ($current_status == 4) ? 100 : (array_search($current_status, array_keys($statuses)) + 1) * 20;
-                    $progress_class = ($current_status == 4) ? 'progress-bar-green' : 'progress-bar-custom';
-                    ?>
+    // Get the current status code from order data
+    $current_status = $order['status_code'];
 
-                    <div class="progress-bar <?php echo $progress_class; ?>" role="progressbar" style="width: <?php echo $progress; ?>%;" aria-valuenow="<?php echo $progress; ?>" aria-valuemin="0" aria-valuemax="100">
-                        <?php echo $statuses[$current_status]; ?>
-                    </div>
-                </div>
-                <ul class="list-group mb-4">
-                    <?php if ($current_status != 5): ?>
-                        <?php foreach ($statuses as $code => $name): ?>
-                            <?php if ($code != 5 || !in_array($current_status, [3, 4])): ?>
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <?php echo $name; ?>
-                                    <span class="badge <?php echo $code < $current_status ? 'badge-primary' : ($code == $current_status ? 'badge-custom' : 'badge-secondary'); ?>">
-                                        <?php echo $code < $current_status ? 'Completed' : ($code == $current_status ? 'Current' : 'Pending'); ?>
-                                    </span>
-                                </li>
-                            <?php endif; ?>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Canceled
-                            <span class="badge badge-danger">Canceled</span>
-                        </li>
-                    <?php endif; ?>
-                    <a href="javascript:history.back()" class="btn btn-custom mb-4" style="margin-top: 20px;">Back</a>
-                </ul>
-            </div>
-        </div>
+    $current_status = $order['status_code'];
+    $progress = ($current_status == 4) ? 100 : (array_search($current_status, array_keys($statuses)) + 1) * 20;
+    $progress_class = ($current_status == 4) ? 'progress-bar-green' : 'progress-bar-custom';
+    ?>
+
+    <div class="progress-bar <?php echo $progress_class; ?>" role="progressbar" style="width: <?php echo $progress; ?>%;" aria-valuenow="<?php echo $progress; ?>" aria-valuemin="0" aria-valuemax="100">
+        <?php echo $statuses[$current_status]; ?>
+    </div>
+</div>
+
+<ul class="list-group mb-4">
+    <?php if ($current_status != 5 && $current_status != 6): ?>
+        <?php foreach ($statuses as $code => $name): ?>
+            <?php if (!in_array($code, [5, 6]) || ($current_status == $code)): ?>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <?php echo $name; ?>
+                    <span class="badge <?php echo $code < $current_status ? 'badge-primary' : ($code == $current_status ? 'badge-warning' : 'badge-secondary'); ?>">
+                        <?php echo $code < $current_status ? 'Completed' : ($code == $current_status ? 'Current' : 'Pending'); ?>
+                    </span>
+                </li>
+            <?php endif; ?>
+        <?php endforeach; ?>
+    <?php elseif($current_status == 5): ?>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            Canceled
+            <span class="badge badge-danger">Canceled</span>
+        </li>
+    <?php else: ?>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            Delivery Attempt was unsuccessful!
+            <span class="badge badge-danger">Failed</span>
+        </li>
+    <?php endif; ?>
+
+    <!-- Back button -->
+    <a href="javascript:history.back()" class="btn btn-custom mb-4" style="margin-top: 20px;">Back</a>
+</ul>
+
     </div>
 
     <!-- jQuery and Bootstrap JS -->

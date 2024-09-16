@@ -71,166 +71,164 @@ if (isset($_POST['logout']) && $_POST['logout'] === 'true') {
 }
 ?>
 
+<!DOCTYPE html>
+<html lang="en">
 
-    <!DOCTYPE html>
-    <html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
 
-    </head>
+<body>
 
-    <body>
-
-        <!-- navbar.php -->
-        <nav class="navbar navbar-expand-lg navbar-light">
-            <a class="navbar-brand" href="#">
-                <img class="logo" src="../img/logo.ico" alt="">
-                Meat-To-Door
-            </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item">
-                        <a class="nav-link act1" href="customerLandingPage.php">
-                            <i class="fas fa-home"></i> Home
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link act2" href="products.php">
-                            <i class="fas fa-box-open"></i> Products
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link act3" href="orders.php">
-                            <i class="fas fa-receipt"></i> Orders
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link act4" href="profile.php">
-                            <i class="fas fa-user"></i> Profile
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link act6" href="cart.php">
-                            <i class="fas fa-cart-arrow-down"></i>
-                            <span class="badge badge-primary cart-badge"><?php echo $item_count; ?></span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <div class="nav-link notification-bell" onclick="toggleNotifications();">
-                            <i class="fas fa-bell"></i>
-                            <span class="notification-badge" id="notificationBadge"><?php echo $unread_count; ?></span>
-                            <div class="notification-overlay" id="notificationOverlay">
-                                <?php if (empty($notifications)): ?>
-                                    <div class="notification-item">No new notifications</div>
-                                <?php else: ?>
-                                    <?php foreach ($notifications as $notification): ?>
-                                        <div id="notification-<?php echo $notification['id']; ?>" class="notification-item<?php echo $notification['status'] === 'read' ? ' read' : ''; ?>" data-id="<?php echo $notification['id']; ?>">
-                                            <?php echo htmlspecialchars($notification['message']); ?>
-                                            <div class="notification-date">
-                                                <?php echo date('M d, Y h:i A', strtotime($notification['created_at'])); ?>
-                                            </div>
+    <!-- navbar.php -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <a class="navbar-brand" href="#">
+            <img class="logo" src="../img/logo.ico" alt="">
+            Meat-To-Door
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link act1" href="customerLandingPage.php">
+                        <i class="fas fa-home"></i> Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link act2" href="products.php">
+                        <i class="fas fa-box-open"></i> Products
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link act3" href="orders.php">
+                        <i class="fas fa-receipt"></i> Orders
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link act4" href="profile.php">
+                        <i class="fas fa-user"></i> Profile
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link act6" href="cart.php">
+                        <i class="fas fa-cart-arrow-down"></i>
+                        <span class="badge badge-primary cart-badge"><?php echo $item_count; ?></span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <div class="nav-link notification-bell" onclick="toggleNotifications();">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" id="notificationBadge"><?php echo $unread_count; ?></span>
+                        <div class="notification-overlay" id="notificationOverlay">
+                            <?php if (empty($notifications)): ?>
+                                <div class="notification-item">No new notifications</div>
+                            <?php else: ?>
+                                <?php foreach ($notifications as $notification): ?>
+                                    <div id="notification-<?php echo $notification['id']; ?>" class="notification-item<?php echo $notification['status'] === 'read' ? ' read' : ''; ?>" data-id="<?php echo $notification['id']; ?>">
+                                        <?php echo htmlspecialchars($notification['message']); ?>
+                                        <div class="notification-date">
+                                            <?php echo date('M d, Y h:i A', strtotime($notification['created_at'])); ?>
                                         </div>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </div>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="javascript:void(0);" onclick="confirmLogout();">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </li>
+            </ul>
+            <form class="form-inline my-2 my-lg-0 ml-auto" action="./search_results.php" method="GET">
+                <input class="fc1 form-control mr-sm-2" type="search" name="v" placeholder="Search for products..." aria-label="Search">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            </form>
 
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="javascript:void(0);" onclick="confirmLogout();">
-                            <i class="fas fa-sign-out-alt"></i> Logout
-                        </a>
-                    </li>
-                </ul>
-                <form class="form-inline my-2 my-lg-0 ml-auto" action="./search_results.php" method="GET">
-                    <input class="fc1 form-control mr-sm-2" type="search" name="v" placeholder="Search for products..." aria-label="Search">
-                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-                </form>
+        </div>
+    </nav>
 
-            </div>
-        </nav>
+    <script>
+        function confirmLogout() {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You will be logged out of your account.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes',
+                cancelButtonText: 'No'
+            }).then((result) => {
+                if (result.isConfirmed) {
 
-        <script>
-            function confirmLogout() {
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: "You will be logged out of your account.",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes',
-                    cancelButtonText: 'No'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        
-                        var form = document.createElement('form');
-                        form.method = 'POST';
-                        form.action = '../includes/header.php'; 
+                    var form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '../includes/header.php';
 
-                        var input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = 'logout';
-                        input.value = 'true';
-                        form.appendChild(input);
+                    var input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'logout';
+                    input.value = 'true';
+                    form.appendChild(input);
 
-                        document.body.appendChild(form);
-                        form.submit();
-                    }
-                });
-            }
-
-            function markNotificationAsRead(notificationId) {
-                fetch('../includes/mark_notification.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: new URLSearchParams({
-                            'id': notificationId
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Update the UI to reflect the read status
-                            const notificationElement = document.querySelector(`#notification-${notificationId}`);
-                            notificationElement.classList.add('read');
-
-                            // Update the notification badge count
-                            const badge = document.getElementById('notificationBadge');
-                            let currentCount = parseInt(badge.textContent);
-
-                            // Decrement the badge count but ensure it doesn't go below 0
-                            badge.textContent = Math.max(currentCount - 1, 0);
-                        } else {
-                            console.error('Failed to mark notification as read:', data.message);
-                        }
-                    })
-                    .catch(error => console.error('Error:', error));
-            }
-
-
-            function toggleNotifications() {
-                const overlay = document.getElementById('notificationOverlay');
-                overlay.classList.toggle('show');
-            }
-
-            // Attach click event to notification items
-            document.querySelectorAll('.notification-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    const notificationId = this.dataset.id;
-                    markNotificationAsRead(notificationId);
-                });
+                    document.body.appendChild(form);
+                    form.submit();
+                }
             });
-        </script>
-    </body>
+        }
 
-    </html>
+        function markNotificationAsRead(notificationId) {
+            fetch('../includes/mark_notification.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        'id': notificationId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update the UI to reflect the read status
+                        const notificationElement = document.querySelector(`#notification-${notificationId}`);
+                        notificationElement.classList.add('read');
+
+                        // Update the notification badge count
+                        const badge = document.getElementById('notificationBadge');
+                        let currentCount = parseInt(badge.textContent);
+
+                        // Decrement the badge count but ensure it doesn't go below 0
+                        badge.textContent = Math.max(currentCount - 1, 0);
+                    } else {
+                        console.error('Failed to mark notification as read:', data.message);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+
+        function toggleNotifications() {
+            const overlay = document.getElementById('notificationOverlay');
+            overlay.classList.toggle('show');
+        }
+
+        // Attach click event to notification items
+        document.querySelectorAll('.notification-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const notificationId = this.dataset.id;
+                markNotificationAsRead(notificationId);
+            });
+        });
+    </script>
+</body>
+
+</html>

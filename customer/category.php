@@ -54,8 +54,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Products - <?php echo htmlspecialchars($category['category_name']); ?></title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <link rel="stylesheet" href="../css/home.css">
     <link rel="icon" href="../img/mtdd_logo.png" type="image/x-icon">
     <style>
@@ -76,9 +76,6 @@
             flex-direction: column;
             justify-content: space-between;
             height: 100%;
-            margin-left: -8px;
-            /* Adjust left and right margin */
-            margin-right: -8px;
         }
 
         .quantity-control {
@@ -230,7 +227,7 @@
                     if ($product["prod_discount"] > 0) {
                         echo '<h6 class="discount-info">
                             <span class="original-price">₱' . number_format($product["prod_price"], 2) . '</span>
-                            $' . number_format($product["prod_discount"], 2) . '
+                            ₱' . number_format($product["prod_discount"], 2) . '
                         </h6>';
                     } else {
                         echo '<h6>₱' . number_format($product["prod_price"], 2) . '</h6>';

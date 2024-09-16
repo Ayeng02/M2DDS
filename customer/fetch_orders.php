@@ -8,6 +8,8 @@ include '../includes/db_connect.php';
 $status = isset($_GET['status']) ? $_GET['status'] : 'all';
 $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
 $search = isset($_GET['search']) ? $_GET['search'] : '';
+$date = isset($_GET['date']) && !empty($_GET['date']) ? $_GET['date'] : ''; // New date parameter
+$view = isset($_GET['view']) ? $_GET['view'] : 'grid'; // Retrieve view type parameter
 
 $limit = 9;
 $offset = ($page - 1) * $limit;
@@ -15,15 +17,18 @@ $offset = ($page - 1) * $limit;
 // Build query
 $status_query = $status !== 'all' ? "AND status_name = '$status'" : "";
 $search_query = $search ? "AND (order_id LIKE '%$search%' || order_fullname LIKE '%$search%' )" : "";
+$date_query = $date ? "AND DATE(order_date) = '$date'" : "";  // New date filter query
+
 $query = "
     SELECT o.*, s.status_name, p.prod_name
     FROM order_tbl o
     JOIN status_tbl s ON o.status_code = s.status_code
     JOIN product_tbl p ON o.prod_code = p.prod_code
-    WHERE o.cust_id = '$cust_id' $status_query $search_query
+    WHERE o.cust_id = '$cust_id' $status_query $search_query $date_query
     ORDER BY o.order_date DESC
     LIMIT $limit OFFSET $offset
 ";
+
 $result = mysqli_query($conn, $query);
 
 // Generate orders HTML
@@ -37,7 +42,7 @@ $total_query = "
     SELECT COUNT(*) as total
     FROM order_tbl o
     JOIN status_tbl s ON o.status_code = s.status_code
-    WHERE o.cust_id = '$cust_id' $status_query $search_query
+    WHERE o.cust_id = '$cust_id' $status_query $search_query $date_query
 ";
 $total_result = mysqli_query($conn, $total_query);
 $total_row = mysqli_fetch_assoc($total_result);
@@ -75,7 +80,6 @@ if ($page < $total_pages) {
 
 $pagination .= '</ul>';
 
-
 $response = [
     'orders' => $orders,
     'pagination' => $pagination
@@ -106,7 +110,7 @@ function generateOrderCard($order) {
                     <p><strong>Product Name:</strong> ' . htmlspecialchars($order['prod_name']) . '</p>
                     <p><strong>Quantity:</strong> ' . htmlspecialchars($order['order_qty']) . '</p>
                     <p><strong>Total:</strong> ' . htmlspecialchars($order['order_total']) . '</p>
-                    <button class="btn btn-view-details" onclick="toggleDetails(\'' . htmlspecialchars($order['order_id']) . '\')">View Details</button>
+                    <button class="btn btn-view-details" onclick="toggleDetails(\'' . htmlspecialchars($order['order_id']) . '\')">More Details</button>
                     <div id="order-info-' . htmlspecialchars($order['order_id']) . '" class="order-info mt-3">
                         <p><strong>Cash Payment:</strong> ' . htmlspecialchars($order['order_cash']) . '</p>
                         <p><strong>Change:</strong> ' . htmlspecialchars($order['order_change']) . '</p>
