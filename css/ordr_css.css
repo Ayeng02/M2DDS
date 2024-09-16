@@ -241,8 +241,6 @@
     color: white;
 }
 
-
-
 .form-control:focus {
     border-color: #FF8225;
     box-shadow: 0 0 5px rgba(255, 130, 37, 0.8);
@@ -296,6 +294,7 @@ label{
     padding: 0.5rem 0.5rem; /* Adjust padding for smaller tooltip */
     background-color: #414141;
     color: #fff; 
+    opacity: 0.65;
   }
 
   .tooltip-arrow {
