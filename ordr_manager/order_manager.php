@@ -800,7 +800,7 @@ label{
     </div>
 
     <!-- Modal for Official Receipt Confirmation -->
-    <div class="modal fade" id="officialReceiptModal" tabindex="1" aria-labelledby="officialReceiptLabel" aria-hidden="true">
+    <div class="modal fade" id="officialReceiptModal" tabindex="-1" aria-labelledby="officialReceiptLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content border-0" style="border-radius: 0.5rem;">
                 <div class="modal-header text-white">
@@ -848,6 +848,9 @@ label{
     <!-- Include DataTables JS -->
 
     <script>
+
+        
+
         $(document).ready(function() {
             $('.trackBtn').on('click', function() {
                 var shipperId = $(this).data('shipper-id'); // Get shipper_id from button data attribute
