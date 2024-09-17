@@ -23,9 +23,6 @@
     transition: background 1s ease;
 }
 
-.active{
-    background: linear-gradient(180deg, #ff83259b, #a72828);
-}
 
 #sidebar a:hover {
     background: linear-gradient(180deg, #ff83259b, #a72828);

@@ -331,6 +331,10 @@ label{
 .profile-container img{
     image-rendering: crisp-edges;
 }
+
+.active{
+    background: linear-gradient(180deg, #ff83259b, #a72828);
+}
     </style>
 
 </head>
@@ -338,31 +342,7 @@ label{
 <body>
 
     <!-- Sidebar on the left -->
-    <nav id="sidebar" class="bg-dark">
-        <div class="profile">
-            <img src="../img/aye.jpg" alt="Profile Picture">
-            <h5>Ayeng Dohinog</h5>
-            <p class="role">Order Manager</p>
-        </div>
-        <a href="#" class="text-light active">
-            <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
-        </a>
-        <a href="#" class="text-light">
-            <i class="fas fa-box"></i> <span>Orders</span>
-        </a>
-        <a href="#" class="text-light">
-            <i class="fas fa-users"></i> <span>Customers</span>
-        </a>
-        <a href="#" class="text-light">
-            <i class="fas fa-chart-line"></i> <span>Reports</span>
-        </a>
-
-        <!-- Logout link at the bottom -->
-        <a href="#" class="text-light logout" id="logoutBtn">
-            <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
-        </a>
-    </nav>
-
+    <?php include '../includes/omSideBar.php'; ?>
 
     <!-- Main content -->
     <div class="content">

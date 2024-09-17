@@ -1,7 +1,8 @@
 <?php
 session_start(); // Start the sessiona
 
-
+// Set the time zone to Manila/Philippines
+date_default_timezone_set('Asia/Manila');
 
 // Redirect to landing page if already logged in
 if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isset($_SESSION['AdminLogExist']) && $_SESSION['AdminLogExist'] === true) {
@@ -131,133 +132,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Google Fonts (Optional) -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
-
+    <link rel="stylesheet" href="./css/loginstake.css">
+    
+</head>
     <!-- Custom CSS -->
-    <style>
-        body {
-            background: linear-gradient(135deg, #ff6b6b, #f7d08a, #6b5b95, #d4e157);
-            background-size: 400% 400%;
-            animation: gradientAnimation 10s ease infinite;
-            font-family: 'Roboto', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
 
-        @keyframes gradientAnimation {
-            0% { background-position: 0% 0%; }
-            50% { background-position: 100% 100%; }
-            100% { background-position: 0% 0%; }
-        }
-
-        .login-container {
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(10px);
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            animation: slideIn 1s ease-out;
-            width: 100%;
-            max-width: 500px;
-        }
-
-
-        .login-container h2 {
-            color: #a72828;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .form-control:focus {
-            border-color: #FF8225;
-            box-shadow: none;
-        }
-
-        .btn-custom {
-            background-color: #a72828;
-            border-color: #a72828;
-            color: #fff;
-            transition: background-color 0.3s ease;
-        }
-
-        .btn-custom:hover {
-            background-color: #FF8225;
-            border-color: #FF8225;
-        }
-
-        .logo {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-
-        .logo img {
-            width: 100px;
-        }
-
-        /* Responsive Adjustments */
-        @media (max-width: 768px) {
-            .login-container {
-                padding: 20px;
-            }
-
-            .login-container h2 {
-                font-size: 24px;
-                margin-bottom: 20px;
-            }
-
-            .btn-custom {
-                font-size: 16px;
-            }
-
-            .form-control {
-                font-size: 14px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .login-container {
-                padding: 15px;
-            }
-
-            .logo img {
-                width: 80px;
-            }
-
-            .login-container h2 {
-                font-size: 22px;
-            }
-
-            .form-control {
-                font-size: 13px;
-                padding: 10px;
-            }
-
-            .btn-custom {
-                padding: 10px 20px;
-            }
-        }
-
-        /* Style for Show Password */
-        .show-password {
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            margin-bottom: 15px;
-            color: #333;
-        }
-
-        .show-password input {
-            width: auto;
-        }
-
-        .alert {
-            margin-top: 20px;
-        }
-    </style>
 </head>
 
 <body>
