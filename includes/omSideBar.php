@@ -4,7 +4,7 @@
             <h5>Ayeng Dohinog</h5>
             <p class="role">Order Manager</p>
         </div>
-        <a href="../ordr_manager/order_manager.php" class="text-light active">
+        <a href="../ordr_manager/order_manager.php" class="text-light active1">
             <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
         </a>
         <a href="../ordr_manager/trackOrders.php" class="text-light active2">
