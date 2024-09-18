@@ -332,7 +332,7 @@ label{
     image-rendering: crisp-edges;
 }
 
-.active{
+.active1{
     background: linear-gradient(180deg, #ff83259b, #a72828);
 }
     </style>
