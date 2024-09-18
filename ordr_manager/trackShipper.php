@@ -189,6 +189,7 @@ $TransactResult = $stmt->get_result();
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
+            justify-content: center;
         }
 
         .shipper-card .card-footer {
