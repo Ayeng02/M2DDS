@@ -52,56 +52,93 @@ $order_date = $order['order_date'];
 $brgy_df = $order['Brgy_df'];
 $status_code = $order['status_code'];
 
-// Fetch order items based on cust_id and order_date, excluding canceled orders
-$sql_items = $status_code == 5 ?
-    "SELECT 
-        p.prod_name,
-        o.order_qty,
-        p.prod_price,
-        p.prod_discount
-     FROM 
-        order_tbl o
-     JOIN 
-        product_tbl p ON o.prod_code = p.prod_code
-     WHERE 
-        o.order_id = ?" :
-    "SELECT 
-        p.prod_name,
-        o.order_qty,
-        p.prod_price,
-        p.prod_discount
-     FROM 
-        order_tbl o
-     JOIN 
-        product_tbl p ON o.prod_code = p.prod_code
-     WHERE 
-        o.cust_id = ? AND o.order_date = ? AND o.status_code != 5 AND o.status_code !=7"; // Exclude canceled orders and declined orders
+// Define the SQL query based on status_code
+if ($status_code == 5) {
+    // Fetch items for canceled orders (status_code == 5)
+    $sql_items = "SELECT 
+                    p.prod_name,
+                    o.order_qty,
+                    p.prod_price,
+                    p.prod_discount
+                  FROM 
+                    order_tbl o
+                  JOIN 
+                    product_tbl p ON o.prod_code = p.prod_code
+                  WHERE 
+                    o.order_id = ?";
+} elseif ($status_code == 6) {
+    // Fetch items for delivered orders (status_code == 6)
+    $sql_items = "SELECT 
+                    p.prod_name,
+                    o.order_qty,
+                    p.prod_price,
+                    p.prod_discount
+                  FROM 
+                    order_tbl o
+                  JOIN 
+                    product_tbl p ON o.prod_code = p.prod_code
+                  WHERE 
+                    o.order_id = ?";
+} elseif ($status_code == 7) {
+    // Fetch items for another specific status (status_code == 7)
+    $sql_items = "SELECT 
+                    p.prod_name,
+                    o.order_qty,
+                    p.prod_price,
+                    p.prod_discount
+                  FROM 
+                    order_tbl o
+                  JOIN 
+                    product_tbl p ON o.prod_code = p.prod_code
+                  WHERE 
+                    o.order_id = ?";
+} else {
+    // Fetch items for active orders excluding canceled (5), delivered (6), and another excluded status (7)
+    $sql_items = "SELECT 
+                    p.prod_name,
+                    o.order_qty,
+                    p.prod_price,
+                    p.prod_discount
+                  FROM 
+                    order_tbl o
+                  JOIN 
+                    product_tbl p ON o.prod_code = p.prod_code
+                  WHERE 
+                    o.cust_id = ? 
+                    AND o.order_date = ? 
+                    AND o.status_code NOT IN (5, 6, 7)"; // Exclude status 5 (canceled), 6 (delivered), 7 (another exclusion) 
+}
 
+// Prepare the statement
 $stmt_items = $conn->prepare($sql_items);
 if (!$stmt_items) {
     die("<p class='text-danger'>Preparation failed: " . $conn->error . "</p>");
 }
 
 // Bind parameters based on the query
-if ($status_code == 5) {
-    $stmt_items->bind_param("s", $order_id); // Only use order_id for canceled orders
+if ($status_code == 5 || $status_code == 6 || $status_code == 7) {
+    // Bind order_id for status codes 5, 6, and 7
+    $stmt_items->bind_param("s", $order_id);
 } else {
+    // Bind cust_id and order_date for active orders
     $stmt_items->bind_param("ss", $cust_id, $order_date);
 }
 
+// Execute the query
 $stmt_items->execute();
 $items_result = $stmt_items->get_result();
 
 // Calculate the total amount including barangay fee
 $total_amount = 0;
 while ($item = $items_result->fetch_assoc()) {
-    // Determine the unit price to display
+    // Determine the unit price, considering discounts
     $unit_price = ($item['prod_discount'] > 0) ? $item['prod_discount'] : $item['prod_price'];
-    $total_amount += $unit_price * $item['order_qty']; // Accumulate the total price per item
+    $total_amount += $unit_price * $item['order_qty']; // Accumulate total price per item
 }
 
-// Add the barangay fee
+// Add the barangay fee to the total
 $total_amount += $brgy_df;
+
 
 // Fetch order status log
 $sql_log = "SELECT 
