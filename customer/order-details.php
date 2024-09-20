@@ -53,7 +53,7 @@ $brgy_df = $order['Brgy_df'];
 $status_code = $order['status_code'];
 
 // Fetch order items based on cust_id and order_date, excluding canceled orders
-$sql_items = $status_code == 5 ? 
+$sql_items = $status_code == 5 ?
     "SELECT 
         p.prod_name,
         o.order_qty,
@@ -75,7 +75,7 @@ $sql_items = $status_code == 5 ?
      JOIN 
         product_tbl p ON o.prod_code = p.prod_code
      WHERE 
-        o.cust_id = ? AND o.order_date = ? AND o.status_code != 5"; // Exclude canceled orders
+        o.cust_id = ? AND o.order_date = ? AND o.status_code != 5 AND o.status_code !=7"; // Exclude canceled orders and declined orders
 
 $stmt_items = $conn->prepare($sql_items);
 if (!$stmt_items) {
@@ -249,7 +249,6 @@ $conn->close();
                     <p class="card-text"><strong>Address:</strong> <?php echo htmlspecialchars($order['order_barangay']) . ', ' . htmlspecialchars($order['order_purok']) . ', ' . htmlspecialchars($order['order_province']); ?></p>
                     <p class="card-text"><strong>Mode of Payment:</strong> <?php echo htmlspecialchars($order['order_mop']); ?></p>
                     <p class="card-text"><strong>Date:</strong> <?php echo date('F j, Y, g:i a', strtotime($order['order_date'])); ?></p>
-                    
                     <?php if ($order['status_code'] == 5): ?>
                         <div class="alert alert-danger mt-4">
                             <h4 class="alert-heading">Order Canceled</h4>
@@ -265,56 +264,56 @@ $conn->close();
                 <hr>
                 <h5 class="mt-4">Order Items</h5>
                 <div class="table-responsive">
-                <table id="orderItemsTable" class="table table-striped order-details-table">
-    <thead>
-        <tr>
-            <th>Product</th>
-            <th>Quantity</th>
-            <th>Unit Price</th>
-            <th>Total Price</th> <!-- Updated column for total price without delivery fee -->
-        </tr>
-    </thead>
-    <tbody>
-        <?php
-        if ($items_result->num_rows > 0) {
-            // Reset items_result pointer to start
-            $items_result->data_seek(0);
-            while ($item = $items_result->fetch_assoc()) {
-                // Determine the unit price to display
-                $unit_price = ($item['prod_discount'] > 0) ? $item['prod_discount'] : $item['prod_price'];
-                $total_price = $unit_price * $item['order_qty']; // Calculate the total price per item
-                
+                    <table id="orderItemsTable" class="table table-striped order-details-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Quantity</th>
+                                <th>Unit Price</th>
+                                <th>Total Price</th> <!-- Updated column for total price without delivery fee -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            if ($items_result->num_rows > 0) {
+                                // Reset items_result pointer to start
+                                $items_result->data_seek(0);
+                                while ($item = $items_result->fetch_assoc()) {
+                                    // Determine the unit price to display
+                                    $unit_price = ($item['prod_discount'] > 0) ? $item['prod_discount'] : $item['prod_price'];
+                                    $total_price = $unit_price * $item['order_qty']; // Calculate the total price per item
 
-                echo "<tr>";
-                echo "<td>" . htmlspecialchars($item['prod_name']) . "</td>";
-                echo "<td>" . htmlspecialchars($item['order_qty']) . "</td>";
-                echo "<td>₱" . number_format($unit_price, 2) . "</td>";
-                echo "<td>₱" . number_format($total_price, 2) . "</td>"; // Display the total price without delivery fee
-                echo "</tr>";
-            }
-        } else {
-            echo "<tr><td colspan='4' class='text-center'>No items found.</td></tr>";
-        }
-        ?>
-        <!-- Conditionally display total amount and delivery fee -->
-        <?php if ($order['status_code'] != 5): ?>
+
+                                    echo "<tr>";
+                                    echo "<td>" . htmlspecialchars($item['prod_name']) . "</td>";
+                                    echo "<td>" . htmlspecialchars($item['order_qty']) . "</td>";
+                                    echo "<td>₱" . number_format($unit_price, 2) . "</td>";
+                                    echo "<td>₱" . number_format($total_price, 2) . "</td>"; // Display the total price without delivery fee
+                                    echo "</tr>";
+                                }
+                            } else {
+                                echo "<tr><td colspan='4' class='text-center'>No items found.</td></tr>";
+                            }
+                            ?>
+                            <!-- Conditionally display total amount and delivery fee -->
+                            <?php if ($order['status_code'] != 5): ?>
                                 <tr>
-                                <td colspan="3" class="font-weight-bold text-right">Delivery Fee</td>
+                                    <td colspan="3" class="font-weight-bold text-right">Delivery Fee</td>
                                     <td>₱<?php echo number_format($brgy_df, 2); ?></td>
                                 </tr>
                                 <tr>
-                                <td colspan="3" class="font-weight-bold text-right">Total Amount</td>
+                                    <td colspan="3" class="font-weight-bold text-right">Total Amount</td>
                                     <td>₱<?php echo number_format($total_amount, 2); ?></td>
                                 </tr>
                             <?php endif; ?>
-    </tbody>
-</table>
-</div>
+                        </tbody>
+                    </table>
+                </div>
 
-        
+
                 <hr>
 
-                 <!-- Order Status Log Section -->
+                <!-- Order Status Log Section -->
                 <h5 class="mt-4">Order Status History</h5>
                 <div class="table-responsive">
                     <table class="table table-striped">
@@ -341,79 +340,94 @@ $conn->close();
                             ?>
                         </tbody>
                     </table>
-                </div>          
+                </div>
 
                 <hr>
                 <!-- Order Status Tracker -->
                 <h5 class="mt-4">Track Order Status</h5>
-<div class="progress mb-4">
-    <?php
-    $statuses = [
-        1 => 'Pending',
-        2 => 'Processing',
-        3 => 'Shipped',
-        4 => 'Delivered',
-        5 => 'Canceled',
-        6 => 'Failed'
-    ];
+                <div class="progress mb-4">
+                    <?php
+                    $statuses = [
+                        1 => 'Pending',
+                        2 => 'Processing',
+                        3 => 'Shipped',
+                        4 => 'Delivered',
+                        5 => 'Canceled',
+                        6 => 'Failed',
+                        7 => 'Declined'
+                    ];
 
-    // Get the current status code from order data
-    $current_status = $order['status_code'];
+                    // Get the current status code from order data
+                    $current_status = $order['status_code'];
 
-    $current_status = $order['status_code'];
-    $progress = ($current_status == 4) ? 100 : (array_search($current_status, array_keys($statuses)) + 1) * 20;
-    $progress_class = ($current_status == 4) ? 'progress-bar-green' : 'progress-bar-custom';
-    ?>
+                    // Calculate progress (each step is 20%, 100% if 'Delivered')
+                    if ($current_status == 4) {
+                        $progress = 100;
+                    } elseif (array_key_exists($current_status, $statuses)) {
+                        $progress = ($current_status - 1) * 25; // 4 steps before Delivered (25% each)
+                    } else {
+                        $progress = 0; // Default to 0 if status is invalid
+                    }
 
-    <div class="progress-bar <?php echo $progress_class; ?>" role="progressbar" style="width: <?php echo $progress; ?>%;" aria-valuenow="<?php echo $progress; ?>" aria-valuemin="0" aria-valuemax="100">
-        <?php echo $statuses[$current_status]; ?>
-    </div>
-</div>
+                    // Set progress bar class based on status (green if delivered)
+                    $progress_class = ($current_status == 4) ? 'progress-bar bg-success' : 'progress-bar bg-info';
+                    ?>
 
-<ul class="list-group mb-4">
-    <?php if ($current_status != 5 && $current_status != 6): ?>
-        <?php foreach ($statuses as $code => $name): ?>
-            <?php if (!in_array($code, [5, 6]) || ($current_status == $code)): ?>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <?php echo $name; ?>
-                    <span class="badge <?php echo $code < $current_status ? 'badge-primary' : ($code == $current_status ? 'badge-warning' : 'badge-secondary'); ?>">
-                        <?php echo $code < $current_status ? 'Completed' : ($code == $current_status ? 'Current' : 'Pending'); ?>
-                    </span>
-                </li>
-            <?php endif; ?>
-        <?php endforeach; ?>
-    <?php elseif($current_status == 5): ?>
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-            Canceled
-            <span class="badge badge-danger">Canceled</span>
-        </li>
-    <?php else: ?>
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-            Delivery Attempt was unsuccessful!
-            <span class="badge badge-danger">Failed</span>
-        </li>
-    <?php endif; ?>
+                    <div class="progress-bar <?php echo $progress_class; ?>" role="progressbar" style="width: <?php echo $progress; ?>%;" aria-valuenow="<?php echo $progress; ?>" aria-valuemin="0" aria-valuemax="100">
+                        <?php echo $statuses[$current_status]; ?>
+                    </div>
+                </div>
 
-    <!-- Back button -->
-    <a href="javascript:history.back()" class="btn btn-custom mb-4" style="margin-top: 20px;">Back</a>
-</ul>
+                <!-- Order Status List -->
+                <ul class="list-group mb-4">
+                    <?php if (!in_array($current_status, [5, 6, 7])) : ?>
+                        <?php foreach ($statuses as $code => $name): ?>
+                            <?php if ($code <= 4): ?>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <?php echo $name; ?>
+                                    <span class="badge <?php echo $code < $current_status ? 'badge-primary' : ($code == $current_status ? 'badge-warning' : 'badge-secondary'); ?>">
+                                        <?php echo $code < $current_status ? 'Completed' : ($code == $current_status ? 'Current' : 'Pending'); ?>
+                                    </span>
+                                </li>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    <?php elseif ($current_status == 5): ?>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Canceled
+                            <span class="badge badge-danger">Canceled</span>
+                        </li>
+                    <?php elseif ($current_status == 6): ?>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Delivery Attempt Unsuccessful
+                            <span class="badge badge-danger">Failed</span>
+                        </li>
+                    <?php elseif ($current_status == 7): ?>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Order Declined
+                            <span class="badge badge-danger">Declined</span>
+                        </li>
+                    <?php endif; ?>
 
-    </div>
+                    <!-- Back button -->
+                    <a href="javascript:history.back()" class="btn btn-custom mb-4" style="margin-top: 20px;">Back</a>
+                </ul>
 
-    <!-- jQuery and Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <!-- DataTables JS -->
-    <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            $('#orderItemsTable').DataTable({
-                "paging": false,
-                "searching": false
-            });
-        });
-    </script>
+            </div>
+
+            <!-- jQuery and Bootstrap JS -->
+            <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+            <!-- DataTables JS -->
+            <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+            <script>
+                $(document).ready(function() {
+                    $('#orderItemsTable').DataTable({
+                        "paging": false,
+                        "searching": false
+                    });
+                });
+            </script>
 </body>
 
 </html>

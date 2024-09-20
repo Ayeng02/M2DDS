@@ -168,6 +168,8 @@ $result = $conn->query($sql);
                                 <option value="Delivered">Delivered</option>
                                 <option value="Canceled">Canceled</option>
                                 <option value="Failed">Failed</option>
+                                <option value="Failed">Declined</option>
+
                             </select>
                         </div>
                     </div>
@@ -223,6 +225,9 @@ $result = $conn->query($sql);
                                             break;
                                         case 'Failed':
                                             $badgeClass = 'bg-secondary text-white';
+                                            break;
+                                        case 'Declined':
+                                            $badgeClass = 'bg-danger text-white';
                                             break;
                                         default:
                                             $badgeClass = 'bg-light text-dark';

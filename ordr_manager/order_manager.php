@@ -335,6 +335,20 @@ label{
 .active1{
     background: linear-gradient(180deg, #ff83259b, #a72828);
 }
+
+
+.DeclineBtn{
+    background-color: #ec4242; 
+    color: white;
+    transition:background-color 0.3s ease-in-out;
+    border: none;
+}
+
+.DeclineBtn:hover{
+    background-color: #c12e2e; 
+    color: white;
+
+}
     </style>
 
 </head>
@@ -442,6 +456,12 @@ label{
                 <div class="col-12 col-sm-auto">
                     <button class="btn accBtn w-100 w-sm-auto" id="acceptBtn" data-bs-toggle="tooltip" data-bs-placement="right" title="Click to accept selected orders" style="color: #ffffff;">
                         <i class="fa fa-circle-check"></i> Accept Order(s)
+                    </button>
+                </div>
+                  <!-- Decline button -->
+                  <div class="col-12 col-sm-auto">
+                    <button class="btn DeclineBtn w-100 w-sm-auto" id="cancellationBtn" data-bs-toggle="tooltip" data-bs-placement="right" title="Decline orders" style="color: #ffffff;">
+                        <i class="fas fa-square-minus" style="color: #ffffff;"></i> Decline Order(s)
                     </button>
                 </div>
             </div>
@@ -812,6 +832,41 @@ label{
         </div>
     </div>
 
+      <!-- Decline Order Modal -->
+<div class="modal fade" id="declineModal" tabindex="-1" aria-labelledby="declineModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="declineModalLabel">Decline Selected Orders</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Product</th>
+                            <th>Full Name</th>
+                        </tr>
+                    </thead>
+                    <tbody id="declineOrderTable">
+                        <!-- Selected orders will be populated here via JS -->
+                    </tbody>
+                </table>
+                <div class="mb-3">
+                    <label for="declineReason" class="form-label">Reason for Declining</label>
+                    <textarea class="form-control" id="declineReason" rows="3" placeholder="Please enter a reason"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="confirmDeclineBtn" class="btn btn-danger">Confirm Decline</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
     <!-- DataTables JS -->
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
@@ -840,6 +895,100 @@ label{
                 });
             });
         });
+
+        $(document).ready(function() {
+    let selectedOrders = [];
+
+    // Check All functionality
+    $('#checkAll').on('change', function() {
+        var checkboxes = $('.orderCheckbox');
+        checkboxes.prop('checked', this.checked);
+    });
+
+    // Decline Button - Open Modal and Populate Data
+    $('#cancellationBtn').on('click', function() {
+        selectedOrders = [];
+        const checkboxes = $('.orderCheckbox:checked');
+
+        // Validate selected orders
+        if (checkboxes.length === 0) {
+            Swal.fire('Warning', 'Please select orders to decline.', 'warning');
+            return;
+        }
+
+        // Populate modal table with selected orders
+        $('#declineOrderTable').empty();
+        checkboxes.each(function() {
+            const orderRow = $(this).closest('tr');
+            const orderId = orderRow.find('td:eq(1)').text();
+            const productName = orderRow.find('td:eq(2)').text();
+            const fullName = orderRow.find('td:eq(3)').text();
+
+            $('#declineOrderTable').append(`
+                <tr>
+                    <td>${orderId}</td>
+                    <td>${productName}</td>
+                    <td>${fullName}</td>
+                </tr>
+            `);
+
+            selectedOrders.push({
+                order_id: $(this).val(),
+                prod_name: productName,
+                order_fullname: fullName
+            });
+        });
+
+        // Open the modal
+        $('#declineModal').modal('show');
+    });
+
+    // Confirm Decline - Send Data to Server
+    $('#confirmDeclineBtn').on('click', function() {
+        const reason = $('#declineReason').val().trim();
+        
+        if (!reason) {
+            Swal.fire('Warning', 'Please provide a reason for declining.', 'warning');
+            return;
+        }
+
+        // Send declined orders and reason to the server via AJAX
+        fetch('decline_orders.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                orders: selectedOrders,
+                reason: reason
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    title: 'Success',
+                    text: 'Orders successfully declined!',
+                    icon: 'success'
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                Swal.fire('Error', 'Failed to decline orders: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error); // Log the error for debugging
+            Swal.fire('Error', 'An error occurred while declining orders.', 'error');
+        });
+    });
+});
+
     </script>
 </body>
 

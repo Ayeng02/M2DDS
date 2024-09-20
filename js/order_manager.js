@@ -395,7 +395,7 @@ $(document).ready(function() {
             Swal.fire({
                 icon: 'warning',
                 title: 'Select Order',
-                text: 'Please select at least one order to print the Official Receipt.',
+                text: 'Please select at least one order to print the Order Receipt.',
             });
             return;
         }
