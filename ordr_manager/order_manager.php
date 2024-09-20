@@ -28,26 +28,42 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
 
 // Query to fetch recent "Pending" orders
 $pendingQuery = "
-    SELECT o.order_id, o.prod_code, o.order_fullname, o.order_phonenum, 
+    SELECT o.order_id, o.prod_code, o.order_fullname, o.order_phonenum, p.prod_img,
            CONCAT(o.order_purok, ', ', o.order_barangay, ', ', o.order_province) AS order_address, 
-           o.order_qty, o.order_total, o.order_date, p.prod_name, b.Brgy_df, p.prod_price, p.prod_discount
+           o.order_qty, o.order_total, o.order_date, p.prod_name, b.Brgy_df, p.prod_price, p.prod_discount,
+           (o.order_total + 
+               (CASE 
+                   WHEN COUNT(0) OVER (PARTITION BY o.cust_id, o.order_date, o.order_barangay) = 1 
+                   THEN b.Brgy_df 
+                   ELSE ROUND(b.Brgy_df / COUNT(0) OVER (PARTITION BY o.cust_id, o.order_date, o.order_barangay), 2) 
+                END)
+           ) AS total_with_brgy_df
     FROM order_tbl o
     JOIN product_tbl p ON o.prod_code = p.prod_code
     JOIN brgy_tbl b ON o.order_barangay = b.Brgy_name
-    WHERE o.status_code = 1 AND DATE(o.order_date) = CURDATE()
+    WHERE o.status_code = 1 
+      AND DATE(o.order_date) = CURDATE()
     ORDER BY o.order_date DESC";
 
 $pendingResult = $conn->query($pendingQuery);
 
-// Query to fetch recent "Processing" orders
+
 $processingQuery = "
-    SELECT o.order_id, o.prod_code, o.order_fullname, o.order_phonenum, 
+    SELECT o.order_id, o.prod_code, o.order_fullname, o.order_phonenum, p.prod_img,
            CONCAT(o.order_purok, ', ', o.order_barangay, ', ', o.order_province) AS order_address, 
-           o.order_qty, o.order_total, o.order_date, p.prod_name, b.Brgy_df, p.prod_price, p.prod_discount
+           o.order_qty, o.order_total, o.order_date, p.prod_name, b.Brgy_df, p.prod_price, p.prod_discount,
+           (o.order_total + 
+               (CASE 
+                   WHEN COUNT(0) OVER (PARTITION BY o.cust_id, o.order_date, o.order_barangay) = 1 
+                   THEN b.Brgy_df 
+                   ELSE ROUND(b.Brgy_df / COUNT(0) OVER (PARTITION BY o.cust_id, o.order_date, o.order_barangay), 2) 
+                END)
+           ) AS total_with_brgy_df
     FROM order_tbl o
     JOIN product_tbl p ON o.prod_code = p.prod_code
     JOIN brgy_tbl b ON o.order_barangay = b.Brgy_name
-    WHERE o.status_code = 2 AND DATE(o.order_date) = CURDATE()
+    WHERE o.status_code = 2 
+      AND DATE(o.order_date) = CURDATE()
     ORDER BY o.order_date DESC";
 
 $processingResult = $conn->query($processingQuery);
@@ -349,6 +365,17 @@ label{
     color: white;
 
 }
+.product-img {
+            width: 60px;
+            height: auto;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .product-img+span {
+            font-size: 14px;
+            line-height: 1.5;
+        }
     </style>
 
 </head>
@@ -492,7 +519,12 @@ label{
                                 <tr>
                                     <td><input type="checkbox" class="orderCheckbox" value="<?php echo $row['order_id']; ?>" data-bs-toggle="tooltip" data-bs-placement="right" title="Check to select Order"></td>
                                     <td><?php echo htmlspecialchars($row['order_id']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['prod_name']); ?></td>
+                                    <td class="text-center">
+                                        <div class="d-flex align-items-center">
+                                            <img src="../<?php echo htmlspecialchars($row['prod_img']);?>" alt="<?php echo htmlspecialchars($row['prod_name']);?>" class="product-img">
+                                            <span class="ms-2"><?php echo htmlspecialchars($row['prod_name']); ?></span>
+                                        </div>
+                                    </td>
                                     <td><?php echo htmlspecialchars($row['order_fullname']); ?></td>
                                     <td><?php echo htmlspecialchars($row['order_phonenum']); ?></td>
                                     <td><?php echo htmlspecialchars($row['order_address']); ?></td>
@@ -503,7 +535,7 @@ label{
                                     <?php } ?>
                                     <td><?php echo htmlspecialchars($row['Brgy_df']); ?></td>
                                     <td><?php echo htmlspecialchars($row['order_qty']); ?></td>
-                                    <td><?php echo htmlspecialchars(number_format($row['order_total'], 2)); ?></td>
+                                    <td><?php echo htmlspecialchars(number_format($row['total_with_brgy_df'], 2)); ?></td>
                                     <td><?php echo htmlspecialchars(date('F j, Y g:i A', strtotime($row['order_date']))); ?></td>
 
                                 </tr>
@@ -590,7 +622,12 @@ label{
                                         <input type="checkbox" class="processingCheckbox" value="<?php echo htmlspecialchars($row['order_id']); ?>" data-bs-toggle="tooltip" data-bs-placement="right" title="Check to select Order">
                                     </td>
                                     <td><?php echo htmlspecialchars($row['order_id']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['prod_name']); ?></td>
+                                    <td class="text-center">
+                                        <div class="d-flex align-items-center">
+                                            <img src="../<?php echo htmlspecialchars($row['prod_img']);?>" alt="<?php echo htmlspecialchars($row['prod_name']);?>" class="product-img">
+                                            <span class="ms-2"><?php echo htmlspecialchars($row['prod_name']); ?></span>
+                                        </div>
+                                    </td>
                                     <td><?php echo htmlspecialchars($row['order_fullname']); ?></td>
                                     <td><?php echo htmlspecialchars($row['order_phonenum']); ?></td>
                                     <td><?php echo htmlspecialchars($row['order_address']); ?></td>
@@ -601,7 +638,7 @@ label{
                                     <?php } ?>
                                     <td><?php echo htmlspecialchars($row['Brgy_df']); ?></td>
                                     <td><?php echo htmlspecialchars($row['order_qty']); ?></td>
-                                    <td><?php echo htmlspecialchars(number_format($row['order_total'], 2)); ?></td>
+                                    <td><?php echo htmlspecialchars(number_format($row['total_with_brgy_df'], 2)); ?></td>
                                     <td><?php echo htmlspecialchars(date('F j, Y g:i A', strtotime($row['order_date']))); ?></td>
                                 </tr>
                             <?php endwhile; ?>
