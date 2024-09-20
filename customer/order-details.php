@@ -296,6 +296,11 @@ $conn->close();
                             <h4 class="alert-heading">Delivery Attempt Failed!</h4>
                             <p>You did not picked up the order!</p>
                         </div>
+                    <?php elseif ($order['status_code'] == 7): ?>
+                        <div class="alert alert-danger mt-4">
+                            <h4 class="alert-heading">Order Declined!</h4>
+                            <p>The Order has been declined!</p>
+                        </div>
                     <?php endif; ?>
                 </div>
                 <hr>
