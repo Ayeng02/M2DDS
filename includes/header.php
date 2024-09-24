@@ -80,6 +80,12 @@ if (isset($_POST['logout']) && $_POST['logout'] === 'true') {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <style>
+    .swal2-container {
+        z-index: 9999 !important;
+    }
+</style>
+
 </head>
 
 <body>

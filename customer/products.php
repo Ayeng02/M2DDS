@@ -240,6 +240,8 @@ $products = $stmt->get_result();
         </div>
     </div>
 
+    <?php include '../includes/message.php'; ?>
+
     <!-- Footer -->
     <?php include '../includes/footer.php' ?>
 

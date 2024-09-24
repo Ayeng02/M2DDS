@@ -600,7 +600,8 @@
             <!-- Success message will be injected here -->
         </div>
     </div>
-
+        
+    <?php include '../includes/message.php'; ?>
 
     <!-- Footer -->
     <?php include '../includes/footer.php' ?>
