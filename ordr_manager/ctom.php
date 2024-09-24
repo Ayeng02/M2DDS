@@ -80,7 +80,7 @@ $result = $conn->query($sql);
                               </div>";
                     }
                 } else {
-                    echo "<div class='text-center'>No customers found.</div>";
+                    echo "<div class='text-center'>No customers messages found.</div>";
                 }
                 $conn->close(); // Close the database connection
                 ?>
