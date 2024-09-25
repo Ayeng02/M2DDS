@@ -438,10 +438,7 @@ ob_end_flush();
 ?>
 <?php
     // Fetch categories from the database
-    $conn = new mysqli('localhost', 'root', '', 'm2dds');
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
-    }
+
 
     $categories = $conn->query("SELECT category_code, category_name FROM category_tbl");
 
