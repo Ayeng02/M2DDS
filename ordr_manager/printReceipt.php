@@ -1,6 +1,5 @@
 <?php
 include '../includes/db_connect.php';
-
 require '../vendor/autoload.php'; // Include the Composer autoload file
 
 use Picqer\Barcode\BarcodeGeneratorPNG;
@@ -10,7 +9,7 @@ if (isset($_GET['orders'])) {
 
     // Fetch the orders based on the IDs
     $orderQuery = "SELECT *, Brgy_df, prod_name, prod_price, prod_discount
-                   FROM order_tbl o
+                   FROM Order_tbl o
                    JOIN product_tbl p ON o.prod_code = p.prod_code
                    JOIN brgy_tbl b ON o.order_barangay = b.Brgy_name
                    JOIN customers c ON o.cust_id = c.cust_id
@@ -22,17 +21,28 @@ if (isset($_GET['orders'])) {
         $generator = new BarcodeGeneratorPNG();
         $barcodeDataUris = [];
 
+        // Group orders by barangay, date, and time
         while ($row = $result->fetch_assoc()) {
             $cust_id = $row['cust_id'];
+            $barangay = $row['order_barangay'];
+            $date = date('Y-m-d', strtotime($row['order_date']));
+            $time = date('H:i', strtotime($row['order_date']));
 
-            if (!isset($receipts[$cust_id])) {
-                $receipts[$cust_id] = [];
+            // Create keys for grouping
+            $groupKey = $barangay . '_' . $date . '_' . $time;
+
+            if (!isset($receipts[$groupKey])) {
+                $receipts[$groupKey] = [];
+                $receipts[$groupKey]['customer_id'] = $cust_id;
+
                 // Generate barcode for each unique customer ID and store it in an array
-                $barcode = $generator->getBarcode($cust_id, $generator::TYPE_CODE_128);
-                $barcodeDataUris[$cust_id] = 'data:image/png;base64,' . base64_encode($barcode);
+                if (!isset($barcodeDataUris[$cust_id])) {
+                    $barcode = $generator->getBarcode($cust_id, $generator::TYPE_CODE_128);
+                    $barcodeDataUris[$cust_id] = 'data:image/png;base64,' . base64_encode($barcode);
+                }
             }
 
-            $receipts[$cust_id][] = $row;
+            $receipts[$groupKey]['orders'][] = $row;
         }
 
         // HTML for print layout
@@ -58,9 +68,12 @@ if (isset($_GET['orders'])) {
         $businessEmail = "xxxxxxxxxxxxxxxxxx";
         $logoPath = "../img/mtdd_logo.png"; // Adjust the logo path as necessary
 
-        foreach ($receipts as $cust_id => $orders) {
+        // Iterate over grouped receipts
+        foreach ($receipts as $groupKey => $group) {
+            $orders = $group['orders'];
             $customerName = $orders[0]['order_fullname'];
             $address = $orders[0]['order_purok'] . ', ' . $orders[0]['order_barangay'] . ', ' . $orders[0]['order_province'];
+            $cust_id = $group['customer_id'];
 
             echo "<div class='receipt'>";
 

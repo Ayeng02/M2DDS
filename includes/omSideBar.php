@@ -1,5 +1,33 @@
+<?php
+session_start();
+
+include 'db_connect.php';
+
+$empID = $_SESSION['emp_id']; // Assuming emp_id is stored in session
+
+// Call the stored function
+$getEmpSql = "SELECT sf_getEmpInfo('$empID') AS empInfo";
+$getEmpResult = $conn->query($getEmpSql);
+
+if ($getEmpResult->num_rows > 0) {
+    // Fetch the result
+    $row1 = $getEmpResult->fetch_assoc();
+    $empInfo = $row1['empInfo'];
+
+    // Split the result into components (name and image)
+    list($empName, $empImg) = explode('|', $empInfo);
+} else {
+    $empName = "Unknown";
+    $empImg = "default.jpg"; // fallback image
+}
+
+?>
+
+
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,17 +39,19 @@
             border-radius: 12px;
             font-size: 12px;
         }
+
         .bg-danger {
             background-color: red;
             color: white;
         }
     </style>
 </head>
+
 <body>
     <nav id="sidebar" class="bg-dark">
         <div class="profile">
-            <img src="../img/aye.jpg" alt="Profile Picture">
-            <h5>Ayeng Dohinog</h5>
+            <img src="../<?php echo $empImg; ?>" alt="Profile Picture">
+            <h5><?php echo $empName; ?></h5>
             <p class="role">Order Manager</p>
         </div>
         <a href="../ordr_manager/order_manager.php" class="text-light active1">
@@ -84,4 +114,5 @@
         window.onload = fetchUnreadMessages;
     </script>
 </body>
+
 </html>

@@ -2,6 +2,10 @@
 session_start();
 include '../includes/db_connect.php';
 
+// Set error reporting to ignore notices
+error_reporting(E_ALL & ~E_NOTICE);
+
+
 // Redirect to landing page if already logged in
 if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isset($_SESSION['AdminLogExist']) && $_SESSION['AdminLogExist'] === true) {
     if (isset($_SESSION['emp_role'])) {

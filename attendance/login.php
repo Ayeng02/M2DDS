@@ -15,51 +15,80 @@ $response = [
     'success' => false,
     'image' => '',
     'name' => '',
+    'role' => '',
     'error' => '',
     'success_message' => ''
 ];
 
 // Handle form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Retrieve the employee ID from the POST request and sanitize input
     $emp_id = strtoupper(trim($_POST['employeeId'])); // Convert emp_id to uppercase and trim spaces
 
-    // Check if employee exists
+    // Use server time instead of fetching time from an external API
+    $current_time = new DateTime(); // Get the current server time
+    $current_hour = (int) $current_time->format('H'); // Get current hour in 24-hour format
+
+    // Set allowed login window (5:00 AM to 7:00 AM)
+    $login_start = 13;   // 5:00 AM
+    $login_end = 15;   // 7:30 AM
+
+    // Check if the current time is within the allowed login window
+    if ($current_hour < $login_start || $current_hour >= $login_end) {
+        // Outside of login hours
+        $response['error'] = "Logins are open between 5:00 AM and 7:30 AM.";
+        echo json_encode($response);
+        exit;
+    }
+
+    // Proceed with login logic after time window check
     $stmt = $conn->prepare("SELECT * FROM emp_tbl WHERE emp_id = ?");
     $stmt->bind_param("s", $emp_id);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($employee = $result->fetch_assoc()) {
-        // Employee found, handle attendance record
-        $current_date = date("Y-m-d");
-        $current_time = date("H:i:s"); // Record current time for time_in
-    
-        // Check if any attendance record exists for today
+        $current_timestamp = date("Y-m-d H:i:s"); // Record current timestamp
+        $current_date = date("Y-m-d"); // Current date
+
+        // Check if an attendance record exists for today with no time_out
         $stmt = $conn->prepare("SELECT * FROM att_tbl WHERE emp_id = ? AND att_date = ? AND time_out IS NULL");
         $stmt->bind_param("ss", $emp_id, $current_date);
         $stmt->execute();
         $attendance_result = $stmt->get_result();
-    
+
         if ($attendance_row = $attendance_result->fetch_assoc()) {
-            // Employee has already logged in and not yet logged out
-            $response['error'] = "You have already logged in today and have not logged out.";
+            // Employee has already logged in today and has not logged out yet
+            $response['error'] = "You're already logged in. Please log out first.";
         } else {
-            // Employee has either not logged in today, or has logged out, allow new login
-            $stmt = $conn->prepare("INSERT INTO att_tbl (emp_id, time_in, att_date) VALUES (?, ?, ?)");
-            $stmt->bind_param("sss", $emp_id, $current_time, $current_date);
+            // Check if there is a previous record for the same day but with time_out
+            $stmt = $conn->prepare("SELECT * FROM att_tbl WHERE emp_id = ? AND att_date = ? AND time_out IS NOT NULL");
+            $stmt->bind_param("ss", $emp_id, $current_date);
             $stmt->execute();
-    
-            // Return employee details in the response
-            $response['success'] = true;
-            $response['success_message'] = "Login Success";
-            $response['image'] = $employee['emp_img'] ? $employee['emp_img'] : 'path/to/default-image.png';
-            $response['name'] = $employee['emp_fname'] . ' ' . $employee['emp_lname'];
+            $previous_attendance = $stmt->get_result();
+
+            // Allow login if either no record exists for today, or there is a time_out
+            if ($previous_attendance->num_rows > 0 || $attendance_result->num_rows === 0) {
+                // Insert new attendance record (time_in)
+                $stmt = $conn->prepare("INSERT INTO att_tbl (emp_id, time_in, att_date) VALUES (?, ?, ?)");
+                $stmt->bind_param("sss", $emp_id, $current_timestamp, $current_date);
+                $stmt->execute();
+
+                // Set successful response with employee details
+                $response['success'] = true;
+                $response['success_message'] = "Login Success";
+                $response['image'] = $employee['emp_img'] ? '../' . $employee['emp_img'] : '../Shipper_Upload/sample1.png'; // Default image path if not set
+                $response['name'] = $employee['emp_fname'] . ' ' . $employee['emp_lname'];
+                $response['role'] = $employee['emp_role'];
+            } else {
+                // Unexpected error case (shouldn't happen)
+                $response['error'] = "Unexpected error. Please try again.";
+            }
         }
     } else {
-        // Employee not found
-        $response['error'] = "Employee ID not found.";
+        // Employee not found in emp_tbl
+        $response['error'] = "Employee ID Not Found.";
     }
-    
 
     // Close statement and connection
     $stmt->close();
@@ -72,8 +101,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 ?>
 
 
+
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -249,13 +281,57 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             margin-right: 10px;
         }
 
-        #employeeInfo img {
-            border-radius: 50%;
-            width: 100px;
-            height: 100px;
+        #employeeImage {
+            width: 200px;
+
+            height: 200px;
+            margin-bottom: 15px;
+
+            object-fit: cover;
+
+            border-radius: 10px;
+
         }
-        </style>
+
+
+        /* Styles for the information box */
+        #infoBox {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            max-width: 400px;
+            text-align: center;
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+            font-size: 25px;
+            color: #333;
+        }
+
+        #employeeName {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        #infoBox.show {
+            display: block;
+            opacity: 10;
+            transform: scale(1.05);
+        }
+
+        #infoBox.hide {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+    </style>
 </head>
+
 <body>
 
     <!-- Video Background -->
@@ -270,7 +346,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <input type="text" id="employeeId" name="employeeId" placeholder="Enter ID" required>
             <button type="submit">Login</button>
         </form>
-        
+
     </div>
 
     <!-- Choice Menu -->
@@ -281,6 +357,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
     </div>
 
+    <!-- Info Box -->
+    <div id="infoBox">
+        <img id="employeeImage"></img>
+        <div id="employeeName"></div>
+        <div id="employeeRole"></div>
+
+    </div>
+
+
     <!-- JavaScript -->
     <script>
         function toggleMenu() {
@@ -289,48 +374,65 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         document.getElementById('attendanceForm').addEventListener('submit', function(event) {
-            event.preventDefault(); 
+            event.preventDefault();
 
             const formData = new FormData(this);
 
             fetch(window.location.href, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: data.success_message,
-                        text: `Welcome, ${data.name}!`,
-                        imageUrl: data.image,
-                        imageWidth: 100,
-                        imageHeight: 100,
-                        imageAlt: 'Employee Image'
-                    }).then(() => {
-                        document.getElementById('attendanceForm').reset();
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const infoBox = document.getElementById('infoBox');
+
+                    if (data.success) {
+                        // Update the info box with employee details
+
+                        document.getElementById('employeeName').innerHTML = `${data.name}`;
+                        document.getElementById('employeeRole').innerText = `(${data.role})`;
                         document.getElementById('employeeImage').src = data.image;
-                        document.getElementById('employeeName').innerText = data.name;
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: data.error
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Network Error',
-                    text: 'Please try again later.'
+
+                        // Show the info box
+                        infoBox.style.display = 'block';
+
+                        // Make the info box disappear after 3 seconds
+                        setTimeout(() => {
+                            infoBox.style.opacity = '0';
+                            setTimeout(() => {
+                                infoBox.style.display = 'none'; // Fully hide after fade-out
+                                infoBox.style.opacity = '1'; // Reset opacity for future use
+                            }, 500); // Wait for fade-out transition to finish
+                        }, 3000); // 3 seconds delay
+
+                        // Reset the form
+                        document.getElementById('attendanceForm').reset();
+                    } else {
+                        // Update the info box with error message
+                        document.getElementById('employeeName').innerText = data.error;
+                        document.getElementById('employeeImage').style.display = 'none';
+                        document.getElementById('employeeRole').style.display = 'none';
+
+                        // Show the info box
+                        infoBox.style.display = 'block';
+
+                        // Make the info box disappear after 3 seconds
+                        setTimeout(() => {
+                            infoBox.style.opacity = '0';
+                            setTimeout(() => {
+                                infoBox.style.display = 'none'; // Fully hide after fade-out
+                                infoBox.style.opacity = '1'; // Reset opacity for future use
+                            }, 500); // Wait for fade-out transition to finish
+                        }, 3000); // 3 seconds delay
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Network Error: Please try again later.');
                 });
-            });
         });
     </script>
 
 </body>
+
 </html>

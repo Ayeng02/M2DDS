@@ -1,0 +1,244 @@
+   /* Fade-in Animation */
+   body {
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+body.loaded {
+    opacity: 1;
+}
+
+.profile-card {
+    background-color: #A72828;
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.profile-card .profile-circle {
+    width: 60px;
+    height: 60px;
+    background-color: #FF8225;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+}
+.card-icon {
+    font-size: 36px;
+    color: #FF8225;
+}
+.custom-card {
+    border-radius: 10px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    flex-grow: 1;
+    text-decoration: none; /* Remove underline */
+    color: inherit; /* Inherit text color */
+    transition: background-color 0.3s; /* Transition for hover effect */
+}
+.active{
+    background-color: #e2e6ea;
+    color: #A72828;
+}
+.custom-card:hover {
+    background-color: #e2e6ea;
+    color: #A72828;
+}
+.icon-text-container {
+    display: flex;
+    align-items: center;
+}
+.icon-text-container h5 {
+    margin-left: 15px;
+    margin-bottom: 0;
+    flex-grow: 1;
+}
+.card-container {
+    display: flex;
+    gap: 15px;
+    flex-wrap: nowrap; /* Prevent wrapping */
+}
+.custom-card {
+    min-width: 150px;
+    flex: 1;
+}
+/* Orders Section Styles */
+.orders-section {
+    margin-top: 30px;
+}
+
+/* Order Card Styles */
+.order-card {
+    border: 1px solid #e2e6ea;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #f8f9fa;
+    transition: transform 0.2s, box-shadow 0.2s; /* Animation on hover */
+    cursor: pointer; /* Change cursor on hover */
+}
+
+.order-card:hover {
+    transform: translateY(-5px); /* Lift effect on hover */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Shadow effect */
+}
+
+/* Order Details */
+.order-details {
+    margin-bottom: 15px;
+}
+
+/* Status Indicator */
+.order-status {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    color: white;
+}
+
+/* Specific Status Colors */
+.order-status.pending {
+    background-color: #ffc107; /* Yellow for pending */
+}
+
+.order-status.in-progress {
+    background-color: #007bff; /* Blue for in-progress */
+}
+
+.order-status.completed {
+    background-color: #28a745; /* Green for completed */
+}
+
+/* Button Custom Styles */
+.btn-custom {
+    margin-right: 10px; /* Space between buttons */
+    border-radius: 10px; /* Rounded buttons */
+    padding: 10px 15px; /* More padding for larger touch area */
+    transition: background-color 0.3s, transform 0.2s; /* Smooth transition */
+}
+
+.btn-custom:hover {
+    transform: scale(1.05); /* Slight grow on hover */
+}
+
+.switch {
+    display: flex;
+    align-items: center;
+}
+
+.switch {
+    display: flex;
+    align-items: center;
+}
+
+.switch input {
+    display: none;
+}
+
+.switch-label {
+    cursor: pointer;
+    position: relative;
+    width: 60px;
+    height: 34px;
+    background-color: #ccc;
+    border-radius: 34px;
+    transition: background-color 0.4s ease;
+}
+
+.switch-label .switch-inner {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 34px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: #A72828;
+    transition: background-color 0.4s ease;
+}
+
+.switch-label .switch-slider {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.4s ease;
+}
+
+input:checked + .switch-label {
+    background-color: #4CAF50;
+}
+
+input:checked + .switch-label .switch-slider {
+    transform: translateX(26px);
+}
+
+.switch-text {
+    margin-left: 10px;
+    font-weight: bold;
+}
+
+.btn-primary1{
+    background-color: #FF8225;
+    color: #fff;
+    border: none;
+
+}
+.btn-primary1:hover{
+    background-color: #e5833b;
+    color: #fff;
+}
+
+.card {
+    height: 300px; /* Set a fixed height */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Align items to fill the card */
+}
+.card-body {
+    flex-grow: 1; /* This allows the card body to take the available space */
+    display: flex;
+    flex-direction: column;
+}
+
+.mt-auto {
+    margin-top: auto; /* Pushes the button to the bottom */
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .card-container {
+        flex-wrap: nowrap;
+    }
+    .custom-card {
+        flex: 1;
+    }
+    /* Adjust text size for smaller screens */
+    h5 {
+        font-size: 14px;
+    }
+    .card-icon {
+        font-size: 28px; /* Smaller icons for small screens */
+    }
+    .order-card {
+        padding: 10px; /* Reduce padding on small screens */
+    }
+    .btn-custom {
+        margin: 5px 2px; /* Vertical spacing between buttons */
+    }
+}

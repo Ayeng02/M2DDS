@@ -1,83 +1,91 @@
 <?php
-// Database connection
+// Include database connection
 include '../includes/db_connect.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+// Manila, Philippine timezone
+date_default_timezone_set('Asia/Manila');
+
+// Handle POST request
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $emp_id = $_POST['employeeId'];
 
-    // Check if employee has a valid entry with time_in but no time_out
-    $query = "SELECT * FROM att_tbl WHERE emp_id = ? AND time_out IS NULL ORDER BY att_date DESC LIMIT 1";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param('s', $emp_id);
+    // Get the current time
+    $current_time = date('H:i'); // e.g., "16:30" for 4:30 PM
+    $logout_start = '13:00';     // 4:00 PM
+    $logout_end = '17:30';       // 5:30 PM
+
+    // Check if the current time is within the allowed logout window
+    if ($current_time < $logout_start || $current_time > $logout_end) {
+        $response = [
+            'status' => 'error',
+            'message' => 'You can only log out between 4:00 PM and 5:30 PM.'
+        ];
+        echo json_encode($response);
+        exit();
+    }
+
+    // Check if emp_id exists in emp_tbl
+    $empQuery = "SELECT * FROM emp_tbl WHERE emp_id = ?";
+    $stmt = $conn->prepare($empQuery);
+    $stmt->bind_param("s", $emp_id);
     $stmt->execute();
-    $result = $stmt->get_result();
+    $empResult = $stmt->get_result();
 
-    if ($result->num_rows > 0) {
-        // Get the current timestamp for logout time
-        $time_out = date('Y-m-d H:i:s');
+    if ($empResult->num_rows > 0) {
+        // Employee exists, check if there is an entry in att_tbl with no time_out
+        $attQuery = "SELECT * FROM att_tbl WHERE emp_id = ? AND time_out IS NULL";
+        $stmt = $conn->prepare($attQuery);
+        $stmt->bind_param("s", $emp_id);
+        $stmt->execute();
+        $attResult = $stmt->get_result();
 
-        // Update the time_out for the corresponding record
-        $row = $result->fetch_assoc();
-        $att_id = $row['att_id'];
+        if ($attResult->num_rows > 0) {
+            // Employee is logged in, update time_out and show success message
+            $updateQuery = "UPDATE att_tbl SET time_out = NOW() WHERE emp_id = ? AND time_out IS NULL";
+            $stmt = $conn->prepare($updateQuery);
+            $stmt->bind_param("s", $emp_id);
+            $stmt->execute();
 
-        $updateQuery = "UPDATE att_tbl SET time_out = ? WHERE att_id = ?";
-        $updateStmt = $conn->prepare($updateQuery);
-        $updateStmt->bind_param('si', $time_out, $att_id);
-        
-        if ($updateStmt->execute()) {
-            // Fetch employee details to show in SweetAlert
-            $empQuery = "SELECT emp_fname, emp_lname, emp_img FROM emp_tbl WHERE emp_id = ?";
-            $empStmt = $conn->prepare($empQuery);
-            $empStmt->bind_param('s', $emp_id);
-            $empStmt->execute();
-            $empResult = $empStmt->get_result();
-
-            if ($empResult->num_rows > 0) {
-                $empRow = $empResult->fetch_assoc();
-
-                // Prepare the data to send back to the client
-                $response = [
-                    'success' => true,
-                    'success_message' => 'Logout successful!',
-                    'name' => $empRow['emp_fname'] . ' ' . $empRow['emp_lname'],
-                    'image' => $empRow['emp_img']
-                ];
-            } else {
-                $response = [
-                    'success' => false,
-                    'error' => 'Employee details not found.'
-                ];
-            }
-        } else {
+            // Fetch employee's name and role to display in the info box
+            $empData = $empResult->fetch_assoc();
             $response = [
-                'success' => false,
-                'error' => 'Failed to log out.'
+                'status' => 'success',
+                'message' => 'Logout successful',
+                'image' => $empData['emp_img'] ? '../'. $empData['emp_img'] : '../Shipper_Upload/sample1.png',
+                'name' => $empData['emp_fname'] . ' ' . $empData['emp_lname'],
+                'role' => $empData['emp_role']
+            ];
+        } else {
+            // Employee is not logged in
+            $response = [
+                'status' => 'error',
+                'message' => 'You are not logged in to the system.'
             ];
         }
     } else {
+        // Employee ID not found
         $response = [
-            'success' => false,
-            'error' => 'No active session found for this employee ID.'
+            'status' => 'error',
+            'message' => 'Employee ID Not Found.'
         ];
     }
 
-    // Return JSON response
     echo json_encode($response);
+    exit();
 }
 ?>
 
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shipper - Meat-To-Door Delivery Logout</title>
+    <title>Shipper - Meat-To-Door Delivery</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="icon" href="../img/mtdd_logo.png" type="image/x-icon">
-
-    <!-- SweetAlert2 CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <style>
         * {
             margin: 0;
@@ -94,12 +102,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             height: 100vh;
             position: relative;
             overflow: hidden;
-            opacity: 0;
-            transition: opacity 1s ease-in-out;
-        }
-
-        body.show {
-            opacity: 1;
         }
 
         video {
@@ -250,9 +252,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .choice-menu i {
             margin-right: 10px;
         }
+
+        #employeeImage {
+            width: 200px;
+
+            height: 200px;
+            margin-bottom: 15px;
+
+            object-fit: cover;
+
+            border-radius: 10px;
+
+        }
+
+        /* Styles for the information box */
+        #infoBox {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            max-width: 400px;
+            text-align: center;
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+            font-size: 25px;
+            color: #333;
+        }
+
+        #employeeName {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+
+        #infoBox.show {
+            display: block;
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.05);
+        }
+
+        #infoBox.hide {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.8);
+        }
     </style>
 </head>
-<body class="animate">
+
+<body>
 
     <!-- Video Background -->
     <video autoplay muted loop>
@@ -262,46 +314,86 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="container">
         <h1 class="title">Meat to Door Delivery System Logout</h1>
 
-        <form id="logoutForm" action="logout.php" method="POST">
-            <input type="text" name="employeeId" placeholder="Enter ID" required>
+        <form id="attendanceForm">
+            <input type="text" id="employeeId" name="employeeId" placeholder="Enter ID" required>
             <button type="submit">Logout</button>
         </form>
+
+        <!-- Info Box -->
+        <div id="infoBox">
+            <img id="employeeImage"></img>
+            <div id="employeeName"></div>
+            <div id="employeeRole"></div>
+
+        </div>
+
     </div>
 
-    <!-- Choice Button -->
+    <!-- Choice Menu -->
     <div class="choice-container">
-        <button class="choice-button" id="choiceButton">
-            <i class="fas fa-ellipsis-v"></i>
-        </button>
-        <div class="choice-menu" id="choiceMenu">
-            <a href="login.php"><i class="fas fa-sign-in-alt"></i>Login</a>
-            <a href="logout.php"><i class="fas fa-sign-out-alt"></i>Logout</a>
+        <button class="choice-button" onclick="toggleMenu()"><i class="fas fa-cogs"></i></button>
+        <div id="choiceMenu" class="choice-menu">
+            <a href="login.php"><i class="fas fa-sign-out-alt"></i> Login</a>
         </div>
     </div>
 
+    <!-- JavaScript -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            document.body.classList.add('show');
-        });
+        function toggleMenu() {
+            const menu = document.getElementById('choiceMenu');
+            menu.classList.toggle('show');
+        }
 
-        const choiceButton = document.getElementById('choiceButton');
-        const choiceMenu = document.getElementById('choiceMenu');
+        document.getElementById('attendanceForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent form submission
 
-        choiceButton.addEventListener('click', () => {
-            if (choiceMenu.classList.contains('show')) {
-                choiceMenu.classList.remove('show');
-            } else {
-                const otherMenus = document.querySelectorAll('.choice-menu.show');
-                otherMenus.forEach(menu => menu.classList.remove('show'));
-                choiceMenu.classList.add('show');
-            }
-        });
+            const employeeId = document.getElementById('employeeId').value;
 
-        document.addEventListener('click', (event) => {
-            if (!choiceButton.contains(event.target) && !choiceMenu.contains(event.target)) {
-                choiceMenu.classList.remove('show');
-            }
+            // Send POST request to PHP to handle logout
+            fetch('', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'employeeId=' + encodeURIComponent(employeeId)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const infoBox = document.getElementById('infoBox');
+                    const employeeImg = document.getElementById('employeeImage');
+                    const employeeName = document.getElementById('employeeName');
+                    const employeeRole = document.getElementById('employeeRole');
+
+
+                    if (data.status === 'success') {
+                        // Show success message with employee's name and role
+                        employeeImg.src = data.image;
+                        employeeName.innerHTML = `${data.name}`;
+                        employeeRole.innerText = `(${data.role})`
+
+                    } else {
+                        // Show error message
+                        infoBox.style.width = '400px'
+                        employeeImg.style.display = 'none';
+                        employeeRole.style.display = 'none';
+                        employeeName.innerText = data.message;
+                    }
+
+                    // Show the info box
+                    infoBox.classList.add('show');
+
+                    // Clear the input field
+                    document.getElementById('employeeId').value = '';
+
+                    // Hide the info box after 2 seconds
+                    setTimeout(() => {
+                        infoBox.classList.remove('show');
+                    }, 2000);
+                })
+                .catch(error => console.error('Error:', error));
         });
     </script>
+
 </body>
+
 </html>

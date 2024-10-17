@@ -28,7 +28,7 @@
     <div class="floating-chat-widget">
         <div class="chat-box" id="chatBox">
             <div class="chat-header">
-                <span>Chat with Us</span>
+                <span> <i class="fas fa-comments"></i> Chat with Us</span>
                 <i class="fas fa-times" onclick="toggleChatBox()"></i>
             </div>
             <div class="chat-body" id="chatBody">

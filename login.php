@@ -1,5 +1,5 @@
 <?php
-session_start(); // Start the sessiona
+session_start(); // Start the session
 
 // Set the time zone to Manila/Philippines
 date_default_timezone_set('Asia/Manila');
@@ -86,10 +86,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['emp_id'] = $empId;
                     $_SESSION['emp_role'] = $empRole;
 
+                    // Update employee status to 'Active'
+                    $statusUpdateSql = "UPDATE emp_tbl SET emp_status = 'Active' WHERE emp_id = ?";
+                    $statusUpdateStmt = $conn->prepare($statusUpdateSql);
+                    $statusUpdateStmt->bind_param("s", $empId);
+                    $statusUpdateStmt->execute();
+                    $statusUpdateStmt->close();
+
                     $redirectUrl = '';
                     switch ($empRole) {
                         case 'Shipper':
-                            $redirectUrl = 'shipper_dashboard.php';
+                            $redirectUrl = './shipper/shipper.php';
                             break;
                         case 'Order Manager':
                             $redirectUrl = './ordr_manager/order_manager.php';
@@ -123,7 +130,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -133,12 +139,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Google Fonts (Optional) -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./css/loginstake.css">
-    
+    <link rel="icon" href="./img/mtdd_logo.png" type="image/x-icon">
 </head>
-    <!-- Custom CSS -->
-
-</head>
-
 <body>
 <div class="login-container">
     <!-- Logo Section -->
@@ -149,9 +151,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- Display Error Message -->
     <?php if (isset($error_message)): ?>
-    <div id="error-alert" class="alert alert-danger ">
-        <?php echo htmlspecialchars($error_message); ?>
-    </div>
+        <div id="error-alert" class="alert alert-danger">
+            <?php echo htmlspecialchars($error_message); ?>
+        </div>
     <?php endif; ?>
 
     <form id="loginForm" method="POST">
@@ -172,27 +174,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </form>
 </div>
 
-    <!-- Bootstrap JS and Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JS for Show Password -->
-    <script>
-        document.getElementById('showPassword').addEventListener('change', function () {
-            const passwordInput = document.getElementById('password');
-            if (this.checked) {
-                passwordInput.type = 'text';
-            } else {
-                passwordInput.type = 'password';
-            }
-        });
+<!-- Bootstrap JS and Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 
-         // JavaScript to hide the alert after 3 seconds
+<!-- Custom JS for Show Password -->
+<script>
+    document.getElementById('showPassword').addEventListener('change', function () {
+        const passwordInput = document.getElementById('password');
+        passwordInput.type = this.checked ? 'text' : 'password';
+    });
+
+    // Hide the alert after 5 seconds
     setTimeout(function() {
         var errorAlert = document.getElementById('error-alert');
         if (errorAlert) {
             errorAlert.style.display = 'none';
         }
-    }, 5000); // 3000 milliseconds = 3 seconds
-    </script>
+    }, 5000); // 5 seconds
+</script>
 </body>
-
 </html>

@@ -1,4 +1,7 @@
 <?php
+session_start();
+// Set error reporting to ignore notices
+error_reporting(E_ALL & ~E_NOTICE);
 // Database connection
 include '../includes/db_connect.php';
 
@@ -189,7 +192,6 @@ $TransactResult = $stmt->get_result();
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
-            justify-content: center;
         }
 
         .shipper-card .card-footer {
