@@ -45,21 +45,20 @@ if ($quantity_result->num_rows > 0) {
 
 
 
+
 $sale_sql = "SELECT SUM(order_total) AS daily_sales 
-        FROM order_tbl 
-        WHERE DATE(order_date) = CURDATE()
-          AND status_code = '4'";
+             FROM order_tbl 
+             WHERE DATE(order_date) = CURDATE()
+               AND status_code = '4'";
 $sale_result = $conn->query($sale_sql);
 
-$daily_sales = 0;
+$daily_sales = 0; // Initialize as 0 to avoid null
 
 if ($sale_result->num_rows > 0) {
-    while ($row = $sale_result->fetch_assoc()) {
-        $daily_sales = $row['daily_sales'];
-    }
-} else {
-    $daily_sales = "No data available";
+    $row = $sale_result->fetch_assoc();
+    $daily_sales = $row['daily_sales'] ?? 0; // Use null coalescing operator to avoid null
 }
+
 
 
 
@@ -69,13 +68,13 @@ $deliv_sql = "SELECT COUNT(*) AS total_deliv
                 AND YEAR(order_date) = YEAR(CURDATE()) 
                 AND status_code = '4'";  // Assuming '4' is the status code for delivered orders
 
-$result = $conn->query($deliv_sql);
+$result1 = $conn->query($deliv_sql);
 
 // Initialize $total_deliv to 0
 $total_deliv = 0;
 
-if ($result->num_rows > 0) {
-    $row = $result->fetch_assoc();
+if ($result1->num_rows > 0) {
+    $row = $result1->fetch_assoc();
     $total_deliv = $row['total_deliv'];  // Store the total delivered count
 } else {
     $total_deliv = "No data available";  // Fallback if no data
