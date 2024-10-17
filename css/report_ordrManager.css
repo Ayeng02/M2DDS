@@ -1,0 +1,449 @@
+/* Sidebar on the left */
+#sidebar {
+    height: 100vh;
+    width: 200px;
+    background: linear-gradient(380deg, #ff83259b, #a72828, #343a4043, #343a40af);
+    /* Gradient background */
+    backdrop-filter: 100px;
+    padding-top: 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    transition: all 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+}
+
+#sidebar a {
+    color: #fff;
+    padding: 15px;
+    display: block;
+    text-decoration: none;
+    transition: background 1s ease;
+}
+
+.active {
+    background: linear-gradient(180deg, #ff83259b, #a72828);
+}
+
+#sidebar a:hover {
+    background: linear-gradient(180deg, #ff83259b, #a72828);
+}
+
+#sidebar.collapsed {
+    width: 80px;
+}
+
+#sidebar.collapsed a {
+    text-align: center;
+    padding: 10px;
+}
+
+#sidebar.collapsed a span {
+    display: none;
+}
+
+/* Profile section */
+.profile {
+    margin: 0 0 20px 0;
+    text-align: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #495057;
+}
+
+.profile img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+.profile h5 {
+    color: #fff;
+    margin: 0;
+}
+
+.profile .role {
+    color: #adb5bd;
+    /* Light grey color for role */
+    font-size: 0.9rem;
+    /* Slightly smaller font size for role */
+    margin: 0;
+}
+
+/* Logout at the bottom */
+.logout {
+    margin-top: auto;
+    padding-bottom: 20px;
+}
+
+/* Sidebar toggle button (visible only on small screens) */
+.toggle-btn {
+    position: fixed;
+    top: 20px;
+    left: 250px;
+    z-index: 1100;
+    cursor: pointer;
+    display: none;
+    transition: all 0.3s;
+}
+
+#sidebar.collapsed~.toggle-btn {
+    left: 80px;
+}
+
+/* Main content */
+.content {
+    margin-left: 200px;
+    padding: 20px;
+    transition: margin-left 0.3s;
+}
+
+/* Adjust content margin when sidebar is collapsed */
+#sidebar.collapsed~.content {
+    margin-left: 80px;
+}
+
+/* Clock container */
+#clock-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    padding: 10px 20px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#clock {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+#date {
+    margin-left: 10px;
+    font-size: 1.2rem;
+    color: #6c757d;
+}
+
+.cards {
+    display: flex;
+    justify-content: center;
+    /* Center cards horizontally */
+    align-items: center;
+    /* Center cards vertically */
+    gap: 3rem;
+    /* Adjust gap between cards */
+    flex-wrap: wrap;
+    /* Allow cards to wrap to next line on smaller screens */
+}
+
+.card-header {
+    border: none;
+    background-color: inherit;
+
+}
+
+.card {
+    height: 15rem;
+    width: 25rem;
+    padding-top: 10px;
+    color: #495057;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+#card_con {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#card_con i {
+    font-size: 3.3rem;
+    margin-bottom: 1rem;
+}
+
+
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; 
+    margin-bottom: 20px;
+}
+
+/* Style for the button */
+#toggleButton {
+    background-color: #ff6347; 
+    color: white; 
+    border: none; 
+    padding: 10px 20px; 
+    font-size: 1rem;
+    border-radius: 8px; 
+    cursor: pointer; 
+    transition: background-color 0.3s ease; 
+}
+
+#toggleButton:hover {
+    background-color: #ff4500; 
+}
+#tableContainer{
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+#con-chart{
+    margin: 0;
+    overflow:auto;
+    height:90vh;
+    padding: 10px;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+#chart {
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center;     /* Center vertically */
+    height: 90vh;           /* Full viewport height */
+
+}
+
+#chartContainer{
+    display: flex;
+    background-color: #fff;
+    /* White background for the chart container */
+    /* Add a shadow */
+    max-width: 100%;
+    max-height: 85vh;
+  
+}
+
+.cust_prod {
+    display: flex;
+    justify-content: space-between;
+    /* To create space between the tables */
+    flex-wrap: wrap;
+    /* Wrap the tables if the screen is too small */
+    padding: 15px;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.table-responsive {
+    width: 48%;
+    /* Ensure the tables take less than 50% of the container width */
+}
+
+
+
+#customersTable, #prodsTable, #stocksTbl {
+    width: 100%; 
+    border-collapse: collapse
+}
+
+#customersTable, #prodsTable, #stocksTbl th {
+    font-size: 1.3rem;
+    text-align: center;
+    
+}
+#stocksTbl th {
+    border: none;
+    padding: 15px;
+}
+
+
+
+#stocksTbl td{
+    font-size: 1rem;
+    text-align: center;
+    border: none; 
+    padding: 10px;
+    
+}
+
+#customersTable td {
+    font-size: 1.1rem;
+}
+
+#prodsTable td{
+    font-size: 1.1rem;
+}
+
+/* Keyframes for fade-in-out effect */
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+}
+
+.accBtn {
+    background-color: #FF8225;
+    color: white;
+    transition: transform 0.5s ease-in-out, background-color 0.3s ease-in-out;
+
+}
+
+.accBtn:hover {
+    background-color: #c12e2e;
+    color: white;
+    transform: scale(1.02);
+}
+
+
+.form-control:focus {
+    border-color: #FF8225;
+    box-shadow: 0 0 5px rgba(255, 130, 37, 0.8);
+}
+
+/* For Webkit browsers */
+::-webkit-scrollbar {
+    width: 12px;
+    /* Width of the scrollbar */
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    /* Color of the track */
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #ff83259b, #a72828);
+    border-radius: 10px;
+    /* Rounded corners of the scrollbar thumb */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(380deg, #a72828, #343a40);
+}
+
+
+
+
+@media (max-width: 600px) {
+
+    table,
+    th,
+    td {
+        font-size: 0.9em;
+    }
+}
+
+/* Navbar collapse on small screens */
+@media (max-width: 768px) {
+    #sidebar {
+        display: none;
+    }
+
+    .toggle-btn {
+        display: block;
+    }
+
+    .content {
+        margin-left: 0;
+    }
+
+    #mobile-nav {
+        display: block;
+    }
+
+}
+
+@media (min-width: 768px) {
+    #mobile-nav {
+        display: none;
+    }
+}
+
+@media (max-width: 576px) {
+    .status-card {
+        width: 150px;
+    }
+}
+
+@media (max-width: 300px) {
+    .status-card {
+        width: 50px;
+    }
+}
+
+/* Optional: Adjust table headers for smaller screens */
+@media screen and (max-width: 768px) {
+    .table-responsive {
+        width: 100%;
+        /* Stack tables vertically on small screens */
+    }
+}
+
+.group-start {
+    border-left: 5px solid #FF8225;
+    background-color: #f9f9f9;
+}
+
+.alternate-color {
+    background-color: #eaf6f6;
+}
+
+.product-img {
+    width: 60px;
+    height: auto;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.product-img+span {
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.buttons-collection,
+.buttons-pdf,
+.buttons-copy,
+.buttons-excel,
+.dt-buttons {
+    background-color: #FF8225;
+    border: none;
+}
+
+.buttons-collection:hover,
+.buttons-pdf:hover,
+.buttons-copy:hover,
+.buttons-excel:hover,
+.dt-buttons:hover {
+    background-color: #a72828;
+}
+
+/* Center pagination controls */
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.input-group .form-control {
+    height: 38px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.input-group-text {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.input-group .form-control:focus {
+    box-shadow: none;
+    border-color: #FF8225;
+}
