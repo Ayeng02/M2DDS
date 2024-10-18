@@ -30,8 +30,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $current_hour = (int) $current_time->format('H'); // Get current hour in 24-hour format
 
     // Set allowed login window (5:00 AM to 7:00 AM)
-    $login_start = 13;   // 5:00 AM
-    $login_end = 15;   // 7:30 AM
+    $login_start = 2;   // 5:00 AM
+    $login_end = 5;   // 7:30 AM
 
     // Check if the current time is within the allowed login window
     if ($current_hour < $login_start || $current_hour >= $login_end) {
@@ -49,7 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($employee = $result->fetch_assoc()) {
         $current_timestamp = date("Y-m-d H:i:s"); // Record current timestamp
-        $current_date = date("Y-m-d"); // Current date
+        $current_date = date("Y-m-d H:i:s"); // Current date
 
         // Check if an attendance record exists for today with no time_out
         $stmt = $conn->prepare("SELECT * FROM att_tbl WHERE emp_id = ? AND att_date = ? AND time_out IS NULL");
