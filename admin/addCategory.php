@@ -296,10 +296,39 @@ include '../includes/db_connect.php';
     }
    #copyTableBtn{
     margin-left: 5%;
+    color: white;
    } 
    .table-header{
     background-color: #8c1c1c;
    }
+   .save-modal-btn{
+    padding-bottom: 20px;
+   }
+    nav{
+    margin-top: 1%;
+   }
+   .pagination-black .page-link {
+    background-color: black;   /* Default background color */
+    color: white;              /* Text color */
+    border: 1px solid black;   /* Border color */
+    padding: 10px 20px;        /* Padding for larger size */
+    font-size: 18px;           /* Font size */
+}
+
+.pagination-black .page-link:hover {
+    background-color: #333;    /* Darker shade on hover */
+    color: white;               /* Text color */
+}
+
+.pagination-black .page-item.active .page-link {
+    background-color: #FF8225; /* Change this color to the desired active background color */
+    border-color: #FF8225;     /* Change the border color if needed */
+    color: #fff;                /* Active page text color */
+}
+
+.pagination-black .page-link:focus {
+    box-shadow: none;           /* Remove focus outline */
+}
     </style>
 </head>
 <body>
@@ -325,7 +354,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $category_img = $_FILES['category_img'];
 
     // Database connection
-    
+    $servername = "localhost";
+    $username = "root";
+    $password = "";
+    $dbname = "m2dds";
+
+    $conn = new mysqli($servername, $username, $password, $dbname);
+
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+
     // Check for duplicate category name
     $check_stmt = $conn->prepare("SELECT COUNT(*) FROM category_tbl WHERE category_name = ?");
     $check_stmt->bind_param("s", $category_name);
@@ -510,9 +549,9 @@ ob_end_flush();
             </div>
             </div>
 
-           <button id="copyTableBtn" class="btn btn-info">Copy to Clipboard</button>
-           <button id="downloadPDF" class="btn btn-danger ">Download as PDF</button>
-              <button id="downloadExcel" class="btn btn-success">Download as Excel</button>
+           <button id="copyTableBtn" class="btn btn-info"><i class="fas fa-copy"></i>  Copy to Clipboard</button>
+           <button id="downloadPDF" class="btn btn-danger "><i class="fas fa-file-pdf"></i> Download as PDF</button>
+              <button id="downloadExcel" class="btn btn-success"><i class="fas fa-file-excel"></i> Download as Excel</button>
             <div class="category-table-container">
                <div class="combo-box">
                 <label for="sort">Sort by category Name: </label>
@@ -522,7 +561,22 @@ ob_end_flush();
                 </select>
             </div>
                 <?php 
-                $sql = "SELECT category_code, category_name, category_desc, category_img FROM category_tbl";
+                $limit = 7;
+
+                    
+                    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+                    $offset = ($page - 1) * $limit;
+
+                    // Count the total number of employees
+                    $count_sql = "SELECT COUNT(*) AS total FROM category_tbl";
+                    $count_result = $conn->query($count_sql);
+                    $total_rows = $count_result->fetch_assoc()['total'];
+                    $total_pages = ceil($total_rows / $limit);
+                
+                $sql = "SELECT category_code, category_name, category_desc, category_img
+                 FROM category_tbl 
+                 ORDER BY category_code DESC
+                  LIMIT $limit OFFSET $offset";
             $result = $conn->query($sql);
                 ?>
            <div class="table-responsive">
@@ -611,9 +665,9 @@ ob_end_flush();
                             <img id="currentCategoryImage" src="" alt="Category Image" style="width: 350px; height: 100px; margin-top: 10px;">
                         </div>
                     </div>
-
+                        <div class="save-modal-btn">
                         <button type="submit" class="btn btn-primary">Save Changes</button>
-                        
+                        </div>  
                     </form>
                     </div>
                 </div>
@@ -661,6 +715,46 @@ ob_end_flush();
 }
         ?>
             </div>
+                    <nav aria-label="Category Table Pagination">
+                            <ul class="pagination pagination-black justify-content-center">
+                                <!-- Previous Page Link -->
+                                <?php if ($page > 1): ?>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=<?php echo $page - 1; ?>" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                <?php else: ?>
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                <?php endif; ?>
+
+                                <!-- Page Links -->
+                                <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                                    <li class="page-item <?php if ($i == $page) echo 'active'; ?>">
+                                        <a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                                    </li>
+                                <?php endfor; ?>
+
+                                <!-- Next Page Link -->
+                                <?php if ($page < $total_pages): ?>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=<?php echo $page + 1; ?>" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                <?php else: ?>
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                <?php endif; ?>
+                            </ul>
+                        </nav>
      
     </div>
     </div>
@@ -714,7 +808,7 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('editCategoryDescription').value = categoryDesc;
             
             // Set the current image in the preview
-            document.getElementById('currentCategoryImage').src = "../category/" + categoryImage;
+            document.getElementById('currentCategoryImage').src = "../" + categoryImage;
         });
     });
 });

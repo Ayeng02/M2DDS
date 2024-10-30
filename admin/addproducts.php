@@ -45,6 +45,7 @@ include '../includes/db_connect.php';
     overflow-x: hidden; /* Prevent horizontal scrolling */
     border-right: 1px solid #ddd; /* Light border to separate from content */
     box-shadow: 2px 0 5px rgba(0,0,0,0.1); /* Subtle shadow */
+    scroll-behavior: none;
   
 }
 #sidebar-wrapper.expanded {
@@ -131,6 +132,7 @@ include '../includes/db_connect.php';
             color: black;
             
             
+            
         }
         .navbar-light .navbar-nav .nav-link:hover {
             color: #a72828;
@@ -146,46 +148,12 @@ include '../includes/db_connect.php';
     height: 30px;
 }
 
-.addprod-content{
-    display: flex;
-    border: 1px solid #8c1c1c;
-    width: 40%;
-    height: 20vh;
-    border-radius: 10px;
-    margin-left: 30%;
-    margin-top: 5rem;
-    text-align: center;
-    justify-content: center;
-    align-items: center;
-    font-size: 40px;
-    font-weight: bold;
-    color: #8c1c1c;
-    background-color: #FF8225;
-      text-shadow: 0 2px 7px #a72828;
 
-}
 
-.update-btn{
-    display: flex;
-    float: right;
-    margin-right: 15rem;
-    margin-top: 20px;
-    width: 150px;
-    height: 35px;
-    justify-content: center;
-    text-align: center;
-    align-items: center;
-    font-size: 20px;
-    background-color: #007bff;
-    border-radius: 5px;
-    color: white;
-}
-.update-btn:hover{
-    background-color: #0056b3;
-}
+
 .product-table-container {
     display: flex;
-    flex-direction: row;
+   
     width: 90%;
     height: 65vh; 
     margin-top: 10px;
@@ -193,8 +161,8 @@ include '../includes/db_connect.php';
     padding-top: 20px;
     border-radius: 10px;
     background-color: #fff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+    
+    
     flex-direction: column;
     text-align: center;
     
@@ -205,7 +173,7 @@ include '../includes/db_connect.php';
     height: 100%;
     display: flex;
     flex-direction: column;
-    overflow: auto;
+    
 
 }
 
@@ -230,21 +198,16 @@ include '../includes/db_connect.php';
     font-size: 16px;
     text-transform: uppercase;
     text-align: center;
-      position: sticky;
+   
       
 }
 
 .product-table tbody {
     display: block;
-    overflow-y: auto; 
-    height: calc(100% - 45px);
+   
 }
 
-.product-table thead, .product-table tbody tr {
-    display: table;
-    width: 100%; 
-    table-layout: fixed; 
-}
+
 
 .product-table th, .product-table td {
     padding: 12px;
@@ -330,7 +293,34 @@ include '../includes/db_connect.php';
     }
    #copyToClipboard{
     margin-left: 5%;
+    color: white;
    } 
+   nav{
+    margin-top: 1%;
+   }
+   .pagination-black .page-link {
+    background-color: black;   /* Default background color */
+    color: white;              /* Text color */
+    border: 1px solid black;   /* Border color */
+    padding: 10px 20px;        /* Padding for larger size */
+    font-size: 18px;           /* Font size */
+}
+
+.pagination-black .page-link:hover {
+    background-color: #333;    /* Darker shade on hover */
+    color: white;               /* Text color */
+}
+
+.pagination-black .page-item.active .page-link {
+    background-color: #FF8225; /* Change this color to the desired active background color */
+    border-color: #FF8225;     /* Change the border color if needed */
+    color: #fff;                /* Active page text color */
+}
+
+.pagination-black .page-link:focus {
+    box-shadow: none;           /* Remove focus outline */
+}
+
     </style>
 </head>
 <body>
@@ -346,7 +336,8 @@ include '../includes/sidebar.php';
         include '../includes/admin-navbar.php';
         ?>
 <?php
-  if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $category_code = $_POST['category_code'];
     $prod_name = $_POST['prod_name'];
     $prod_desc = $_POST['prod_desc'];
@@ -362,59 +353,74 @@ include '../includes/sidebar.php';
             'title' => 'The image size should not exceed 5MB.'
         ];
     } else {
-        // Define the upload directory
-        $upload_dir = '../Product-Images/';
-        
-        // Create the directory if it does not exist
-        if (!is_dir($upload_dir)) {
-            mkdir($upload_dir, 0755, true);
+        // Database connection
+        $conn = new mysqli('localhost', 'root', '', 'm2dds');
+        if ($conn->connect_error) {
+            die("Connection failed: " . $conn->connect_error);
         }
 
-        // Define the target file path
-        $target_file = $upload_dir . basename($prod_img['name']);
+        // Check for duplicate product name
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM product_tbl WHERE prod_name = ?");
+        $stmt->bind_param('s', $prod_name);
+        $stmt->execute();
+        $stmt->bind_result($count);
+        $stmt->fetch();
+        $stmt->close();
 
-        // Save only the relative path in the database
-        $relative_path_to_store = "Product-Images/" . basename($prod_img['name']);
-        
-        // Move the uploaded file to the target directory
-        if (!move_uploaded_file($prod_img['tmp_name'], $target_file)) {
+        if ($count > 0) {
+            // Product name already exists
             $_SESSION['alert'] = [
                 'icon' => 'error',
-                'title' => 'There was an error uploading the file.'
+                'title' => 'Product name already exists. Please choose a different name.'
             ];
         } else {
-            // Database connection
-            $conn = new mysqli('localhost', 'root', '', 'm2dds');
-            if ($conn->connect_error) {
-                die("Connection failed: " . $conn->connect_error);
+            // Define the upload directory
+            $upload_dir = '../Product-Images/';
+            
+            // Create the directory if it does not exist
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0755, true);
             }
 
-            // Call the stored procedure to insert the product
-            if ($stmt = $conn->prepare("CALL sp_InsertProduct(?, ?, ?, ?, ?, ?, ?)")) {
-                $stmt->bind_param('ssssdis', $category_code, $prod_name, $prod_desc, $prod_price, $prod_discount, $prod_qoh,  $relative_path_to_store);
+            // Define the target file path
+            $target_file = $upload_dir . basename($prod_img['name']);
 
-                if ($stmt->execute()) {
-                    $_SESSION['alert'] = [
-                        'icon' => 'success',
-                        'title' => 'Product inserted successfully.'
-                    ];
+            // Save only the relative path in the database
+            $relative_path_to_store = "Product-Images/" . basename($prod_img['name']);
+            
+            // Move the uploaded file to the target directory
+            if (!move_uploaded_file($prod_img['tmp_name'], $target_file)) {
+                $_SESSION['alert'] = [
+                    'icon' => 'error',
+                    'title' => 'There was an error uploading the file.'
+                ];
+            } else {
+                // Call the stored procedure to insert the product
+                if ($stmt = $conn->prepare("CALL sp_InsertProduct(?, ?, ?, ?, ?, ?, ?)")) {
+                    $stmt->bind_param('ssssdis', $category_code, $prod_name, $prod_desc, $prod_price, $prod_discount, $prod_qoh,  $relative_path_to_store);
+
+                    if ($stmt->execute()) {
+                        $_SESSION['alert'] = [
+                            'icon' => 'success',
+                            'title' => 'Product inserted successfully.'
+                        ];
+                    } else {
+                        $_SESSION['alert'] = [
+                            'icon' => 'error',
+                            'title' => 'Database error: ' . htmlspecialchars($stmt->error)
+                        ];
+                    }
+
+                    $stmt->close();
                 } else {
                     $_SESSION['alert'] = [
                         'icon' => 'error',
-                        'title' => 'Database error: ' . htmlspecialchars($stmt->error)
+                        'title' => 'Failed to prepare the SQL statement.'
                     ];
                 }
-
-                $stmt->close();
-            } else {
-                $_SESSION['alert'] = [
-                    'icon' => 'error',
-                    'title' => 'Failed to prepare the SQL statement.'
-                ];
             }
-
-            $conn->close();
         }
+        $conn->close();
     }
 
     // Redirect to the same page after processing
@@ -436,9 +442,13 @@ if (isset($_SESSION['alert'])) {
 }
 ob_end_flush(); 
 ?>
+
 <?php
     // Fetch categories from the database
-
+    $conn = new mysqli('localhost', 'root', '', 'm2dds');
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
 
     $categories = $conn->query("SELECT category_code, category_name FROM category_tbl");
 
@@ -508,30 +518,9 @@ ob_end_flush();
     </div>
             </a>
           
-            <?php 
-          $sql = "SELECT p.prod_code, c.category_name, p.prod_name, p.prod_price, p.prod_discount, p.prod_qoh, p.prod_img 
-        FROM product_tbl p 
-        JOIN category_tbl c ON p.category_code = c.category_code";
-            $result = $conn->query($sql);
+          
 
-             $products = [];
 
-             if ($result->num_rows > 0) {
-            while($row = $result->fetch_assoc()) {
-                 $products[] = array(
-                     "prod_code" => $row['prod_code'],
-                     "category_name" => $row['category_name'],
-                    "prod_name" => $row['prod_name'],
-                    "prod_price" => $row['prod_price'],
-                    "prod_qoh" => $row['prod_qoh'],
-                    "prod_discount" => $row['prod_discount'],
-                    "prod_img" => $row['prod_img']
-                );
-            }
-        } else {
-            $products = [];
-        }
-            ?>
             <?php 
            $category_query = "SELECT DISTINCT category_name, category_code FROM category_tbl";
             $category_result = mysqli_query($conn, $category_query);
@@ -559,9 +548,9 @@ ob_end_flush();
             </div>
             </div>
 
-            <button id="copyToClipboard" class="btn btn-info">Copy to Clipboard</button>
-             <button id="downloadPDF" class="btn btn-danger">Download as PDF</button>
-              <button id="downloadExcel" class="btn btn-success">Download as Excel</button>
+            <button id="copyToClipboard" class="btn btn-info"><i class="fas fa-copy"></i>  Copy to Clipboard</button>
+             <button id="downloadPDF" class="btn btn-danger"><i class="fas fa-file-pdf"></i> Download as PDF</button>
+              <button id="downloadExcel" class="btn btn-success"><i class="fas fa-file-excel"></i> Download as Excel</button>
             <div class="product-table-container">
                <div class="combo-box">
         <label for="sort">Sort by Product Name: </label>
@@ -586,55 +575,124 @@ ob_end_flush();
         ?>
     </select>
     </div>
-            <div class="table-responsive">
+    <?php 
+            // Set the number of records per page
+            $limit = 6; 
+
+            // Get the current page number from the URL, default to 1
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $page = max($page, 1); // Ensure the page number is at least 1
+            $offset = ($page - 1) * $limit;
+
+            // Get the selected category code (or any other filter you want to apply)
+            $category_code = isset($_GET['category_code']) ? $_GET['category_code'] : '';
+
+            // Prepare the count SQL with category filtering
+            $count_sql = "SELECT COUNT(*) AS total FROM product_tbl p";
+            if (!empty($category_code)) {
+                $count_sql .= " WHERE p.category_code = '" . $conn->real_escape_string($category_code) . "'";
+            }
+
+            $count_result = $conn->query($count_sql);
+            $total_rows = $count_result ? $count_result->fetch_assoc()['total'] : 0; // Default to 0 if count fails
+            $total_pages = ceil($total_rows / $limit);
+
+            // Ensure the current page does not exceed the total number of pages
+            $page = min($page, $total_pages);
+
+            // Fetch records for the current page with category filtering
+            $sql = "SELECT p.prod_code, c.category_name, p.prod_name, p.prod_price, p.prod_discount, p.prod_qoh, p.prod_img 
+                    FROM product_tbl p 
+                    JOIN category_tbl c ON p.category_code = c.category_code";
+
+            // Initialize conditions array for the WHERE clause
+            $conditions = [];
+            if (!empty($category_code)) {
+                $conditions[] = "p.category_code = '" . $conn->real_escape_string($category_code) . "'";
+            }
+
+            // Append conditions to the SQL query if any
+            if (!empty($conditions)) {
+                $sql .= " WHERE " . implode(' AND ', $conditions);
+            }
+
+            $sql .= " ORDER BY p.prod_code DESC 
+                    LIMIT ? OFFSET ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("ii", $limit, $offset);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            // Fetch products
+            $products = [];
+            if ($result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
+                    $products[] = array(
+                        "prod_code" => $row['prod_code'],
+                        "category_name" => $row['category_name'],
+                        "prod_name" => $row['prod_name'],
+                        "prod_price" => $row['prod_price'],
+                        "prod_qoh" => $row['prod_qoh'],
+                        "prod_discount" => $row['prod_discount'],
+                        "prod_img" => $row['prod_img']
+                    );
+                }
+            } else {
+                $products = []; // No products found
+            }
+
+            // Free result and close the statement
+            $stmt->close();
+            ?>
     
-            <table class="table table-hover" id="productTable">
+           <div class="table-responsive">
+    <table class="table table-hover" id="productTable">
         <thead class="table-dark">
+            <tr>
                 <th>Product Code</th>
                 <th>Category Name</th>
                 <th>Image</th>
                 <th>Product Name</th>
                 <th>Price</th>
                 <th>Quantity</th>
-                <th>Discount</th>   
+                <th>Discount</th>
                 <th>Action</th>
-          
+            </tr>
         </thead>
         <tbody>
             <?php foreach ($products as $product): ?>
-            <tr>
-                <td><?php echo htmlspecialchars($product['prod_code']); ?></td>
-                <td contenteditable="false"><?php echo htmlspecialchars($product['category_name']); ?></td>
-                <td>
-            <img src="../<?php echo htmlspecialchars($product['prod_img']); ?>" alt="Product Image" style="width: 120px; height: 50px;">
-        </td>
-                <td contenteditable="false"><?php echo htmlspecialchars($product['prod_name']); ?></td>
-                <td contenteditable="false"><?php echo number_format($product['prod_price']); ?></td>
-                 <td contenteditable="false"><?php echo number_format($product['prod_qoh']); ?></td>
-                 <td contenteditable="falase"><?php echo number_format($product['prod_discount']); ?></td>
-                  
-                  <td>
-             
-                 <a href="#" class="edit-icon" data-bs-toggle="modal" data-bs-target="#editModal"
-                    data-prod-code="<?php echo htmlspecialchars($product['prod_code']); ?>"
-                    data-category-name="<?php echo htmlspecialchars($product['category_name']); ?>"
-                    data-prod-name="<?php echo htmlspecialchars($product['prod_name']); ?>"
-                    data-prod-price="<?php echo number_format($product['prod_price']); ?>"
-                    data-prod-qoh="<?php echo number_format($product['prod_qoh']); ?>"
-                    data-prod-discount="<?php echo number_format($product['prod_discount']); ?>" >
-                    
-                    <i class="fa fa-edit"></i>
-            </a>
-                <a href="delete_products.php?id=<?php echo $product['prod_code']; ?>" class="delete-icon" onclick="confirmDelete(event, '<?php echo $product['prod_code']; ?>')">
-                    <i class="fa fa-trash"></i>
-                </a>
-            </td>
-                
-            </tr>
+                <tr>
+                    <td><?php echo htmlspecialchars($product['prod_code']); ?></td>
+                    <td contenteditable="false"><?php echo htmlspecialchars($product['category_name']); ?></td>
+                    <td>
+                        <img src="../<?php echo htmlspecialchars($product['prod_img']); ?>" alt="Product Image" style="width: 120px; height: 50px;">
+                    </td>
+                    <td contenteditable="false"><?php echo htmlspecialchars($product['prod_name']); ?></td>
+                    <td contenteditable="false"><?php echo number_format($product['prod_price']); ?></td>
+                    <td contenteditable="false"><?php echo number_format($product['prod_qoh']); ?></td>
+                    <td contenteditable="false"><?php echo number_format($product['prod_discount']); ?></td>
+                    <td>
+                        <a href="#" class="edit-icon" data-bs-toggle="modal" data-bs-target="#editModal"
+                           data-prod-code="<?php echo htmlspecialchars($product['prod_code']); ?>"
+                           data-category-name="<?php echo htmlspecialchars($product['category_name']); ?>"
+                           data-prod-name="<?php echo htmlspecialchars($product['prod_name']); ?>"
+                           data-prod-price="<?php echo number_format($product['prod_price']); ?>"
+                           data-prod-qoh="<?php echo number_format($product['prod_qoh']); ?>"
+                           data-prod-discount="<?php echo number_format($product['prod_discount']); ?>">
+                            <i class="fa fa-edit"></i>
+                        </a>
+                        <a href="delete_products.php?id=<?php echo $product['prod_code']; ?>" class="delete-icon" onclick="confirmDelete(event, '<?php echo $product['prod_code']; ?>')">
+                            <i class="fa fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
-            </div>
+</div>
+
+<!-- Pagination Controls -->
+
 
             <!-- Edit Modal -->
 <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
@@ -714,6 +772,48 @@ if (isset($_SESSION['delete_success'])) {
 }
 ?>
             </div>
+            <nav aria-label="Page navigation">
+  <ul class="pagination pagination-black justify-content-center">
+        <!-- Previous Page Link -->
+        <?php if ($page > 1): ?>
+            <li class="page-item">
+                <a class="page-link" href="?page=<?php echo $page - 1; ?>&category_code=<?php echo urlencode($category_code ?? ''); ?>" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+        <?php else: ?>
+            <li class="page-item disabled">
+                <a class="page-link" href="#" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+        <?php endif; ?>
+
+        <!-- Page Links -->
+        <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+            <li class="page-item <?php if ($i == $page) echo 'active'; ?>">
+                <a class="page-link" href="?page=<?php echo $i; ?>&category_code=<?php echo urlencode($category_code ?? ''); ?>"><?php echo $i; ?></a>
+            </li>
+        <?php endfor; ?>
+
+        <!-- Next Page Link -->
+        <?php if ($page < $total_pages): ?>
+            <li class="page-item">
+                <a class="page-link" href="?page=<?php echo $page + 1; ?>&category_code=<?php echo urlencode($category_code ?? ''); ?>" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        <?php else: ?>
+            <li class="page-item disabled">
+                <a class="page-link" href="#" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        <?php endif; ?>
+    </ul>
+
+
+</nav>
      
     </div>
     </div>
@@ -946,22 +1046,36 @@ function sortTablePrice() {
     });
 }
     // sort table by category
- function sortTableCategory() {
+ function sortTableCategory(page = 1) {
     var categoryCode = document.getElementById('sort-category').value;
-    
+
     if (categoryCode === "") {
         location.reload();
         return;
     }
+
     var xhr = new XMLHttpRequest();
-    xhr.open("GET", "sortingCategory.php?category_code=" + categoryCode, true);
+    xhr.open("GET", "sortingCategory.php?category_code=" + categoryCode + "&page=" + page, true);
     xhr.onload = function () {
         if (this.status === 200) {
-            document.querySelector('tbody').innerHTML = this.responseText;
+            // Parse the response text to find the specific sections
+            var responseText = this.responseText;
+
+            // Extract table rows
+            var tbodyContent = responseText.match(/<tbody id="product-rows">[\s\S]*?<\/tbody>/)[0];
+            // Extract pagination links
+            var paginationContent = responseText.match(/<nav aria-label="Page navigation">[\s\S]*?<\/nav>/)[0];
+
+            // Replace the table body with the new rows
+            document.querySelector('tbody').outerHTML = tbodyContent;
+
+            // Replace the pagination section with the new pagination
+            document.querySelector('nav[aria-label="Page navigation"]').outerHTML = paginationContent;
         }
     };
     xhr.send();
 }
+
 
 $(document).ready(function() {
     $('#insertProductForm').on('submit', function(e) {

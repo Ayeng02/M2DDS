@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $redirectUrl = './ordr_manager/order_manager.php';
                             break;
                         case 'Cashier':
-                            $redirectUrl = './shipper/dashboard2.php';
+                            $redirectUrl = './cashier/cashier.php';
                             break;
                         default:
                             $redirectUrl = 'login.php'; 

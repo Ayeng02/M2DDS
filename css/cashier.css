@@ -1,0 +1,140 @@
+body {
+    padding-top: 5px; 
+    background-color: #f4f4f4; 
+  }
+  .navbar {
+    background-color: #FF8225;
+    padding: 0.5rem;
+    border-radius: 1.5rem; 
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); 
+    position: fixed; 
+    width: 100%;
+    z-index: 1000; 
+  }
+  .nav-link {
+    color: white;
+    font-weight: bold;
+    margin-left: 15px;
+    transition: color 0.3s ease;
+  }
+  .nav-link:hover {
+    color: #A72828;
+  }
+  .navbar-brand {
+    margin-right: 20px;
+  }
+  .navbar-brand img {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+  }
+  .notification-bell {
+    position: relative;
+    margin-left: 20px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+  }
+  .notification-bell:hover {
+    transform: scale(1.2);
+  }
+  .notification-bell::after {
+    content: '5'; /* Example count, you can update dynamically */
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 18px;
+    height: 18px;
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8rem;
+    font-weight: bold;
+  }
+  .dropdown-menu {
+    background-color: #FF8225;
+    border: none;
+  }
+  .dropdown-item {
+    color: white;
+  }
+  .dropdown-item:hover {
+    background-color: #A72828;
+    color: #f4f4f4;
+  }
+  .title {
+    margin-top: 90px; /* Space to avoid overlap with the fixed navbar */
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #A72828; /* Optional color for the title */
+  }
+  .title img {
+    width: 50px; /* Adjust the size of the logo as needed */
+    height: auto; /* Maintain aspect ratio */
+    margin-right: 10px; /* Space between the logo and title */
+  }
+  .input-container {
+    margin-top: 20px; /* Space above the input container */
+    padding: 20px; /* Padding for the container */
+    background-color: white; /* Background color of the container */
+    border-radius: 1rem; /* Rounded corners */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Light shadow for depth */
+  }
+  .form-label {
+    font-weight: bold; /* Bold label */
+  }
+   /* Footer Widget Styles */
+.footer-widget {
+  background-color: #A72828;
+  color: white;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 10px 0;
+  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.15); /* Shadow to lift the footer */
+  font-size: 1rem;
+  z-index: 1000;
+  margin-top: 20px;
+}
+
+/* Styling the time text */
+#currentTime {
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 0.2rem;
+}
+
+/* Styling the footer text */
+.footer-text {
+  font-size: 1rem;
+  margin: 0;
+  transition: color 0.3s ease;
+}
+
+/* Hover effect */
+.footer-text:hover {
+  color: #A72828;
+}
+.card{
+  min-height: 100%;
+}
+.table-responsive {
+      max-height: 400px; /* Set a max height for the table */
+      overflow-y: auto; /* Enable vertical scrolling */
+  }
+
+  .focused {
+    background-color: #ff8225;
+    color: white;
+}
+
+/* Optional: Responsive font size for smaller screens */
+@media (max-width: 768px) {
+  .footer-widget {
+    font-size: 0.9rem;
+  }
+}
