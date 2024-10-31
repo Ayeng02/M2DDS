@@ -163,7 +163,6 @@ body.loaded {
     position: absolute;
     top: 0;
     left: 0;
-    background: #A72828;
     transition: background-color 0.4s ease;
 }
 

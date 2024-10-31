@@ -353,6 +353,27 @@ if ($result1->num_rows > 0) {
                 }
             });
         }
+
+        
+        document.addEventListener('DOMContentLoaded', function() {
+    const activeSwitch = document.getElementById('activeSwitch');
+    const shippedSwitch = document.getElementById('shippedSwitch');
+    
+    function updateSwitchColor() {
+        document.querySelectorAll('.switch-label').forEach(label => {
+            label.style.backgroundColor = '#A72828'; // Default color
+        });
+        
+        if (activeSwitch.checked || shippedSwitch.checked) {
+            document.querySelector('.switch-label[for="' + (activeSwitch.checked ? 'activeSwitch' : 'shippedSwitch') + '"]').style.backgroundColor = 'green';
+        }
+    }
+    
+    activeSwitch.addEventListener('change', updateSwitchColor);
+    shippedSwitch.addEventListener('change', updateSwitchColor);
+    updateSwitchColor(); // Initial load
+});
+
     </script>
 </body>
 

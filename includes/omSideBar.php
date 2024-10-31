@@ -70,7 +70,7 @@ if ($getEmpResult->num_rows > 0) {
         <a href="../ordr_manager/reports.php" class="text-light active5">
             <i class="fas fa-chart-line"></i> <span>Reports</span>
         </a>
-        <a href="#" class="text-light active6">
+        <a href="../ordr_manager/setting.php" class="text-light active6">
             <i class="fas fa-gear"></i> <span>Settings</span>
         </a>
 
