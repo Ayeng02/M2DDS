@@ -524,7 +524,7 @@ if ($result->num_rows > 0) {
 
             <!-- Include DataTables JS -->
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-            <!-- Include DataTables JS -->
+            <script src="../js/order_manager.js"></script>
 
             <script>
                 function updateClock() {

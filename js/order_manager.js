@@ -328,14 +328,8 @@ $(document).ready(function() {
                     url: '../includes/logout.php', // Path to your logout PHP script
                     method: 'POST',
                     success: function() {
-                        // Show success message and redirect to login page
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Logged out',
-                            text: 'You have been successfully logged out.',
-                        }).then(() => {
-                            window.location.href = '../login.php';
-                        });
+                        // Redirect to login page directly after successful logout
+                        window.location.href = '../login.php';
                     },
                     error: function() {
                         // Show error message if logout fails

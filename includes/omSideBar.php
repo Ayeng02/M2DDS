@@ -73,6 +73,10 @@ if ($getEmpResult->num_rows > 0) {
         <a href="../ordr_manager/setting.php" class="text-light active6">
             <i class="fas fa-gear"></i> <span>Settings</span>
         </a>
+        <a href="../ordr_manager/dtr.php" class="text-light active7">
+            <i class="fas fa-calendar-days"></i> <span>My DTR</span>
+        </a>
+
 
         <!-- Logout link at the bottom -->
         <a href="#" class="text-light logout" id="logoutBtn">
