@@ -19,25 +19,37 @@ require '../PHPMailer/PHPMailer/src/SMTP.php';
 $encryption_key = 'your-secret-key';
 
 // Helper functions
-function validatePhoneNumber($phone) {
+function validatePhoneNumber($phone)
+{
     return preg_match('/^(09\d{9})$/', $phone);
 }
 
-function validateAddress($address) {
+function validateAddress($address)
+{
     return preg_match('/^[\w\s\.,\-#]+, [\w\s]+, [\w\s]+$/', $address);
 }
 
-function validateUsername($username) {
+function validateUsername($username)
+{
     return preg_match('/^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{6,}$/', $username);
 }
 
-function validateName($name) {
+function validateName($name)
+{
     return preg_match('/^[A-Z][a-zA-Z\s]*$/', $name);
 }
 
-function validateEmail($email) {
+function validateEmail($email)
+{
     return filter_var($email, FILTER_VALIDATE_EMAIL);
 }
+
+$f_name = '';
+$l_name = '';
+$username = '';
+$email = '';
+$phone_num = '';
+$add_ress = '';
 
 $error = '';
 $success = false;
@@ -61,7 +73,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             if (validatePhoneNumber($phone_num)) {
                                 if (validateAddress($add_ress)) {
                                     // Check if email or username already exists
-                                    $stmt = $conn->prepare("SELECT COUNT(*) FROM customers WHERE email = ? OR username = ?");
+                                    $stmt = $conn->prepare("SELECT COUNT(*) FROM Customers WHERE email = ? OR username = ?");
                                     $stmt->bind_param("ss", $email, $username);
                                     $stmt->execute();
                                     $stmt->bind_result($count);
@@ -153,7 +165,7 @@ $conn->close();
     <title>Register - Meat-To-Door Delivery</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
     <link rel="stylesheet" href="./css/home.css">
     <link rel="icon" href="../img/mtdd_logo.png" type="image/x-icon">
     <style>
@@ -309,6 +321,26 @@ $conn->close();
             background-color: #e36f10;
             border-color: #e36f10;
         }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-wrapper .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 73%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: gray;
+        }
+
+        input[type="password"],
+        input[type="text"] {
+            width: 100%;
+            padding-right: 40px;
+            /* Add space for the eye icon */
+        }
     </style>
 </head>
 
@@ -369,43 +401,47 @@ $conn->close();
             <div class="form-row">
                 <div class="form-group col-md-6">
                     <label for="f_name">First Name</label>
-                    <input type="text" class="form-control" id="f_name" name="f_name" placeholder="Enter your first name" required oninput="validateName(this)">
+                    <input type="text" class="form-control" id="f_name" name="f_name" placeholder="Enter your first name" required oninput="validateName(this)" value="<?php echo isset($f_name) ? htmlspecialchars($f_name) : ''; ?>">
                 </div>
                 <div class="form-group col-md-6">
                     <label for="l_name">Last Name</label>
-                    <input type="text" class="form-control" id="l_name" name="l_name" placeholder="Enter your last name" required oninput="validateName(this)">
+                    <input type="text" class="form-control" id="l_name" name="l_name" placeholder="Enter your last name" required oninput="validateName(this)" value="<?php echo isset($l_name) ? htmlspecialchars($l_name) : ''; ?>">
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group col-md-6">
                     <label for="username">Username</label>
-                    <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" required>
+                    <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" required value="<?php echo isset($username) ? htmlspecialchars($username) : ''; ?>">
                 </div>
                 <div class="form-group col-md-6">
                     <label for="email">Email address</label>
-                    <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required value="<?php echo isset($email) ? htmlspecialchars($email) : ''; ?>">
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group col-md-6">
                     <label for="phone_num">Phone Number</label>
-                    <input type="text" class="form-control" id="phone_num" name="phone_num" placeholder="Enter your phone number" required>
+                    <input type="text" class="form-control" id="phone_num" name="phone_num" placeholder="Enter your phone number" required value="<?php echo isset($phone_num) ? htmlspecialchars($phone_num) : ''; ?>">
                 </div>
                 <div class="form-group col-md-6">
                     <label for="add_ress">Address</label>
-                    <input type="text" class="form-control" id="add_ress" name="add_ress" placeholder="Enter your address" required>
+                    <input type="text" class="form-control" id="add_ress" name="add_ress" placeholder="Purok, Barangay, City, Province" required value="<?php echo isset($add_ress) ? htmlspecialchars($add_ress) : ''; ?>">
                 </div>
             </div>
             <div class="form-row">
-                <div class="form-group col-md-6">
+                <div class="form-group col-md-6 password-wrapper">
                     <label for="cust_pass">Password</label>
                     <input type="password" class="form-control" id="cust_pass" name="cust_pass" placeholder="Enter your password" required>
+                    <i class="fas fa-thin fa-eye toggle-password" onclick="togglePasswordVisibility('cust_pass', this)"></i>
                 </div>
-                <div class="form-group col-md-6">
+                <div class="form-group col-md-6 password-wrapper">
                     <label for="confirm_pass">Confirm Password</label>
                     <input type="password" class="form-control" id="confirm_pass" name="confirm_pass" placeholder="Confirm your password" required>
+                    <i class="fas fa-thin fa-eye toggle-password" onclick="togglePasswordVisibility('confirm_pass', this)"></i>
                 </div>
             </div>
+
+
             <button type="submit" class="btn btn-primary btn-block">Register</button>
         </form>
         <div class="register-footer">
@@ -446,14 +482,30 @@ $conn->close();
         });
 
         function validateName(input) {
-        // Remove numbers and keep letters only
-        input.value = input.value.replace(/[^a-zA-Z\s]/g, '');
+            // Remove numbers and keep letters only
+            input.value = input.value.replace(/[^a-zA-Z\s]/g, '');
 
-        // Capitalize the first letter of each word
-        input.value = input.value.replace(/\b\w/g, function(char) {
-            return char.toUpperCase();
-        });
-    }
+            // Capitalize the first letter of each word
+            input.value = input.value.replace(/\b\w/g, function(char) {
+                return char.toUpperCase();
+            });
+        }
+
+        function togglePasswordVisibility(fieldId, iconElement) {
+            var passwordInput = document.getElementById(fieldId);
+
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+
+                iconElement.classList.remove('fa-eye');
+                iconElement.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = "password";
+
+                iconElement.classList.remove('fa-eye-slash');
+                iconElement.classList.add('fa-eye');
+            }
+        }
     </script>
 </body>
 
