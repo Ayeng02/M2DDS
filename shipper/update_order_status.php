@@ -66,6 +66,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['order_cash'])) {
             $allUpdatesSuccessful = false;
             break; // Exit loop on failure
         }
+
+         // Insert log into emplog_tbl with status 4
+         $logQuery = "
+         INSERT INTO emplog_tbl (emp_id, order_id, emplog_status, emplog_action, emplog_date) 
+         VALUES ('$emp_id', '$order_id', 4, 'Delivered Order', NOW());
+         ";
+        
+          // Execute updates and check for errors
+        if (!mysqli_query($conn,  $logQuery)) {
+            $allUpdatesSuccessful = false;
+            break; // Exit loop on failure
+        }
+
     }
 
     // Return a success response or an error response

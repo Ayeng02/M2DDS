@@ -4,6 +4,30 @@ ob_start();
 session_start();
 include '../includes/db_connect.php';
 
+// Redirect to landing page if already logged in
+if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isset($_SESSION['AdminLogExist']) && $_SESSION['AdminLogExist'] === true) {
+
+
+    if (isset($_SESSION['emp_role'])) {
+        // Redirect based on employee role
+        switch ($_SESSION['emp_role']) {
+            case 'Shipper':
+                header("Location: ../shipper/shipper.php");
+                exit;
+            case 'Order Manager':
+                header("Location: ../ordr_manager/order_manager.php");
+                exit;
+            case 'Cashier':
+                header("Location: ../cashier/cashier.php");
+                exit;
+                break;
+            default:
+        }
+    }
+} else {
+    header("Location: ../login.php");
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
@@ -463,6 +487,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $stmt->bind_param("sss", $category_name, $category_desc, $relative_path_to_store);
 
                     if ($stmt->execute()) {
+                        // Insert into system log
+                        $user_id = $_SESSION['admin_id']; 
+                        $action = "Added new category: " . $category_name;
+
+                        $log_stmt = $conn->prepare("INSERT INTO systemlog_tbl (user_id, user_type, systemlog_action, systemlog_date) VALUES (?, ?, ?, NOW())");
+                        $user_type = 'Admin';
+                        $log_stmt->bind_param("sss", $user_id, $user_type, $action);
+                        $log_stmt->execute();
+                        $log_stmt->close();
+
                         $_SESSION['alert'] = [
                             'icon' => 'success',
                             'title' => 'New category added successfully.'

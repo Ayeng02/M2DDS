@@ -1,3 +1,32 @@
+<?php
+
+include '../includes/db_connect.php';
+
+// Fetch current shop background and video
+$shop_bg_query = "SELECT olshopmgt_bg FROM olshopmgt_tbl LIMIT 1";  // Replace with actual table and column
+$shop_vid_query = "SELECT olshopmgt_vid FROM olshopmgt_tbl LIMIT 1";  // Replace with actual table and column
+
+$shop_bg_result = $conn->query($shop_bg_query);
+$shop_vid_result = $conn->query($shop_vid_query);
+
+$default_bg = '../img/meat-bg.png'; // Default background image
+$default_vid = '../img/sampleVid.mp4'; // Default video file
+
+$shop_bg = $default_bg; // Set default image path
+$shop_vid = $default_vid; // Set default video path
+
+if ($shop_bg_result && $shop_bg_result->num_rows > 0) {
+    $row = $shop_bg_result->fetch_assoc();
+    $shop_bg = $row['olshopmgt_bg']; // Replace with actual path from the database
+}
+
+if ($shop_vid_result && $shop_vid_result->num_rows > 0) {
+    $row = $shop_vid_result->fetch_assoc();
+    $shop_vid = $row['olshopmgt_vid']; // Replace with actual path from the database
+}
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -27,9 +56,6 @@
             height: 100%;
             display: flex;
             flex-direction: column;
-            margin-left: -8px;
-            /* Adjust left and right margin */
-            margin-right: -8px;
         }
 
         .card-body {
@@ -179,7 +205,7 @@
                                 s.status_name AS status,
                                 o.order_total
                             FROM 
-                                order_tbl o
+                                Order_tbl o
                             JOIN 
                                 status_tbl s ON o.status_code = s.status_code
                             WHERE 
@@ -265,7 +291,7 @@
         <!-- Product Cards for what's New-->
         <h3 class="mb-4" style="text-align: center; padding-top: 20px; font-weight: bold; color: crimson;">What's New</h3>
         <hr class="under">
-        <div class="row gx-0 gy-0">
+        <div class="row">
             <?php
             include '../includes/db_connect.php';
 
@@ -574,16 +600,15 @@
 
 
 
-        <!-- Video Section -->
-        <!--Temporary deleted and will replaced with an updated one-->
         <div class="video-section">
             <h3>Watch Our Latest Promo Video</h3>
             <hr class="under">
             <video controls autoplay muted loop>
-                <source src="../img/sampleVid.mp4" type="video/mp4">
+                <source src="../<?php echo $shop_vid; ?>" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
         </div>
+
 
     </div>
 
@@ -600,7 +625,7 @@
             <!-- Success message will be injected here -->
         </div>
     </div>
-        
+
     <?php include '../includes/message.php'; ?>
 
     <!-- Footer -->

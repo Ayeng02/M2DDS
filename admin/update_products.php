@@ -17,9 +17,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_FILES['prod_img']) && $_FILES['prod_img']['error'] == UPLOAD_ERR_OK) {
         // Handle the file upload
         $upload_dir = '../Product-Images/'; // Path to upload directory
+        $relative_dir_path = 'Product-Images/';
         $image_file = $_FILES['prod_img'];
         $image_name = basename($image_file['name']);
         $image_path = $upload_dir . $image_name;
+        $relative_path_to_store =   $relative_dir_path . $image_name;
 
         // Move the uploaded file to the target directory
         if (!move_uploaded_file($image_file['tmp_name'], $image_path)) {
@@ -37,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->close();
 
             // Use the existing image if no new image is uploaded
-            $image_path = $existing_image;
+            $relative_path_to_store = $existing_image;
         }
     }
 
@@ -70,10 +72,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             WHERE prod_code = ?";
 
     if ($stmt = $conn->prepare($sql)) {
-        $stmt->bind_param('ssdiiss', $category_code, $prod_name, $prod_price, $prod_qoh, $prod_discount, $image_path, $prod_code);
+        $stmt->bind_param('ssdiiss', $category_code, $prod_name, $prod_price, $prod_qoh, $prod_discount, $relative_path_to_store, $prod_code);
         
         if ($stmt->execute()) {
             session_start();
+
+             // Insert into system log upon successful employee update
+             $user_id = $_SESSION['admin_id'];
+             $action = "Update Product: " . $prod_code . "(" . $prod_name . ")";
+             $user_type = 'Admin';
+ 
+             // Prepare and execute system log insertion
+             if ($log_stmt = $conn->prepare("INSERT INTO systemlog_tbl (user_id, user_type, systemlog_action, systemlog_date) VALUES (?, ?, ?, NOW())")) {
+                 $log_stmt->bind_param("sss", $user_id, $user_type, $action);
+                 $log_stmt->execute();
+                 $log_stmt->close();
+             } else {
+                 $_SESSION['error'] = "Failed to log system action: " . $conn->error;
+             }
+
             $_SESSION['success'] = 'The Product has been Updated Successfully!';
             header("Location: addproducts.php?success=1");
         } else {

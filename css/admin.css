@@ -1,0 +1,166 @@
+body {
+    overflow-x: auto;
+    background-color: #f8f9fa;
+}
+
+
+#sidebar-wrapper .sidebar-heading .sidebar-title {
+    font-size: 1.5rem;
+    display: inline;
+}
+
+#wrapper {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    /* Full viewport height */
+}
+
+#sidebar-wrapper {
+    min-height: 100vh;
+    width: 80px;
+    /* Default width for icons only */
+    background-color: #a72828;
+    color: #fff;
+    transition: width 0.3s ease;
+    overflow-y: auto;
+    /* Allow vertical scrolling */
+    position: relative;
+    overflow-x: hidden;
+    /* Prevent horizontal scrolling */
+    border-right: 1px solid #ddd;
+    /* Light border to separate from content */
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    /* Subtle shadow */
+}
+
+#sidebar-wrapper.expanded {
+    width: 250px;
+    /* Expanded width */
+}
+
+#sidebar-wrapper .sidebar-heading {
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    background-color: #FF8225;
+    color: #fff;
+    border-bottom: 1px solid #ddd;
+    /* Border for separation */
+}
+
+#sidebar-wrapper .logo-img {
+    width: 40px;
+    /* Adjust size as needed */
+    height: 40px;
+    margin-right: 10px;
+    /* Space between logo and text */
+}
+
+#sidebar-wrapper .sidebar-title {
+    font-size: 1.5rem;
+    display: inline;
+    /* Ensure title is always visible */
+}
+
+#sidebar-wrapper .list-group {
+    width: 100%;
+}
+
+#sidebar-wrapper .list-group-item {
+    background-color: #a72828;
+    color: #fff;
+    border: none;
+    padding: 1rem;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    border-radius: 0;
+    /* Remove default border radius */
+    transition: background-color 0.2s ease;
+    /* Smooth hover effect */
+}
+
+#sidebar-wrapper .list-group-item i {
+    font-size: 1.5rem;
+    margin-right: 15px;
+}
+
+#sidebar-wrapper .list-group-item span {
+    display: none;
+    /* Hide text in default state */
+    margin-left: 10px;
+    white-space: nowrap;
+    /* Prevent text wrapping */
+}
+
+#sidebar-wrapper.expanded .list-group-item span {
+    display: inline;
+    /* Show text in expanded state */
+}
+
+#sidebar-wrapper .list-group-item:hover {
+    background-color: #8c1c1c;
+    /* Darker color on hover */
+}
+
+#sidebar-wrapper .toggle-btn {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #FF8225;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    /* Button shadow */
+}
+
+#sidebar-wrapper .toggle-btn:hover {
+    background-color: #a72828;
+}
+
+#page-content-wrapper {
+    flex: 1;
+    padding: 20px;
+    transition: margin-left 0.3s ease;
+    background-color: #f8f9fa;
+    /* Slightly different background */
+}
+
+#page-content-wrapper.sidebar-expanded {
+    margin-left: 0px;
+    /* Match the expanded sidebar width */
+}
+
+.navbar-light {
+    background-color: #FF8225;
+}
+
+.navbar-light .navbar-nav .nav-link {
+    color: black;
+
+
+}
+
+.navbar-light .navbar-nav .nav-link:hover {
+    color: #a72828;
+}
+
+
+/* Hide sidebar heading text when collapsed */
+#sidebar-wrapper:not(.expanded) .sidebar-title {
+    display: none;
+}
+
+#sidebar-wrapper:not(.expanded) .logo-img {
+    width: 30px;
+    /* Adjust size when collapsed */
+    height: 30px;
+}

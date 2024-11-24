@@ -272,7 +272,7 @@ if ($result1->num_rows > 0) {
                 ?>
                         <div class="col-md-4">
                             <div class="card mb-3">
-                                <div class="card-body d-flex flex-column">
+                                <div class="card-body d-flex flex-column" style="background: url('../img/bgShip.png') no-repeat center; background-size: cover; object-fit:cover;">
                                     <div>
                                         <h5 class="card-title">Customer: <?php echo $cust_name; ?></h5>
                                         <p class="card-text">
@@ -319,22 +319,56 @@ if ($result1->num_rows > 0) {
             $('input[name="emp_status"]').change(function() {
                 var newStatus = $(this).val(); // Get the selected status
 
-                // Send the status update via AJAX
-                $.ajax({
-                    url: '', // Current PHP script
-                    type: 'POST',
-                    data: {
-                        emp_status: newStatus
-                    },
-                    success: function(response) {
-                        alert(response); // Display a success message (optional)
-                    },
-                    error: function() {
-                        alert("Error updating status.");
+                // Show a confirmation dialog before updating
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: `Do you want to update the status to "${newStatus}"?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes',
+                    cancelButtonText: 'Cancel',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Proceed with the AJAX request if confirmed
+                        $.ajax({
+                            url: '', // Current PHP script
+                            type: 'POST',
+                            data: {
+                                emp_status: newStatus
+                            },
+                            success: function(response) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Status Updated',
+                                    text: response,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                            },
+                            error: function() {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Update Failed',
+                                    text: 'Error updating status.',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                            }
+                        });
+                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Cancelled',
+                            text: 'Status update was cancelled.',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
                     }
                 });
             });
         });
+
 
         function confirmLogout() {
             Swal.fire({
@@ -356,23 +390,23 @@ if ($result1->num_rows > 0) {
 
         
         document.addEventListener('DOMContentLoaded', function() {
-    const activeSwitch = document.getElementById('activeSwitch');
-    const shippedSwitch = document.getElementById('shippedSwitch');
-    
-    function updateSwitchColor() {
-        document.querySelectorAll('.switch-label').forEach(label => {
-            label.style.backgroundColor = '#A72828'; // Default color
+            const activeSwitch = document.getElementById('activeSwitch');
+            const shippedSwitch = document.getElementById('shippedSwitch');
+
+            function updateSwitchColor() {
+                document.querySelectorAll('.switch-label').forEach(label => {
+                    label.style.backgroundColor = '#A72828'; // Default color
+                });
+
+                if (activeSwitch.checked || shippedSwitch.checked) {
+                    document.querySelector('.switch-label[for="' + (activeSwitch.checked ? 'activeSwitch' : 'shippedSwitch') + '"]').style.backgroundColor = 'green';
+                }
+            }
+
+            activeSwitch.addEventListener('change', updateSwitchColor);
+            shippedSwitch.addEventListener('change', updateSwitchColor);
+            updateSwitchColor(); // Initial load
         });
-        
-        if (activeSwitch.checked || shippedSwitch.checked) {
-            document.querySelector('.switch-label[for="' + (activeSwitch.checked ? 'activeSwitch' : 'shippedSwitch') + '"]').style.backgroundColor = 'green';
-        }
-    }
-    
-    activeSwitch.addEventListener('change', updateSwitchColor);
-    shippedSwitch.addEventListener('change', updateSwitchColor);
-    updateSwitchColor(); // Initial load
-});
 
     </script>
 </body>

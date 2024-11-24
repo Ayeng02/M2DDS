@@ -14,9 +14,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_FILES['category_img']) && $_FILES['category_img']['error'] == UPLOAD_ERR_OK) {
         // Handle the file upload
         $upload_dir = '../category/'; // Path to upload directory
+         $relative_dir_path = 'category/';
         $image_file = $_FILES['category_img'];
         $image_name = basename($image_file['name']);
         $image_path = $upload_dir . $image_name;
+         $relative_path_to_store =   $relative_dir_path . $image_name;
 
         // Move the uploaded file to the target directory
         if (!move_uploaded_file($image_file['tmp_name'], $image_path)) {
@@ -34,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->close();
 
             // Use the existing image if no new image is uploaded
-            $image_path = $existing_image;
+            $relative_path_to_store = $existing_image;
         }
     }
 
@@ -46,10 +48,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             WHERE category_code = ?";
     
     if ($stmt = $conn->prepare($sql)) {
-        $stmt->bind_param('ssss', $category_name, $category_desc, $image_path, $category_code);
+        $stmt->bind_param('ssss', $category_name, $category_desc, $relative_path_to_store, $category_code);
 
         if ($stmt->execute()) {
             session_start();
+
+            // Insert into system log
+            $user_id = $_SESSION['admin_id'];
+            $action = "Edit category: " . $category_name;
+
+            $log_stmt = $conn->prepare("INSERT INTO systemlog_tbl (user_id, user_type, systemlog_action, systemlog_date) VALUES (?, ?, ?, NOW())");
+            $user_type = 'Admin';
+            $log_stmt->bind_param("sss", $user_id, $user_type, $action);
+            $log_stmt->execute();
+            $log_stmt->close();
+
             $_SESSION['success'] = 'Category updated successfully!';
             header("Location: addCategory.php?success=1");
         } else {

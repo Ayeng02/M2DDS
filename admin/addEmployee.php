@@ -4,6 +4,31 @@ ob_start();
 session_start();
 include '../includes/db_connect.php';
 
+
+// Redirect to landing page if already logged in
+if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isset($_SESSION['AdminLogExist']) && $_SESSION['AdminLogExist'] === true) {
+
+
+    if (isset($_SESSION['emp_role'])) {
+        // Redirect based on employee role
+        switch ($_SESSION['emp_role']) {
+            case 'Shipper':
+                header("Location: ../shipper/shipper.php");
+                exit;
+            case 'Order Manager':
+                header("Location: ../ordr_manager/order_manager.php");
+                exit;
+            case 'Cashier':
+                header("Location: ../cashier/cashier.php");
+                exit;
+                break;
+            default:
+        }
+    }
+} else {
+    header("Location: ../login.php");
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
@@ -418,6 +443,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                         $stmt->bind_param("ssssssss", $emp_fname, $emp_lname, $emp_email, $emp_num, $emp_address, $emp_role, $hashed_pass, $relative_path_to_store);
 
                                         if ($stmt->execute()) {
+
+                                            // Insert into system log
+                                            $user_id = $_SESSION['admin_id']; 
+                                            $action = "Added new employee: " . $emp_fname . " " . $emp_lname;
+
+                                            $log_stmt = $conn->prepare("INSERT INTO systemlog_tbl (user_id, user_type, systemlog_action, systemlog_date) VALUES (?, ?, ?, NOW())");
+                                            $user_type = 'Admin';
+                                            $log_stmt->bind_param("sss", $user_id, $user_type, $action);
+                                            $log_stmt->execute();
+                                            $log_stmt->close();
+
                                             $_SESSION['alert'] = [
                                                 'icon' => 'success',
                                                 'title' => 'New employee added successfully.'
@@ -514,35 +550,35 @@ if (isset($_SESSION['alert'])) {
 
 
       <div class="modal fade" id="employeeModal" tabindex="-1" aria-labelledby="employeeModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="employeeModalLabel">Add Employee</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="" method="post" enctype="multipart/form-data">
-                    <div class="form-group mb-3">
+                <form class="row g-3" action="" method="post" enctype="multipart/form-data">
+                    <div class="col-md-4">
                         <label for="emp_fnam">First Name</label>
                         <input type="text" class="form-control" id="emp_fname" name="emp_fname" placeholder="Enter Firstname" required>
                     </div>
-                    <div class="form-group mb-3">
+                    <div class="col-md-4">
                         <label for="emp_lname">Last Name</label>
                         <input type="text" class="form-control" id="emp_lname" name="emp_lname" placeholder="Enter Lastname" required>
                     </div>
-                    <div class="form-group mb-3">
+                    <div class="col-md-4">
                         <label for="emp_email">Email</label>
                         <input type="email" class="form-control" id="emp_email" name="emp_email" placeholder="Enter Email" required>
                     </div>
-                    <div class="form-group mb-3">
+                    <div class="col-md-4">
                         <label for="emp_num">Contact Number</label>
                         <input type="text" class="form-control" id="emp_num" name="emp_num" placeholder="Enter Contact Number" required maxlength="11" pattern="\d{1,11}">
                     </div>
-                    <div class="form-group mb-3">
+                    <div class="col-md-5">
                         <label for="emp_address">Address</label>
                         <textarea class="form-control" id="emp_address" name="emp_address" rows="1" placeholder="Purok Barangay, City, Province" required></textarea>
                     </div>
-                    <div class="form-group mb-3">
+                    <div class="col-md-3">
                         <label for="emp_role">Role</label>
                         <select class="form-select" id="emp_role" name="emp_role" required>
                             <option value="">Select a role</option>
@@ -552,16 +588,18 @@ if (isset($_SESSION['alert'])) {
                             <option value="Cashier">Cashier</option>
                         </select>
                     </div>
-                    <div class="form-group mb-3">
+                    <div class="col-md-5">
                         <label for="emp_pass">Password</label>
                         <input type="password" class="form-control" id="emp_pass" placeholder="Enter Password Ex. @Sample1234" name="emp_pass" required>
                     </div>
-                    <div class="form-group mb-3">
+                    <div class="col-md-4">
                         <label for="emp_img">Employee Image</label>
                         <input type="file" class="form-control-file" id="emp_img" name="emp_img" accept="image/*">
                         <img id="image_preview" src="" alt="Image Preview" style="display: none; margin-top: 10px; width: 50%; height: 200px;">
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Add Employee</button>
+                    <div class="d-grid gap-2 col-5 mx-auto">
+                    <button type="submit" class="btn btn-primary btn-lg">ADD</button>
+                    </div>
                 </form>
             </div>
         </div>

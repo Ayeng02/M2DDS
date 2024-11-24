@@ -3,6 +3,33 @@
 ob_start();
 session_start();
 include '../includes/db_connect.php';
+require '../vendor/autoload.php';
+use Picqer\Barcode\BarcodeGeneratorPNG;
+
+// Redirect to landing page if already logged in
+if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isset($_SESSION['AdminLogExist']) && $_SESSION['AdminLogExist'] === true) {
+
+
+    if (isset($_SESSION['emp_role'])) {
+        // Redirect based on employee role
+        switch ($_SESSION['emp_role']) {
+            case 'Shipper':
+                header("Location: ../shipper/shipper.php");
+                exit;
+            case 'Order Manager':
+                header("Location: ../ordr_manager/order_manager.php");
+                exit;
+            case 'Cashier':
+                header("Location: ../cashier/cashier.php");
+                exit;
+                break;
+            default:
+        }
+    }
+} else {
+    header("Location: ../login.php");
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
@@ -400,6 +427,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stmt->bind_param('ssssdis', $category_code, $prod_name, $prod_desc, $prod_price, $prod_discount, $prod_qoh,  $relative_path_to_store);
 
                     if ($stmt->execute()) {
+
+                          // Insert into system log
+                          $user_id = $_SESSION['admin_id']; 
+                          $action = "Added new product: " . $prod_name;
+  
+                          $log_stmt = $conn->prepare("INSERT INTO systemlog_tbl (user_id, user_type, systemlog_action, systemlog_date) VALUES (?, ?, ?, NOW())");
+                          $user_type = 'Admin';
+                          $log_stmt->bind_param("sss", $user_id, $user_type, $action);
+                          $log_stmt->execute();
+                          $log_stmt->close();
+
                         $_SESSION['alert'] = [
                             'icon' => 'success',
                             'title' => 'Product inserted successfully.'
@@ -509,7 +547,7 @@ ob_end_flush();
                             <textarea class="form-control" id="prod_desc" name="prod_desc" rows="3" required></textarea>
                         </div>
                         <div class="d-grid gap-2 col-5 mx-auto">
-                            <button type="submit" class="btn btn-primary btn-lg">Add Product</button>
+                            <button type="submit" class="btn btn-primary btn-lg">ADD</button>
                         </div>
                     </form>
                 </div>
@@ -547,35 +585,7 @@ ob_end_flush();
             </div>
             </div>
             </div>
-
-            <button id="copyToClipboard" class="btn btn-info"><i class="fas fa-copy"></i>  Copy to Clipboard</button>
-             <button id="downloadPDF" class="btn btn-danger"><i class="fas fa-file-pdf"></i> Download as PDF</button>
-              <button id="downloadExcel" class="btn btn-success"><i class="fas fa-file-excel"></i> Download as Excel</button>
-            <div class="product-table-container">
-               <div class="combo-box">
-        <label for="sort">Sort by Product Name: </label>
-        <select id="sort-name" onchange="sortTable()">
-            <option value="a-z">A-Z</option>
-            <option value="z-a">Z-A</option>
-        </select>
-        <label for="sort-price">Sort by Price: </label>
-        <select id="sort-price" onchange="sortTablePrice()">
-            <option value="low-high">Low to High</option>
-            <option value="high-low">High to Low</option>
-        </select>
-        <label for="sort-category">Sort by Category: </label>
-    <select id="sort-category" onchange="sortTableCategory()">
-        <option value="">All</option>
-        <?php
-        // Loop through the result to generate category options
-        while ($row = mysqli_fetch_assoc($category_result)) {
-           echo '<option value="' . $row['category_code'] . '">' . $row['category_name'] . '</option>';
-        
-        }
-        ?>
-    </select>
-    </div>
-    <?php 
+            <?php 
             // Set the number of records per page
             $limit = 6; 
 
@@ -643,7 +653,44 @@ ob_end_flush();
 
             // Free result and close the statement
             $stmt->close();
+            //generate product barcode
+            $barcodeDataUris = [];
+            $generator = new BarcodeGeneratorPNG();
+            foreach ($products as $product) {
+                $barcode = $generator->getBarcode($product['prod_code'], $generator::TYPE_CODE_128);
+                $barcodeDataUris[$product['prod_code']] = 'data:image/png;base64,' . base64_encode($barcode);
+            }
             ?>
+
+            <button id="copyToClipboard" class="btn btn-info"><i class="fas fa-copy"></i>  Copy to Clipboard</button>
+             <button id="downloadPDF" class="btn btn-danger"><i class="fas fa-file-pdf"></i> Download as PDF</button>
+              <button id="downloadExcel" class="btn btn-success"><i class="fas fa-file-excel"></i> Download as Excel</button>
+              <button style="margin-left: 45%;" id="printAll" onclick="printAllCategories()" class="btn btn-warning"><i class="fa fa-print"></i> Print All Barcode</button>
+            <div class="product-table-container">
+               <div class="combo-box">
+        <label for="sort">Sort by Product Name: </label>
+        <select id="sort-name" onchange="sortTable()">
+            <option value="a-z">A-Z</option>
+            <option value="z-a">Z-A</option>
+        </select>
+        <label for="sort-price">Sort by Price: </label>
+        <select id="sort-price" onchange="sortTablePrice()">
+            <option value="low-high">Low to High</option>
+            <option value="high-low">High to Low</option>
+        </select>
+        <label for="sort-category">Sort by Category: </label>
+    <select id="sort-category" onchange="sortTableCategory()">
+        <option value="">All</option>
+        <?php
+        // Loop through the result to generate category options
+        while ($row = mysqli_fetch_assoc($category_result)) {
+           echo '<option value="' . $row['category_code'] . '">' . $row['category_name'] . '</option>';
+        
+        }
+        ?>
+    </select>
+    </div>
+    
     
            <div class="table-responsive">
     <table class="table table-hover" id="productTable">
@@ -656,6 +703,7 @@ ob_end_flush();
                 <th>Price</th>
                 <th>Quantity</th>
                 <th>Discount</th>
+                <th>Barcode</th>
                 <th>Action</th>
             </tr>
         </thead>
@@ -671,6 +719,8 @@ ob_end_flush();
                     <td contenteditable="false"><?php echo number_format($product['prod_price']); ?></td>
                     <td contenteditable="false"><?php echo number_format($product['prod_qoh']); ?></td>
                     <td contenteditable="false"><?php echo number_format($product['prod_discount']); ?></td>
+                     <td><img src="<?php echo $barcodeDataUris[$product['prod_code']]; ?>" alt="Barcode" style="width: 150px; height: auto;"></td>
+                    
                     <td>
                         <a href="#" class="edit-icon" data-bs-toggle="modal" data-bs-target="#editModal"
                            data-prod-code="<?php echo htmlspecialchars($product['prod_code']); ?>"
@@ -678,12 +728,28 @@ ob_end_flush();
                            data-prod-name="<?php echo htmlspecialchars($product['prod_name']); ?>"
                            data-prod-price="<?php echo number_format($product['prod_price']); ?>"
                            data-prod-qoh="<?php echo number_format($product['prod_qoh']); ?>"
-                           data-prod-discount="<?php echo number_format($product['prod_discount']); ?>">
+                           data-prod-discount="<?php echo number_format($product['prod_discount']); ?>"
+                           data-prod-img="<?php echo htmlspecialchars($product['prod_img']); ?>"
+                           >
                             <i class="fa fa-edit"></i>
                         </a>
+                         <a href="javascript:void(0);" 
+                            class="print-icon"
+                            data-code="<?php echo htmlspecialchars($product['prod_code']); ?>"
+                            data-name="<?php echo htmlspecialchars($product['prod_name']); ?>"
+                            data-barcode="<?php echo $barcodeDataUris[$product['prod_code']]; ?>"
+                            onclick="printProductDetails(
+                                '<?php echo htmlspecialchars($product['prod_code']); ?>',
+                                '<?php echo htmlspecialchars($product['prod_name']); ?>',
+                                '<?php echo $barcodeDataUris[$product['prod_code']]; ?>'
+                            )">
+                            <i class="fa fa-print" ></i>
+                        </a>
+
                         <a href="delete_products.php?id=<?php echo $product['prod_code']; ?>" class="delete-icon" onclick="confirmDelete(event, '<?php echo $product['prod_code']; ?>')">
                             <i class="fa fa-trash"></i>
                         </a>
+
                     </td>
                 </tr>
             <?php endforeach; ?>
@@ -725,10 +791,12 @@ ob_end_flush();
             <label for="modalProdDiscount" class="form-label">Discount</label>
             <input type="number" class="form-control" id="modalProdDiscount" name="prod_discount">
           </div>
+          <label for="modalProdImage" class="form-label">Product Image</label>
           <div class="mb-3">
             
-        <label for="modalProdImage" class="form-label">Product Image</label>
-         <img id="modalImagePreview" src="" alt="Product Image" style="width: 150px; margin-bottom: 15px; height: auto; display: none;" />
+        
+        <img id="Current-prod-img" src="../" alt="Product Image"  style="width: 150px; margin-bottom: 15px; height: auto; " class="mt-2">
+         
         <input type="file" class="form-control" id="modalProdImage" name="prod_img" accept="image/*">
     </div>
           <button type="submit" class="btn btn-primary" >Save Changes</button>
@@ -830,6 +898,7 @@ if (isset($_SESSION['delete_success'])) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 
+
 <script>
 // Toggle sidebar
 $("#menu-toggle, #menu-toggle-top").click(function(e) {
@@ -884,6 +953,53 @@ $("#menu-toggle, #menu-toggle-top").click(function(e) {
             }
         };
     });
+    //print barcode
+function printProductDetails(code, name, barcodeDataUri) {
+            const printWindow = window.open('', '', 'height=600,width=800');
+            printWindow.document.write('<html><head><title>Print Product Details</title>');
+            printWindow.document.write('<style>body { font-family: Arial, sans-serif; margin: 20px; } .container { max-width: 500px; margin: auto; } img { max-width: 100%; height: auto; } h1 { font-size: 20px; } p { margin: 10px 0; }</style>');
+            printWindow.document.write('</head><body >');
+            printWindow.document.write('<div class="container">');
+            printWindow.document.write('<h1>Product Details</h1>');
+            printWindow.document.write('<p>' + name + '</p>');
+            
+            printWindow.document.write('<img src="' + barcodeDataUri + '" alt="Barcode">');
+            
+            printWindow.document.write(' <p style="letter-spacing: 18px; margin-top: -0.4px; color: #0000007e;">' + code + ' </p>');
+            printWindow.document.write('</div>');
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            
+            printWindow.focus();
+            printWindow.print();
+        }
+//print all barcode 
+
+        function printAllCategories() {
+            const products = <?php echo json_encode($products); ?>;
+            let content = '<html><head><title>Print All Products</title>';
+            content += '<style>body { font-family: Arial, sans-serif; margin: 20px; } .container { max-width: 800px; margin: auto; } img { max-width: 100%; height: auto; } h1 { font-size: 20px; } p { margin: 10px 0; } </style>';
+            content += '</head><body>';
+            content += '<div class="container">';
+            content += '<h1>All Products</h1>';
+
+            products.forEach(product => {
+                const barcodeDataUri = <?php echo json_encode($barcodeDataUris); ?>[product['prod_code']];
+                content += '<p>' + product['prod_name'] + '</p>';
+                content += '<img src="' + barcodeDataUri + '" alt="Barcode">';
+                content += '<p style="letter-spacing: 18px; margin-top: -0.4px; color: #0000007e;">' +  product['prod_code'] + ' </p>';
+                
+            });
+            content += '</div>';
+            content += '</body></html>';
+
+            const printWindow = window.open('', '', 'height=600,width=800');
+            printWindow.document.write(content);
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+        }
+
 //copy in clipboard
 document.getElementById('copyToClipboard').addEventListener('click', function() {
         const table = document.getElementById('productTable');
@@ -971,6 +1087,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var prodPrice = button.getAttribute('data-prod-price');
         var prodQOH = button.getAttribute('data-prod-qoh');
         var prodDiscount = button.getAttribute('data-prod-discount');
+         var prodImg = button.getAttribute('data-prod-img');
 
         // Populate the modal's input fields
         document.getElementById('modalProdCode').value = prodCode;
@@ -979,6 +1096,8 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('modalProdPrice').value = prodPrice;
         document.getElementById('modalProdQOH').value = prodQOH;
         document.getElementById('modalProdDiscount').value = prodDiscount;
+        document.getElementById('Current-prod-img').src = "../" + prodImg //
+        
     });
 });
 
@@ -1057,6 +1176,7 @@ function sortTablePrice() {
     var xhr = new XMLHttpRequest();
     xhr.open("GET", "sortingCategory.php?category_code=" + categoryCode + "&page=" + page, true);
     xhr.onload = function () {
+        
         if (this.status === 200) {
             // Parse the response text to find the specific sections
             var responseText = this.responseText;

@@ -1,9 +1,11 @@
 <?php
 include '../includes/db_connect.php';
+session_start(); // Start session to access emp_id
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $categoryName = $_POST['category_name'];
     $categoryDesc = $_POST['category_desc'];
+    $emp_id = $_SESSION['emp_id']; // Get emp_id from session
 
     // Define the target directory for category images
     $target_dir = "../category/";
@@ -33,7 +35,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bind_param("sss", $categoryName, $categoryDesc, $relative_path_to_store);
 
             if ($stmt->execute()) {
-                echo json_encode(['status' => 'success', 'message' => 'Category added successfully!']);
+                // Log the action in the system log
+                $action = "Added new category: " . $categoryName;
+                $logStmt = $conn->prepare("INSERT INTO systemlog_tbl (user_id, user_type, systemlog_action, systemlog_date) VALUES (?, 'Employee', ?, NOW())");
+                $logStmt->bind_param("ss", $emp_id, $action);
+
+                if ($logStmt->execute()) {
+                    echo json_encode(['status' => 'success', 'message' => 'Category added and action logged successfully!']);
+                } else {
+                    echo json_encode(['status' => 'error', 'message' => 'Category added, but logging action failed.']);
+                }
+                $logStmt->close();
             } else {
                 echo json_encode(['status' => 'error', 'message' => 'Failed to add category.']);
             }

@@ -27,16 +27,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Use server time instead of fetching time from an external API
     $current_time = new DateTime(); // Get the current server time
-    $current_hour = (int) $current_time->format('H'); // Get current hour in 24-hour format
+    $current_time_str = $current_time->format('H:i:s'); // Get current time in HH:MM:SS format
+    
+    // Retrieve login window from AttendSched_tbl
+    $stmt = $conn->prepare("SELECT am_login_start, am_login_end FROM AttendSched_tbl");
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($row = $result->fetch_assoc()) {
+        $login_start = $row['am_login_start'];
+        $login_end = $row['am_login_end'];
 
-    // Set allowed login window (5:00 AM to 7:00 AM)
-    $login_start = 2;   // 5:00 AM
-    $login_end = 5;   // 7:30 AM
+        // Convert logout times to 12-hour format with AM/PM
+        $login_start_time = new DateTime($login_start);
+        $login_end_time = new DateTime($login_end);
 
-    // Check if the current time is within the allowed login window
-    if ($current_hour < $login_start || $current_hour >= $login_end) {
-        // Outside of login hours
-        $response['error'] = "Logins are open between 5:00 AM and 7:30 AM.";
+          // Format the times in 12-hour format with AM/PM
+          $login_start_formatted = $login_start_time->format('h:i A');
+          $login_end_formatted = $login_end_time->format('h:i A');
+    
+        // Check if the current time is within the allowed login window
+        if ($current_time_str < $login_start || $current_time_str >= $login_end) {
+            // Outside of login hours
+            $response['error'] = "Logouts are open between $login_start_formatted and $login_end_formatted";
+            echo json_encode($response);
+            exit;
+        }
+    } else {
+        // Handle case where no schedule is found
+        $response['error'] = "Login schedule not found.";
         echo json_encode($response);
         exit;
     }
@@ -49,7 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($employee = $result->fetch_assoc()) {
         $current_timestamp = date("Y-m-d H:i:s"); // Record current timestamp
-        $current_date = date("Y-m-d H:i:s"); // Current date
+        $current_date = date("Y-m-d"); // Current date
 
         // Check if an attendance record exists for today with no time_out
         $stmt = $conn->prepare("SELECT * FROM att_tbl WHERE emp_id = ? AND att_date = ? AND time_out IS NULL");
@@ -103,13 +122,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shipper - Meat-To-Door Delivery</title>
+    <title>Attendance - Meat-To-Door Delivery</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="icon" href="../img/mtdd_logo.png" type="image/x-icon">
@@ -151,11 +171,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
             max-width: 450px;
             width: 100%;
-            height: 70%;
+            height: auto;
             display: flex;
             flex-direction: column;
             position: relative;
+            transition: height 0.5s ease-out;
+            min-height: 300px;
+          
         }
+
 
         h1.title {
             text-align: center;
@@ -170,7 +194,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
-            height: 100%;
+            height: 150px;
         }
 
         input[type="text"] {
@@ -281,37 +305,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             margin-right: 10px;
         }
 
-        #employeeImage {
-            width: 200px;
-
-            height: 200px;
-            margin-bottom: 15px;
-
-            object-fit: cover;
-
-            border-radius: 10px;
-
-        }
-
-
-        /* Styles for the information box */
         #infoBox {
             display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
             background-color: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
             padding: 20px;
             border-radius: 15px;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            z-index: 100;
             max-width: 400px;
+            /* Set to 100% to fit within the container */
+            margin: 15px 0;
+            /* Add margin to create space between elements */
             text-align: center;
             transition: opacity 0.5s ease-out, transform 0.5s ease-out;
             font-size: 25px;
             color: #333;
+        }
+
+        #employeeImage {
+            width: 150px;
+            height: 150px;
+            margin-bottom: 15px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        #infoBox.show {
+            display: block;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        #infoBox.hide {
+            opacity: 0;
+            transform: scale(0.8);
         }
 
         #employeeName {
@@ -321,8 +348,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         #infoBox.show {
             display: block;
-            opacity: 10;
-            transform: scale(1.05);
+            opacity: 1;
+            transform: scale(1);
         }
 
         #infoBox.hide {
@@ -338,15 +365,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <video autoplay muted loop>
         <source src="../attendance/sample_only.mp4" type="video/mp4">
     </video>
+    <div class="container-fluid">
+        <div class="container">
+            <h1 class="title">Meat to Door Delivery System Login</h1>
 
-    <div class="container">
-        <h1 class="title">Meat to Door Delivery System Login</h1>
+            <div class="card text-bg-light mb-3" id="infoBox">
+                <div class="card-body">
+                    <img id="employeeImage"></img>
+                    <div id="employeeName"></div>
+                    <div id="employeeRole"></div>
+                </div>
+            </div>
 
-        <form id="attendanceForm" method="POST">
-            <input type="text" id="employeeId" name="employeeId" placeholder="Enter ID" required>
-            <button type="submit">Login</button>
-        </form>
+            <form id="attendanceForm" method="POST">
+                <input type="text" id="employeeId" name="employeeId" placeholder="Enter ID" required>
+                <button type="submit">Login</button>
+            </form>
 
+
+        </div>
     </div>
 
     <!-- Choice Menu -->
@@ -357,13 +394,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
     </div>
 
-    <!-- Info Box -->
-    <div id="infoBox">
-        <img id="employeeImage"></img>
-        <div id="employeeName"></div>
-        <div id="employeeRole"></div>
-
-    </div>
 
 
     <!-- JavaScript -->
@@ -373,10 +403,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             menu.classList.toggle('show');
         }
 
+
         document.getElementById('attendanceForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
             const formData = new FormData(this);
+            const container = document.querySelector('.container'); // Reference the container element
 
             fetch(window.location.href, {
                     method: 'POST',
@@ -388,13 +420,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                     if (data.success) {
                         // Update the info box with employee details
-
                         document.getElementById('employeeName').innerHTML = `${data.name}`;
                         document.getElementById('employeeRole').innerText = `(${data.role})`;
                         document.getElementById('employeeImage').src = data.image;
 
+
                         // Show the info box
-                        infoBox.style.display = 'block';
+                        infoBox.style.display = 'flex';
 
                         // Make the info box disappear after 3 seconds
                         setTimeout(() => {
@@ -408,7 +440,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         // Reset the form
                         document.getElementById('attendanceForm').reset();
                     } else {
-                        // Update the info box with error message
+                        // Update the info box with an error message
                         document.getElementById('employeeName').innerText = data.error;
                         document.getElementById('employeeImage').style.display = 'none';
                         document.getElementById('employeeRole').style.display = 'none';

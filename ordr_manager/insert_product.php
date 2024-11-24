@@ -3,6 +3,7 @@
 
 // Database connection
 include '../includes/db_connect.php';
+session_start(); // Start session to access emp_id
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Get product details from the AJAX request
@@ -13,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $prod_discount = $_POST['prod_discount'];
     $prod_qoh = $_POST['prod_qoh'];
     $prod_img = $_FILES['prod_img'];
+    $emp_id = $_SESSION['emp_id']; // Get emp_id from session
 
     // Define the upload directory
     $upload_dir = '../Product-Images/';
@@ -58,13 +60,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt->bind_param("sssddds", $category_code, $prod_name, $prod_desc, $prod_price, $prod_discount, $prod_qoh, $relative_path_to_store);
 
     // Execute the stored procedure
-    if (!$stmt->execute()) {
-        echo 'Execution failed: ' . $stmt->error; // Display execution error
+    if ($stmt->execute()) {
+        // Log the action in the system log
+        $action = "Added new product: " . $prod_name;
+        $logStmt = $conn->prepare("INSERT INTO systemlog_tbl (user_id, user_type, systemlog_action, systemlog_date) VALUES (?, 'Employee', ?, NOW())");
+        $logStmt->bind_param("ss", $emp_id, $action);
+
+        if ($logStmt->execute()) {
+            echo 'success'; // Indicate success for both product addition and logging
+        } else {
+            echo 'Product added, but logging action failed';
+        }
+        $logStmt->close();
     } else {
-        echo 'success'; // Indicate success
+        echo 'Execution failed: ' . $stmt->error; // Display execution error
     }
 
-    // Close statement and connection
+    // Close statement
     $stmt->close();
 }
 

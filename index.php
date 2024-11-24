@@ -1,11 +1,14 @@
-<?php
+<?php 
+
 session_start();
 
 // Redirect to landing page if already logged in
 if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
     header('Location: ./customer/customerLandingPage.php');
-    exit();
+  
 }
+
+include './includes/prefereces_shop.php';
 ?>
 
 <!DOCTYPE html>
@@ -51,13 +54,6 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
 
         .navbar-toggler-icon {
             background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='crimson' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
-        }
-
-
-        .jumbotron {
-            background: url('./img/meat-bg.png') no-repeat center center;
-            background-size: cover;
-            color: white;
         }
 
         .product-img {
@@ -340,7 +336,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
         </div>
     </nav>
     <!-- Header -->
-    <header class="jumbotron jumbotron-fluid text-center">
+    <header class="jumbotron jumbotron-fluid text-center" style="background-image: url('./<?php echo $shop_bg; ?>'); background-size: cover; background-position: center center; color:#ffffff;">
         <div class="con1 container">
             <h1 class="display-4">Fresh Meat Delivered to Your Doorstep</h1>
             <p class="lead">Quality meat from trusted sources, delivered quickly and safely.</p>

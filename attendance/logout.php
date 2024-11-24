@@ -1,27 +1,62 @@
 <?php
-// Include database connection
-include '../includes/db_connect.php';
-
 // Manila, Philippine timezone
 date_default_timezone_set('Asia/Manila');
 
+// Enable error reporting for debugging
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Include database connection
+include '../includes/db_connect.php';
+
+// Initialize response variables
+$response = [
+    'success' => false,
+    'image' => '',
+    'name' => '',
+    'role' => '',
+    'error' => '',
+    'success_message' => ''
+];
+
 // Handle POST request
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $emp_id = $_POST['employeeId'];
+    $emp_id = strtoupper(trim($_POST['employeeId']));
 
-    // Get the current time
-    $current_time = date('H:i'); // e.g., "16:30" for 4:30 PM
-    $logout_start = '13:00';     // 4:00 PM
-    $logout_end = '17:30';       // 5:30 PM
+    // Use server time instead of fetching time from an external API
+    $current_time = new DateTime(); // Get the current server time
+    $current_time_str = $current_time->format('H:i:s'); // Get current time in HH:MM:SS format
 
-    // Check if the current time is within the allowed logout window
-    if ($current_time < $logout_start || $current_time > $logout_end) {
-        $response = [
-            'status' => 'error',
-            'message' => 'You can only log out between 4:00 PM and 5:30 PM.'
-        ];
+    // Retrieve logout window from AttendSched_tbl
+    $stmt = $conn->prepare("SELECT pm_logout_start, pm_logout_end FROM AttendSched_tbl");
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($row = $result->fetch_assoc()) {
+        $logout_start = $row['pm_logout_start'];
+        $logout_end = $row['pm_logout_end'];
+
+        // Convert logout times to 12-hour format with AM/PM
+        $logout_start_time = new DateTime($logout_start);
+        $logout_end_time = new DateTime($logout_end);
+
+        // Format the times in 12-hour format with AM/PM
+        $logout_start_formatted = $logout_start_time->format('h:i A');
+        $logout_end_formatted = $logout_end_time->format('h:i A');
+
+        // Check if the current time is within the allowed logout window
+        if ($current_time_str < $logout_start || $current_time_str >= $logout_end) {
+            // Outside of logout hours
+            $response['error'] = "Logouts are open between $logout_start_formatted and $logout_end_formatted";
+            echo json_encode($response);
+            exit;
+        }
+    } else {
+        // Handle case where no schedule is found
+        $response['error'] = "Logout schedule not found.";
         echo json_encode($response);
-        exit();
+        exit;
     }
 
     // Check if emp_id exists in emp_tbl
@@ -48,26 +83,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             // Fetch employee's name and role to display in the info box
             $empData = $empResult->fetch_assoc();
-            $response = [
-                'status' => 'success',
-                'message' => 'Logout successful',
-                'image' => $empData['emp_img'] ? '../'. $empData['emp_img'] : '../Shipper_Upload/sample1.png',
-                'name' => $empData['emp_fname'] . ' ' . $empData['emp_lname'],
-                'role' => $empData['emp_role']
-            ];
+            $response['success'] = true;
+            $response['success_message'] = 'Logout successful';
+            $response['image'] = $empData['emp_img'] ? '../' . $empData['emp_img'] : '../Shipper_Upload/sample1.png';
+            $response['name'] = $empData['emp_fname'] . ' ' . $empData['emp_lname'];
+            $response['role'] = $empData['emp_role'];
         } else {
             // Employee is not logged in
-            $response = [
-                'status' => 'error',
-                'message' => 'You are not logged in to the system.'
-            ];
+            $response['error'] = 'You are not logged in to the system.';
         }
     } else {
         // Employee ID not found
-        $response = [
-            'status' => 'error',
-            'message' => 'Employee ID Not Found.'
-        ];
+        $response['error'] = 'Employee ID Not Found.';
     }
 
     echo json_encode($response);
@@ -82,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shipper - Meat-To-Door Delivery</title>
+    <title>Attendance - Meat-To-Door Delivery</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="icon" href="../img/mtdd_logo.png" type="image/x-icon">
@@ -142,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
-            height: 100%;
+            height: 150px;
         }
 
         input[type="text"] {
@@ -253,53 +280,45 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             margin-right: 10px;
         }
 
-        #employeeImage {
-            width: 200px;
-
-            height: 200px;
-            margin-bottom: 15px;
-
-            object-fit: cover;
-
-            border-radius: 10px;
-
-        }
-
-        /* Styles for the information box */
         #infoBox {
             display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
             background-color: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
             padding: 20px;
             border-radius: 15px;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            z-index: 100;
             max-width: 400px;
+            /* Set to 100% to fit within the container */
+            margin: 15px 0;
+            /* Add margin to create space between elements */
             text-align: center;
             transition: opacity 0.5s ease-out, transform 0.5s ease-out;
             font-size: 25px;
             color: #333;
         }
 
-        #employeeName {
-            margin-top: 10px;
-            font-weight: bold;
+        #employeeImage {
+            width: 150px;
+            height: 150px;
+            margin-bottom: 15px;
+            object-fit: cover;
+            border-radius: 10px;
         }
-
 
         #infoBox.show {
             display: block;
             opacity: 1;
-            transform: translate(-50%, -50%) scale(1.05);
+            transform: scale(1);
         }
 
         #infoBox.hide {
             opacity: 0;
-            transform: translate(-50%, -50%) scale(0.8);
+            transform: scale(0.8);
+        }
+
+        #employeeName {
+            margin-top: 10px;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -311,22 +330,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <source src="../attendance/sample_only.mp4" type="video/mp4">
     </video>
 
-    <div class="container">
-        <h1 class="title">Meat to Door Delivery System Logout</h1>
+    <div class="container-fluid">
+        <div class="container">
+            <h1 class="title">Meat to Door Delivery System Logout</h1>
 
-        <form id="attendanceForm">
-            <input type="text" id="employeeId" name="employeeId" placeholder="Enter ID" required>
-            <button type="submit">Logout</button>
-        </form>
+            <div class="card text-bg-light mb-3" id="infoBox">
+                <div class="card-body">
+                    <img id="employeeImage"></img>
+                    <div id="employeeName"></div>
+                    <div id="employeeRole"></div>
+                </div>
+            </div>
 
-        <!-- Info Box -->
-        <div id="infoBox">
-            <img id="employeeImage"></img>
-            <div id="employeeName"></div>
-            <div id="employeeRole"></div>
+            <form id="attendanceForm">
+                <input type="text" id="employeeId" name="employeeId" placeholder="Enter ID" required>
+                <button type="submit">Logout</button>
+            </form>
 
         </div>
-
     </div>
 
     <!-- Choice Menu -->
@@ -344,53 +365,60 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             menu.classList.toggle('show');
         }
 
-        document.getElementById('attendanceForm').addEventListener('submit', function(e) {
-            e.preventDefault(); // Prevent form submission
+        document.getElementById('attendanceForm').addEventListener('submit', function(event) {
+            event.preventDefault();
 
-            const employeeId = document.getElementById('employeeId').value;
+            const formData = new FormData(this);
+            const container = document.querySelector('.container');
 
-            // Send POST request to PHP to handle logout
-            fetch('', {
+            fetch(window.location.href, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: 'employeeId=' + encodeURIComponent(employeeId)
+                    body: formData
                 })
                 .then(response => response.json())
                 .then(data => {
                     const infoBox = document.getElementById('infoBox');
-                    const employeeImg = document.getElementById('employeeImage');
-                    const employeeName = document.getElementById('employeeName');
-                    const employeeRole = document.getElementById('employeeRole');
 
+                    if (data.success) {
+                        // Handle success
+                        document.getElementById('employeeName').innerText = `${data.name}`;
+                        document.getElementById('employeeRole').innerText = `(${data.role})`;
+                        document.getElementById('employeeImage').src = data.image;
 
-                    if (data.status === 'success') {
-                        // Show success message with employee's name and role
-                        employeeImg.src = data.image;
-                        employeeName.innerHTML = `${data.name}`;
-                        employeeRole.innerText = `(${data.role})`
+                        infoBox.style.display = 'flex';
 
+                        setTimeout(() => {
+                            infoBox.style.opacity = '0';
+                            setTimeout(() => {
+                                infoBox.style.display = 'none';
+                                infoBox.style.opacity = '1';
+                            }, 500);
+                        }, 3000);
+
+                        // Reset form
+                        document.getElementById('attendanceForm').reset();
                     } else {
-                        // Show error message
-                        infoBox.style.width = '400px'
-                        employeeImg.style.display = 'none';
-                        employeeRole.style.display = 'none';
-                        employeeName.innerText = data.message;
+                        // Handle error message
+                        const errorMessage = data.error ? data.error : "An unknown error occurred.";
+                        document.getElementById('employeeName').innerText = errorMessage;
+                        document.getElementById('employeeImage').style.display = 'none';
+                        document.getElementById('employeeRole').style.display = 'none';
+
+                        infoBox.style.display = 'block';
+
+                        setTimeout(() => {
+                            infoBox.style.opacity = '0';
+                            setTimeout(() => {
+                                infoBox.style.display = 'none';
+                                infoBox.style.opacity = '1';
+                            }, 500);
+                        }, 3000);
                     }
-
-                    // Show the info box
-                    infoBox.classList.add('show');
-
-                    // Clear the input field
-                    document.getElementById('employeeId').value = '';
-
-                    // Hide the info box after 2 seconds
-                    setTimeout(() => {
-                        infoBox.classList.remove('show');
-                    }, 2000);
                 })
-                .catch(error => console.error('Error:', error));
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Network Error: Please try again later.');
+                });
         });
     </script>
 

@@ -35,6 +35,7 @@ $products = $conn->query($productQuery);
 // Fetch categories from category_tbl
 $categoryQuery = "SELECT * FROM category_tbl";
 $categoryResult = $conn->query($categoryQuery);
+$categoryResultForDropdown = $conn->query($categoryQuery);
 
 
 // Fetch shop status
@@ -67,6 +68,9 @@ if ($shop_status_result && $shop_status_result->num_rows > 0) {
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="../css/ordr_css.css">
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 
     <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
@@ -177,21 +181,27 @@ if ($shop_status_result && $shop_status_result->num_rows > 0) {
 
         <hr>
         <!--Switch Here--->
-        <div class="container mt-5">
-    <div class="d-flex flex-column align-items-end">
-        <h5 style="font-weight:bold;">Shop Management</h5>
-        <div class="d-flex align-items-center mt-2">
-            <span class="me-2" style="margin-bottom: 10px; font-weight:bold;">Closed</span>
-            <div class="switch-tooltip" data-bs-original-title="Toggle Open/Closed">
-                <label class="switch">
-                    <input type="checkbox" id="shopStatusSwitch" <?php echo ($shop_status === 'Open') ? 'checked' : ''; ?>>
-                    <span class="slider"></span>
-                </label>
+        <div class="container mt-1">
+    <div class="card p-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <!-- Shop Management Title -->
+            <h5 style="font-weight:bold; margin: 0;"> <i class="bi bi-shop-window"></i> Shop Management</h5>
+
+            <!-- Switch -->
+            <div class="d-flex align-items-center">
+                <span class="me-2" style="font-weight:bold; margin-bottom: 0;">Closed</span>
+                <div class="switch-tooltip" data-bs-original-title="Toggle Open/Closed">
+                    <label class="switch">
+                        <input type="checkbox" id="shopStatusSwitch" <?php echo ($shop_status === 'Open') ? 'checked' : ''; ?>>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <span class="ms-2" style="font-weight:bold; margin-bottom: 0;">Open</span>
             </div>
-            <span class="ms-2" style="margin-bottom: 10px; font-weight:bold;">Open</span>
         </div>
     </div>
 </div>
+
 
         <hr>
 
@@ -312,8 +322,12 @@ if ($shop_status_result && $shop_status_result->num_rows > 0) {
                                         <option value="">Select Category</option>
                                         <?php
                                         // Populate categories
-                                        while ($category = $categoryResult->fetch_assoc()) {
-                                            echo '<option value="' . htmlspecialchars($category['category_code']) . '">' . htmlspecialchars($category['category_name']) . '</option>';
+                                        if ($categoryResultForDropdown->num_rows > 0) {
+                                            while ($categoryForDropdown = $categoryResultForDropdown->fetch_assoc()) {
+                                                echo '<option value="' . htmlspecialchars($categoryForDropdown['category_code']) . '">' . htmlspecialchars($categoryForDropdown['category_name']) . '</option>';
+                                            }
+                                        } else {
+                                            echo '<option value="">No categories available</option>';
                                         }
                                         ?>
                                     </select>

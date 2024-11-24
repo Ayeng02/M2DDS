@@ -64,6 +64,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo 'Failed to update order status';
             exit;
         }
+
+        // Log the action in the emplog_tbl
+        $log_query = "INSERT INTO emplog_tbl (emp_id, order_id, emplog_status, emplog_action, emplog_date) VALUES (?, ?, ?, ?, NOW())";
+        if ($log_stmt = $conn->prepare($log_query)) {
+            $emplog_status = 3; //  3 corresponds to 'Shipped'
+            $action = 'Shipped Order'; // Adjust action message as needed
+            $log_stmt->bind_param('ssis', $_SESSION['emp_id'], $order_id, $emplog_status, $action);
+            $log_stmt->execute();
+            $log_stmt->close();
+        }
     }
 
     $update_stmt->close();
