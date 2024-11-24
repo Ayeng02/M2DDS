@@ -53,9 +53,15 @@ if ($shop_vid_result && $shop_vid_result->num_rows > 0) {
         }
 
         .product-card {
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            flex: 1;
             height: 100%;
             display: flex;
             flex-direction: column;
+            justify-content: space-between;
+            margin-left: -8px;
+            margin-right: -8px;
         }
 
         .card-body {
