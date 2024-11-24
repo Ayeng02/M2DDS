@@ -117,7 +117,7 @@
     <script src="https://cdn.datatables.net/2.1.6/js/dataTables.bootstrap5.js"></script>
 
     <script>
-        $(document).ready(function () {
+          $(document).ready(function() {
             // Show loading spinner
             $('.loading').show();
 
@@ -126,26 +126,48 @@
                 url: 'fetch_logs.php', // Update this to the correct path
                 method: 'GET',
                 dataType: 'json',
-                success: function (data) {
-                    // Populate the DataTable with logs
+                success: function(data) {
                     var tableBody = $('#logsTable tbody');
-                    data.forEach(function (log) {
-                        var row = '<tr>' +
-                            '<td>' + log.id + '</td>' +
-                            '<td>' + log.user_id + '</td>' +
-                            '<td>' + log.user_name + '</td>' +
-                            '<td>' + log.user_type + '</td>' +
-                            '<td>' + log.systemlog_action + '</td>' +
-                            '<td>' + new Date(log.systemlog_date).toLocaleString() + '</td>' +
-                            '</tr>';
-                        tableBody.append(row);
+
+                    // Clear existing data if any
+                    tableBody.empty();
+
+                    if (data.length === 0) {
+                        tableBody.append('<tr><td colspan="6">No logs found.</td></tr>');
+                    } else {
+                        // Populate the DataTable with logs
+                        data.forEach(function(log) {
+                            var row = '<tr>' +
+                                '<td>' + log.id + '</td>' +
+                                '<td>' + log.user_id + '</td>' +
+                                '<td>' + log.user_name + '</td>' +
+                                '<td>' + log.user_type + '</td>' +
+                                '<td>' + log.systemlog_action + '</td>' +
+                                '<td>' + new Date(log.systemlog_date).toLocaleString() + '</td>' +
+                                '</tr>';
+                            tableBody.append(row);
+                        });
+                    }
+
+                    // Check if DataTable is already initialized
+                    if ($.fn.DataTable.isDataTable('#logsTable')) {
+                        $('#logsTable').DataTable().clear().destroy();
+                    }
+
+                    // Initialize DataTable with descending order
+                    $('#logsTable').DataTable({
+                        order: [
+                            [0, 'desc']
+                        ], // Sort by the first column (index 0) in descending order
                     });
-                    $('#logsTable').DataTable(); // Initialize DataTable
-                    $('.loading').hide(); // Hide loading spinner after data is loaded
+
+                    // Hide loading spinner
+                    $('.loading').hide();
                 },
-                error: function (jqXHR, textStatus, errorThrown) {
+                error: function(jqXHR, textStatus, errorThrown) {
                     console.error("Error fetching logs: " + textStatus, errorThrown);
-                    $('.loading').hide(); // Hide loading spinner on error
+                    alert("Failed to fetch logs. Please try again later.");
+                    $('.loading').hide();
                 }
             });
         });

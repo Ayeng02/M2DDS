@@ -20,7 +20,7 @@ LEFT JOIN
 LEFT JOIN 
     admin_tbl a ON sl.user_id = a.admin_id AND sl.user_type = 'Admin'
 ORDER BY 
-    sl.systemlog_date DESC
+    sl.id DESC
 "; // Fetch logs with user names
 $result = $conn->query($query);
 
