@@ -20,10 +20,11 @@ $search_query = $search ? "AND (order_id LIKE '%$search%' || order_fullname LIKE
 $date_query = $date ? "AND DATE(order_date) = '$date'" : "";  // New date filter query
 
 $query = "
-    SELECT o.*, s.status_name, p.prod_name
+    SELECT o.*, s.status_name, p.prod_name, b.Brgy_Name, b.Brgy_df
     FROM order_tbl o
     JOIN status_tbl s ON o.status_code = s.status_code
     JOIN product_tbl p ON o.prod_code = p.prod_code
+    JOIN brgy_tbl b ON o.order_barangay = b.Brgy_Name
     WHERE o.cust_id = '$cust_id' $status_query $search_query $date_query
     ORDER BY o.order_date DESC
     LIMIT $limit OFFSET $offset
@@ -96,6 +97,9 @@ function generateOrderCard($order) {
     }else if ($order['status_name'] === 'Canceled'){
         $orderButton = '<a href="product-details.php?id=' . htmlspecialchars($order['prod_code']) . '" class="btn btn-primary mt-2" style="background-color: #FF5349; border-color: #FF5349; border-radius: 10px;"> <i class="fas fa-cart-arrow-down"></i>  Order</a>';
     }
+
+     // Calculate total including delivery fee
+     $totalWithDelivery = floatval($order['order_total']) + floatval($order['Brgy_df']);
     
     return '
         <div class="col-md-4 mb-3" id="order-card-' . htmlspecialchars($order['order_id']) . '">
@@ -109,7 +113,7 @@ function generateOrderCard($order) {
                     <p><strong>Address:</strong> ' . htmlspecialchars($order['order_barangay']) . ', ' . htmlspecialchars($order['order_purok']) . ', ' . htmlspecialchars($order['order_province']) . '</p>
                     <p><strong>Product Name:</strong> ' . htmlspecialchars($order['prod_name']) . '</p>
                     <p><strong>Quantity:</strong> ' . htmlspecialchars($order['order_qty']) . '</p>
-                    <p><strong>Total:</strong> ' . htmlspecialchars($order['order_total']) . '</p>
+                    <p><strong>Total:</strong> ' . htmlspecialchars($totalWithDelivery) . '</p>
                     <button class="btn btn-view-details" onclick="toggleDetails(\'' . htmlspecialchars($order['order_id']) . '\')">More Details</button>
                     <div id="order-info-' . htmlspecialchars($order['order_id']) . '" class="order-info mt-3">
                         <p><strong>Cash Payment:</strong> ' . htmlspecialchars($order['order_cash']) . '</p>
