@@ -6,16 +6,31 @@ include '../includes/db_connect.php';
 session_start();
 
 // Fetch user permissions based on emp_id
-$emp_id = $_SESSION['emp_id']; // assuming emp_id is stored in session
-$accessQuery = "SELECT add_product, edit_product, add_category FROM access_control WHERE emp_id = ?";
+$emp_id = $_SESSION['emp_id']; // Assuming emp_id is stored in session
+$accessQuery = "
+    SELECT add_product, edit_product, add_category 
+    FROM access_control 
+    WHERE emp_id = ? 
+    ORDER BY granted_date DESC 
+    LIMIT 1"; // Fetch the latest record based on granted_date
 $stmt = $conn->prepare($accessQuery);
-$stmt->bind_param("i", $emp_id);
+$stmt->bind_param("s", $emp_id);
 $stmt->execute();
 $accessResult = $stmt->get_result()->fetch_assoc();
 
-$canAddProduct = $accessResult['add_product'] === 'Enabled';
-$canEditProduct = $accessResult['edit_product'] === 'Enabled';
-$canViewCategories = $accessResult['add_category'] === 'Enabled';
+// Set default access rights to "Disabled" if no record is found
+$canAddProduct = false;
+$canEditProduct = false;
+$canViewCategories = false;
+
+if ($accessResult) {
+    // If a record exists, update the permissions based on the result
+    $canAddProduct = $accessResult['add_product'] === 'Enabled';
+    $canEditProduct = $accessResult['edit_product'] === 'Enabled';
+    $canViewCategories = $accessResult['add_category'] === 'Enabled';
+}
+
+
 
 // Fetch products with category name using JOIN
 $productQuery = "
