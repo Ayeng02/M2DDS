@@ -28,30 +28,41 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Use server time instead of fetching time from an external API
     $current_time = new DateTime(); // Get the current server time
     $current_time_str = $current_time->format('H:i:s'); // Get current time in HH:MM:SS format
-    
+
     // Retrieve login window from AttendSched_tbl
     $stmt = $conn->prepare("SELECT am_login_start, am_login_end FROM AttendSched_tbl");
     $stmt->execute();
     $result = $stmt->get_result();
-    
+
     if ($row = $result->fetch_assoc()) {
         $login_start = $row['am_login_start'];
         $login_end = $row['am_login_end'];
 
-        // Convert logout times to 12-hour format with AM/PM
+        // Convert login times into DateTime objects for comparison
         $login_start_time = new DateTime($login_start);
         $login_end_time = new DateTime($login_end);
 
-          // Format the times in 12-hour format with AM/PM
-          $login_start_formatted = $login_start_time->format('h:i A');
-          $login_end_formatted = $login_end_time->format('h:i A');
-    
-        // Check if the current time is within the allowed login window
-        if ($current_time_str < $login_start || $current_time_str >= $login_end) {
-            // Outside of login hours
-            $response['error'] = "Logouts are open between $login_start_formatted and $login_end_formatted";
-            echo json_encode($response);
-            exit;
+        // Format the times for the response
+        $login_start_formatted = $login_start_time->format('h:i A');
+        $login_end_formatted = $login_end_time->format('h:i A');
+
+        // Check if the login time spans midnight
+        if ($login_start_time > $login_end_time) {
+            // The login window spans midnight
+            if ($current_time_str >= $login_start && $current_time_str < '23:59:59' || $current_time_str >= '00:00:00' && $current_time_str < $login_end) {
+                // Valid login time
+            } else {
+                $response['error'] = "Login is open between $login_start_formatted and $login_end_formatted";
+                echo json_encode($response);
+                exit;
+            }
+        } else {
+            // Normal login window, doesn't span midnight
+            if ($current_time_str < $login_start || $current_time_str >= $login_end) {
+                $response['error'] = "Login is open between $login_start_formatted and $login_end_formatted";
+                echo json_encode($response);
+                exit;
+            }
         }
     } else {
         // Handle case where no schedule is found
@@ -177,7 +188,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             position: relative;
             transition: height 0.5s ease-out;
             min-height: 300px;
-          
+
         }
 
 
@@ -356,6 +367,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             opacity: 0;
             transform: scale(0.8);
         }
+
+        .realTime-container {
+            text-align: center;
+            padding: 1px;
+            width: 100%;
+        }
+
+        .clocktitle h3 {
+            font-size: 20px;
+            font-weight: bold;
+            color: #8c1c1c;
+        }
+
+        .timeclockcontainer h1 {
+            font-size: 23px;
+            color: #8c1c1c;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .timeclockcontainer h5 {
+            font-size: 17px;
+            color: #666;
+        }
     </style>
 </head>
 
@@ -368,6 +403,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="container-fluid">
         <div class="container">
             <h1 class="title">Meat to Door Delivery System Login</h1>
+            <div class="d-grid gap-10 col-14 ms-auto">
+                <div class="realTime-container">
+                    <div class="timeclockcontainer">
+                        <h1 id="current-time">--:--:--</h1>
+                        <h5 id="current-date">Loading...</h5>
+                    </div>
+                    <div class="clockfoot"></div>
+                </div>
+            </div>
 
             <div class="card text-bg-light mb-3" id="infoBox">
                 <div class="card-body">
@@ -463,6 +507,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     alert('Network Error: Please try again later.');
                 });
         });
+
+        function updateTime() {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    document.getElementById("current-time").innerHTML = response.time;
+                    document.getElementById("current-date").innerHTML = response.date;
+                }
+            };
+            xhr.open("GET", "../admin/get_time.php", true);
+            xhr.send();
+        }
+
+        // Call updateTime initially and then every second
+        updateTime();
+        setInterval(updateTime, 1000);
     </script>
 
 </body>

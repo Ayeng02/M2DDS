@@ -43,288 +43,8 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <link rel="stylesheet" href="../css/attendanceConfig.css">
 
-
-    <style>
-        body {
-            overflow-x: hidden;
-            background-color: #f8f9fa;
-        }
-
-
-        #sidebar-wrapper .sidebar-heading .sidebar-title {
-            font-size: 1.5rem;
-            display: inline;
-        }
-
-        #wrapper {
-            display: flex;
-            width: 100%;
-            height: 100%;
-            /* Full viewport height */
-        }
-
-        #sidebar-wrapper {
-            min-height: 100vh;
-            width: 80px;
-            /* Default width for icons only */
-            background-color: #a72828;
-            color: #fff;
-            transition: width 0.3s ease;
-            overflow-y: auto;
-            /* Allow vertical scrolling */
-            position: relative;
-            overflow-x: hidden;
-            /* Prevent horizontal scrolling */
-            border-right: 1px solid #ddd;
-            /* Light border to separate from content */
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-            /* Subtle shadow */
-
-        }
-
-        #sidebar-wrapper.expanded {
-            width: 250px;
-            /* Expanded width */
-        }
-
-        #sidebar-wrapper .sidebar-heading {
-            padding: 1rem;
-            display: flex;
-            align-items: center;
-            background-color: #FF8225;
-            color: #fff;
-            border-bottom: 1px solid #ddd;
-            /* Border for separation */
-        }
-
-        #sidebar-wrapper .logo-img {
-            width: 40px;
-            /* Adjust size as needed */
-            height: 40px;
-            margin-right: 10px;
-            /* Space between logo and text */
-        }
-
-        #sidebar-wrapper .sidebar-title {
-            font-size: 1.5rem;
-            display: inline;
-            /* Ensure title is always visible */
-        }
-
-        #sidebar-wrapper .list-group {
-            width: 100%;
-        }
-
-        #sidebar-wrapper .list-group-item {
-            background-color: #a72828;
-            color: #fff;
-            border: none;
-            padding: 1rem;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            border-radius: 0;
-            /* Remove default border radius */
-            transition: background-color 0.2s ease;
-            /* Smooth hover effect */
-        }
-
-        #sidebar-wrapper .list-group-item i {
-            font-size: 1.5rem;
-            margin-right: 15px;
-        }
-
-        #sidebar-wrapper .list-group-item span {
-            display: none;
-            /* Hide text in default state */
-            margin-left: 10px;
-            white-space: nowrap;
-            /* Prevent text wrapping */
-        }
-
-        #sidebar-wrapper.expanded .list-group-item span {
-            display: inline;
-            /* Show text in expanded state */
-        }
-
-        #sidebar-wrapper .list-group-item:hover {
-            background-color: #8c1c1c;
-            /* Darker color on hover */
-        }
-
-        #sidebar-wrapper .toggle-btn {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #FF8225;
-            color: #fff;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-            /* Button shadow */
-        }
-
-        #sidebar-wrapper .toggle-btn:hover {
-            background-color: #a72828;
-        }
-
-        #page-content-wrapper {
-            flex: 1;
-            padding: 20px;
-            transition: margin-left 0.3s ease;
-            background-color: #f8f9fa;
-            /* Slightly different background */
-        }
-
-        #page-content-wrapper.sidebar-expanded {
-            margin-left: 0px;
-            /* Match the expanded sidebar width */
-        }
-
-        .navbar-light {
-            background-color: #FF8225;
-        }
-
-        .navbar-light .navbar-nav .nav-link {
-            color: black;
-
-
-        }
-
-        .navbar-light .navbar-nav .nav-link:hover {
-            color: #a72828;
-        }
-
-        /* Hide sidebar heading text when collapsed */
-        #sidebar-wrapper:not(.expanded) .sidebar-title {
-            display: none;
-        }
-
-        #sidebar-wrapper:not(.expanded) .logo-img {
-            width: 30px;
-            /* Adjust size when collapsed */
-            height: 30px;
-        }
-
-        .employee-table-container {
-            display: block;
-            flex-direction: row;
-            width: 95%;
-            height: 50vh;
-            margin-top: 4%;
-            margin-left: 2%;
-            padding-top: 20px;
-            border-radius: 10px;
-            background-color: #fff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            flex-direction: column;
-            text-align: center;
-
-        }
-
-        .tbod tr{
-            font-size: 20px;
-        }
-
-
-        #header-table-title {
-            text-align: start;
-            margin-bottom: 0.1rem;
-            margin-left: 1%;
-            font-size: 45px;
-            font-weight: bold;
-            color: #8c1c1c;
-
-        }
-
-        .combo-box {
-            display: flex;
-            margin-left: 30px;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-bottom: 8px;
-            margin-right: 20px;
-        }
-
-        .combo-box button:hover {
-            background-color: #0062cd;
-        }
-
-
-        .edit-icon i {
-            color: #007bff;
-            font-size: 16px;
-            cursor: pointer;
-            margin-right: 10px;
-            transition: color 0.2s ease;
-        }
-
-
-        .edit-icon i:hover {
-            color: #0056b3;
-        }
-
-        .custom-font-size {
-            font-size: 17px;
-
-        }
-
-        #editRole {
-            cursor: none;
-        }
-
-
-
-        #copyTableBtn {
-            margin-left: 2%;
-            color: white;
-        }
-
-        .table-header {
-            background-color: #8c1c1c;
-        }
-
-        nav {
-            margin-top: 1%;
-        }
-
-        .navbar {
-            background-color: white;
-            margin-left: 3rem;
-        }
-
-        .realTime-container {
-            text-align: center;
-            padding: 1px;
-            width: 95%;
-            margin-left: 2%;
-        }
-
-        .clocktitle h3 {
-            font-size: 25px;
-            font-weight: bold;
-            color: #ff8225
-        }
-
-        .timeclockcontainer h1 {
-            font-size: 27px;
-            color: black;
-            margin: 10px 0;
-        }
-
-        .timeclockcontainer h5 {
-            font-size: 18px;
-            color: #666;
-        }
-    </style>
 </head>
 
 <body>
@@ -476,7 +196,14 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                     </div>
                 </div>
                 <div class="combo-box">
-                    <button type="submit" name="edit" class="btn btn-primary w-70 " data-bs-toggle="modal" data-bs-target="#attendanceModal"><i class="fa-sharp fa-solid fa-plus"></i> Set Schedule</button>
+                    <!-- Edit Schedule Button -->
+                    <button id="editScheduleButton" class="btn btn-secondary w-70" data-bs-toggle="modal" data-bs-target="#editModal">
+                        <i class="fa-sharp fa-solid fa-pen"></i> Edit Schedule
+                    </button>
+                    <!-- Set Schedule Button -->
+                    <button class="btn btn-primary w-70" data-bs-toggle="modal" data-bs-target="#attendanceModal">
+                        <i class="fa-sharp fa-solid fa-plus"></i> Set Schedule
+                    </button>
                 </div>
                 <?php
 
@@ -491,137 +218,140 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                 ?>
 
 
-                <div class="table-responsive">
-                    <table class="table table-hover" id="payrollTable">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Login Start (Morning)</th>
-                                <th>Login End (Morning)</th>
-                                <th>Logout Start (Afternoon)</th>
-                                <th>Logout End (Afternoon)</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody class="tbod">
-                            <?php if ($result->num_rows > 0): ?>
-                                <?php while ($sched = $result->fetch_assoc()): ?>
-                                    <tr>
-                                        <td> <?php
-                                                $loginStart = new DateTime($sched['am_login_start']);
-                                                echo $loginStart->format('g:i A');
-                                                ?></td>
-                                        <td> <?php
-                                                $loginEnd = new DateTime($sched['am_login_end']);
-                                                echo $loginEnd->format('g:i A');
-                                                ?></td>
-                                        <td>
+                <div class="row">
+                    <?php if ($result->num_rows > 0): ?>
+                        <?php while ($sched = $result->fetch_assoc()): ?>
+                            <div class="schedule-container">
+                                <div class="cards">
+                                    <!-- Login Card -->
+                                    <div class="card">
+                                        <h1>Morning Login Start</h1>
+                                        <p class="card-text">
+                                            <i class="fa-solid fa-user-clock"></i>
                                             <?php
-                                            $logoutStart = new DateTime($sched['pm_logout_start']);
-                                            echo $logoutStart->format('g:i A');
+                                            $loginStart = new DateTime($sched['am_login_start']);
+                                            echo $loginStart->format('g:i A');
                                             ?>
-                                        </td>
-                                        <td>
+                                        </p>
+                                        <input type="hidden" class="schedule-data"
+                                            data-logstart-AM="<?php echo htmlspecialchars($sched['am_login_start']); ?>"
+                                            data-logend-AM="<?php echo htmlspecialchars($sched['am_login_end']); ?>"
+                                            data-logstart-PM="<?php echo htmlspecialchars($sched['pm_logout_start']); ?>"
+                                            data-logend-PM="<?php echo htmlspecialchars($sched['pm_logout_end']); ?>">
+                                    </div>
+                                    <div class="card">
+                                        <h1>Morning Login End</h1>
+                                        <p class="card-text">
+                                            <i class="fa-solid fa-user-clock"></i>
                                             <?php
-                                            $logoutEnd = new DateTime($sched['pm_logout_end']);
-                                            echo $logoutEnd->format('g:i A');
+                                            $loginStart = new DateTime($sched['am_login_end']);
+                                            echo $loginStart->format('g:i A');
                                             ?>
-                                        </td>
-
-                                        <td>
-                                            <!-- Edit button trigger modal -->
-                                            <a href="#" class="edit-icon" data-bs-toggle="modal" data-bs-target="#editModal"
-                                                data-logstart-AM="<?php echo htmlspecialchars($sched['am_login_start']); ?>"
-                                                data-logend-AM="<?php echo htmlspecialchars($sched['am_login_end']); ?>"
-                                                data-logstart-PM="<?php echo htmlspecialchars($sched['pm_logout_start']); ?>"
-                                                data-logend-PM="<?php echo htmlspecialchars($sched['pm_logout_end']); ?>">
-
-                                                <i class="fa fa-edit"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                <?php endwhile; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <td colspan="5">No Schedule found.</td>
-                                </tr>
-                            <?php endif; ?>
-
-                        </tbody>
-                    </table>
+                                        </p>
+                                    </div>
+                                    <div class="card">
+                                        <h1>Afternoon Logout Start</h1>
+                                        <p class="card-text">
+                                            <i class="fa-solid fa-user-clock"></i>
+                                            <?php
+                                            $loginStart = new DateTime($sched['pm_logout_start']);
+                                            echo $loginStart->format('g:i A');
+                                            ?>
+                                        </p>
+                                    </div>
+                                    <div class="card">
+                                        <h1>Afternoon Logout End</h1>
+                                        <p class="card-text">
+                                            <i class="fa-solid fa-user-clock"></i>
+                                            <?php
+                                            $loginStart = new DateTime($sched['pm_logout_end']);
+                                            echo $loginStart->format('g:i A');
+                                            ?>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <div class="col-12">
+                            <p>No schedule found.</p>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
 
-    <?php
-    if (isset($_POST['edit'])) {
-        $morningLoginStart = $_POST['startLogin'];
-        $morningLoginEnd = $_POST['endLogin'];
-        $afternoonLogoutStart = $_POST['startLogout'];
-        $afternoonLogoutEnd = $_POST['endLogout'];
 
-        // Check if a schedule already exists in the attendsched_tbl table
-        $checkQuery = "SELECT COUNT(*) AS schedule_count FROM attendsched_tbl";
+            <?php
+            if (isset($_POST['edit'])) {
+                $morningLoginStart = $_POST['startLogin'];
+                $morningLoginEnd = $_POST['endLogin'];
+                $afternoonLogoutStart = $_POST['startLogout'];
+                $afternoonLogoutEnd = $_POST['endLogout'];
 
-        $result = $conn->query($checkQuery);
-        $row = $result->fetch_assoc();
+                // Check if a schedule already exists in the attendsched_tbl table
+                $checkQuery = "SELECT COUNT(*) AS schedule_count FROM attendsched_tbl";
 
-        if ($row['schedule_count'] > 0) {
-            // Schedule already exists, update the existing schedule
-            $updateQuery = "UPDATE attendsched_tbl 
+                $result = $conn->query($checkQuery);
+                $row = $result->fetch_assoc();
+
+                if ($row['schedule_count'] > 0) {
+                    // Schedule already exists, update the existing schedule
+                    $updateQuery = "UPDATE attendsched_tbl 
                         SET am_login_start = ?, am_login_end = ?, pm_logout_start = ?, pm_logout_end = ?";
 
-            if ($stmt = $conn->prepare($updateQuery)) {
-                // Bind the parameters to the prepared statement
-                $stmt->bind_param("ssss", $morningLoginStart, $morningLoginEnd, $afternoonLogoutStart, $afternoonLogoutEnd);
+                    if ($stmt = $conn->prepare($updateQuery)) {
+                        // Bind the parameters to the prepared statement
+                        $stmt->bind_param("ssss", $morningLoginStart, $morningLoginEnd, $afternoonLogoutStart, $afternoonLogoutEnd);
 
-                // Execute the update query
-                if ($stmt->execute()) {
-                    // Successfully updated the schedule
-                    $_SESSION['alert'] = [
-                        'icon' => 'success',
-                        'title' => 'Attendance schedule updated successfully.'
-                    ];
+                        // Execute the update query
+                        if ($stmt->execute()) {
+                            // Successfully updated the schedule
+                            $_SESSION['alert'] = [
+                                'icon' => 'success',
+                                'title' => 'Attendance schedule updated successfully.'
+                            ];
+                        } else {
+                            // Error executing the update query
+                            $_SESSION['alert'] = [
+                                'icon' => 'error',
+                                'title' => 'Failed to update attendance schedule. Please try again.'
+                            ];
+                        }
+                        $stmt->close();
+                    } else {
+                        // Error preparing the update statement
+                        $_SESSION['alert'] = [
+                            'icon' => 'error',
+                            'title' => 'Error preparing update statement: ' . $conn->error
+                        ];
+                    }
                 } else {
-                    // Error executing the update query
+                    // Schedule does not exist, show a message
                     $_SESSION['alert'] = [
-                        'icon' => 'error',
-                        'title' => 'Failed to update attendance schedule. Please try again.'
+                        'icon' => 'warning',
+                        'title' => 'No schedule found. Please add a schedule first.'
                     ];
                 }
-                $stmt->close();
-            } else {
-                // Error preparing the update statement
-                $_SESSION['alert'] = [
-                    'icon' => 'error',
-                    'title' => 'Error preparing update statement: ' . $conn->error
-                ];
+
+                // Redirect back to the page to prevent form resubmission and show the alert message
+                header("Location: " . $_SERVER['PHP_SELF']);
+                exit();
             }
-        } else {
-            // Schedule does not exist, show a message
-            $_SESSION['alert'] = [
-                'icon' => 'warning',
-                'title' => 'No schedule found. Please add a schedule first.'
-            ];
-        }
 
-        // Redirect back to the page to prevent form resubmission and show the alert message
-        header("Location: " . $_SERVER['PHP_SELF']);
-        exit();
-    }
-
-    // Check for alerts after the form processing
-    if (isset($_SESSION['alert'])) {
-        $alert = $_SESSION['alert'];
-        echo '<script>
+            // Check for alerts after the form processing
+            if (isset($_SESSION['alert'])) {
+                $alert = $_SESSION['alert'];
+                echo '<script>
     Swal.fire({
         icon: "' . $alert['icon'] . '",
         title: "' . $alert['title'] . '",
         showConfirmButton: true
     });
     </script>';
-        unset($_SESSION['alert']); // Clear the alert so it doesn't show again
-    }
+                unset($_SESSION['alert']); // Clear the alert so it doesn't show again
+            }
 
-?>
+            ?>
 
             <!-- Edit Employee Modal -->
             <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
@@ -682,10 +412,6 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
 
 
 
-
-
-
-
             <!-- Bootstrap and JavaScript -->
             <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
@@ -715,23 +441,24 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                 });
 
 
-                $('#editModal').on('show.bs.modal', function(event) {
-                    // Get the clicked edit icon
-                    var button = $(event.relatedTarget);
+                document.getElementById('editScheduleButton').addEventListener('click', function() {
+                    // Get the first schedule card's data
+                    const scheduleData = document.querySelector('.schedule-data');
 
-                    // Get data attributes from the clicked edit icon
-                    var morningLoginStart = button.data('logstart-am');
-                    var morningLoginEnd = button.data('logend-am');
-                    var afternoonLogoutStart = button.data('logstart-pm');
-                    var afternoonLogoutEnd = button.data('logend-pm');
+                    // Extract data from hidden inputs
+                    const logstartAM = scheduleData.getAttribute('data-logstart-AM');
+                    const logendAM = scheduleData.getAttribute('data-logend-AM');
+                    const logstartPM = scheduleData.getAttribute('data-logstart-PM');
+                    const logendPM = scheduleData.getAttribute('data-logend-PM');
 
-                    // Populate the modal form fields with the retrieved data
-                    var modal = $(this);
-                    modal.find('#morningLoginStart').val(morningLoginStart);
-                    modal.find('#morningLoginEnd').val(morningLoginEnd);
-                    modal.find('#afternoonLogoutStart').val(afternoonLogoutStart);
-                    modal.find('#afternoonLogoutEnd').val(afternoonLogoutEnd);
+                    // Populate the edit modal fields
+                    const modal = document.getElementById('editModal');
+                    modal.querySelector('#morningLoginStart').value = logstartAM;
+                    modal.querySelector('#morningLoginEnd').value = logendAM;
+                    modal.querySelector('#afternoonLogoutStart').value = logstartPM;
+                    modal.querySelector('#afternoonLogoutEnd').value = logendPM;
                 });
+
 
 
                 function applyDefaultMeridian() {

@@ -90,7 +90,7 @@ $(document).ready(function() {
                     if (data.success) {
                         Swal.fire({
                             title: 'Success',
-                            text: 'Order(s) pdated to Processing!',
+                            text: 'Order(s) updated to Processing!',
                             icon: 'success'
                         }).then(() => {
                             window.location.reload();
@@ -279,6 +279,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Track the last order ID or timestamp
+/*
 let lastOrderId = null;
 
 function checkForNewOrders() {
@@ -288,7 +289,7 @@ function checkForNewOrders() {
             // Assuming 'latest_order_id' is the field returned by the server
             if (data.latest_order_id && data.latest_order_id !== lastOrderId) {
                 lastOrderId = data.latest_order_id;
-                window.location.reload(); // Refresh the page if new orders are found
+                //window.location.reload(); // Refresh the page if new orders are found
             }
         })
         .catch(error => console.error('Error:', error));
@@ -296,7 +297,7 @@ function checkForNewOrders() {
 
 // Check for new orders every 1 minute (60000 milliseconds)
 setInterval(checkForNewOrders, 60000);
-
+*/
 
 // Initialize tooltips
 document.addEventListener('DOMContentLoaded', function() {

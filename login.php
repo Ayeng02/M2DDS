@@ -86,12 +86,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['emp_id'] = $empId;
                     $_SESSION['emp_role'] = $empRole;
 
-                    // Update employee status to 'Active'
-                    $statusUpdateSql = "UPDATE emp_tbl SET emp_status = 'Active' WHERE emp_id = ?";
+                    // Update employee status to 'Active' only if the current status is not 'On Shipped'
+                    $statusUpdateSql = "UPDATE emp_tbl SET emp_status = 'Active' WHERE emp_id = ? AND emp_status != 'On Shipped'";
                     $statusUpdateStmt = $conn->prepare($statusUpdateSql);
                     $statusUpdateStmt->bind_param("s", $empId);
                     $statusUpdateStmt->execute();
                     $statusUpdateStmt->close();
+
 
                     $redirectUrl = '';
                     switch ($empRole) {

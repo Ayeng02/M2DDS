@@ -330,6 +330,10 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
 
         }
 
+        #add {
+            margin-top: 1%;
+        }
+
         #search {
             background-color: #007bff;
             color: white;
@@ -367,9 +371,10 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
         }
 
         .pagination-black .page-item.active .page-link {
-            background-color: #FF8225;
+
+            background-color: #8c1c1c;
             /* Change this color to the desired active background color */
-            border-color: #FF8225;
+            border-color: #8c1c1c;
             /* Change the border color if needed */
             color: #fff;
             /* Active page text color */
@@ -498,7 +503,7 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                         <label for="dailyRate">Daily Rate (₱)</label>
                         <input type="number" id="dailyRate" name="dailyRate" class="form-control" step="0.01" min="0" placeholder="00.00" required>
                     </div>
-                    <button type="submit" onclick="addRate()" class="btn btn-primary">Add Rate</button>
+                    <button id="add" type="submit" onclick="addRate()" class="btn btn-primary"><i class="fa-sharp fa-solid fa-peso-sign"></i> Add Rate</button>
                 </form>
             </div>
 
@@ -791,7 +796,6 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                     }
                 }
             }
-
         </script>
 
 </body>
