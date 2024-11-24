@@ -21,99 +21,112 @@ $response = [
     'success_message' => ''
 ];
 
-// Handle POST request
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $emp_id = strtoupper(trim($_POST['employeeId']));
+try {
 
-    // Use server time instead of fetching time from an external API
-    $current_time = new DateTime(); // Get the current server time
-    $current_time_str = $current_time->format('H:i:s'); // Get current time in HH:MM:SS format
+    // Handle POST request
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        $emp_id = strtoupper(trim($_POST['employeeId']));
 
-    // Retrieve logout window from AttendSched_tbl
-    $stmt = $conn->prepare("SELECT pm_logout_start, pm_logout_end FROM AttendSched_tbl");
-    $stmt->execute();
-    $result = $stmt->get_result();
+        // Use server time instead of fetching time from an external API
+        $current_time = new DateTime(); // Get the current server time
+        $current_time_str = $current_time->format('H:i:s'); // Get current time in HH:MM:SS format
 
-    if ($row = $result->fetch_assoc()) {
-        $logout_start = $row['pm_logout_start'];
-        $logout_end = $row['pm_logout_end'];
+        // Retrieve logout window from AttendSched_tbl
+        $stmt = $conn->prepare("SELECT pm_logout_start, pm_logout_end FROM AttendSched_tbl");
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-        // Convert logout times to 12-hour format with AM/PM
-        $logout_start_time = new DateTime($logout_start);
-        $logout_end_time = new DateTime($logout_end);
+        if ($row = $result->fetch_assoc()) {
+            $logout_start = $row['pm_logout_start'];
+            $logout_end = $row['pm_logout_end'];
 
-        // Format the times in 12-hour format with AM/PM
-        $logout_start_formatted = $logout_start_time->format('h:i A');
-        $logout_end_formatted = $logout_end_time->format('h:i A');
-        // Check if the login range spans midnight
+            // Convert logout times to 12-hour format with AM/PM
+            $logout_start_time = new DateTime($logout_start);
+            $logout_end_time = new DateTime($logout_end);
 
-        if ($logout_start_time > $logout_end_time) {
-            // The login window spans midnight
-            if ($current_time_str >= $logout_start && $current_time_str < '23:59:59' || $current_time_str >= '00:00:00' && $current_time_str < $logout_end) {
-                // Valid login time
+            // Format the times in 12-hour format with AM/PM
+            $logout_start_formatted = $logout_start_time->format('h:i A');
+            $logout_end_formatted = $logout_end_time->format('h:i A');
+            // Check if the login range spans midnight
+
+            if ($logout_start_time > $logout_end_time) {
+                // The login window spans midnight
+                if ($current_time_str >= $logout_start && $current_time_str < '23:59:59' || $current_time_str >= '00:00:00' && $current_time_str < $logout_end) {
+                    // Valid login time
+                } else {
+                    $response['error'] = "Logout is open between $logout_start_formatted and $logout_end_formatted";
+                    echo json_encode($response);
+                    exit;
+                }
             } else {
-                $response['error'] = "Logout is open between $logout_start_formatted and $logout_end_formatted";
-                echo json_encode($response);
-                exit;
+                // Normal login window, doesn't span midnight
+                if ($current_time_str < $logout_start || $current_time_str >= $logout_end) {
+                    $response['error'] = "Logout is open between $logout_start_formatted and $logout_end_formatted";
+                    echo json_encode($response);
+                    exit;
+                }
             }
         } else {
-            // Normal login window, doesn't span midnight
-            if ($current_time_str < $logout_start || $current_time_str >= $logout_end) {
-                $response['error'] = "Logout is open between $logout_start_formatted and $logout_end_formatted";
-                echo json_encode($response);
-                exit;
-            }
+            // Handle case where no schedule is found
+            $response['error'] = "Logout schedule not found.";
+            echo json_encode($response);
+            exit;
         }
-    } else {
-        // Handle case where no schedule is found
-        $response['error'] = "Logout schedule not found.";
-        echo json_encode($response);
-        exit;
-    }
 
-    // Check if emp_id exists in emp_tbl
-    $empQuery = "SELECT * FROM emp_tbl WHERE emp_id = ?";
-    $stmt = $conn->prepare($empQuery);
-    $stmt->bind_param("s", $emp_id);
-    $stmt->execute();
-    $empResult = $stmt->get_result();
-
-    if ($empResult->num_rows > 0) {
-        // Employee exists, check if there is an entry in att_tbl with no time_out
-        $attQuery = "SELECT * FROM att_tbl WHERE emp_id = ? AND time_out IS NULL";
-        $stmt = $conn->prepare($attQuery);
+        // Check if emp_id exists in emp_tbl
+        $empQuery = "SELECT * FROM emp_tbl WHERE emp_id = ?";
+        $stmt = $conn->prepare($empQuery);
         $stmt->bind_param("s", $emp_id);
         $stmt->execute();
-        $attResult = $stmt->get_result();
+        $empResult = $stmt->get_result();
 
-        if ($attResult->num_rows > 0) {
-            // Employee is logged in, update time_out and show success message
-            $updateQuery = "UPDATE att_tbl SET time_out = NOW() WHERE emp_id = ? AND time_out IS NULL";
-            $stmt = $conn->prepare($updateQuery);
+        if ($empResult->num_rows > 0) {
+            // Employee exists, check if there is an entry in att_tbl with no time_out
+            $attQuery = "SELECT * FROM att_tbl WHERE emp_id = ? AND time_out IS NULL";
+            $stmt = $conn->prepare($attQuery);
             $stmt->bind_param("s", $emp_id);
             $stmt->execute();
+            $attResult = $stmt->get_result();
 
-            // Destroy session data for this employee
-            if (isset($_SESSION['emp_id']) && $_SESSION['emp_id'] == $emp_id) {
-                session_destroy(); 
+            if ($attResult->num_rows > 0) {
+                // Employee is logged in, update time_out and show success message
+                $updateQuery = "UPDATE att_tbl SET time_out = NOW() WHERE emp_id = ? AND time_out IS NULL";
+                $stmt = $conn->prepare($updateQuery);
+                $stmt->bind_param("s", $emp_id);
+                $stmt->execute();
+
+                // Destroy session data for this employee
+                if (isset($_SESSION['emp_id']) && $_SESSION['emp_id'] == $emp_id) {
+                    session_destroy();
+                }
+
+                // Fetch employee's name and role to display in the info box
+                $empData = $empResult->fetch_assoc();
+                $response['success'] = true;
+                $response['success_message'] = 'Logout successful';
+                $response['image'] = $empData['emp_img'] ? '../' . $empData['emp_img'] : '../Shipper_Upload/sample1.png';
+                $response['name'] = $empData['emp_fname'] . ' ' . $empData['emp_lname'];
+                $response['role'] = $empData['emp_role'];
+            } else {
+                // Employee is not logged in
+                $response['error'] = 'You are not logged in to the system.';
             }
-
-            // Fetch employee's name and role to display in the info box
-            $empData = $empResult->fetch_assoc();
-            $response['success'] = true;
-            $response['success_message'] = 'Logout successful';
-            $response['image'] = $empData['emp_img'] ? '../' . $empData['emp_img'] : '../Shipper_Upload/sample1.png';
-            $response['name'] = $empData['emp_fname'] . ' ' . $empData['emp_lname'];
-            $response['role'] = $empData['emp_role'];
         } else {
-            // Employee is not logged in
-            $response['error'] = 'You are not logged in to the system.';
+            // Employee ID not found
+            $response['error'] = 'Employee ID Not Found.';
         }
-    } else {
-        // Employee ID not found
-        $response['error'] = 'Employee ID Not Found.';
-    }
 
+        // Close statement and connection
+        $stmt->close();
+        $conn->close();
+
+        echo json_encode($response);
+        exit();
+    }
+} catch (Exception $e) {
+    // Handle any unexpected errors
+    $response['success'] = false;
+    $response['error'] = 'An unexpected error occurred: ' . $e->getMessage();
     echo json_encode($response);
     exit();
 }
@@ -352,7 +365,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         .timeclockcontainer h1 {
             font-size: 23px;
-            color:#8c1c1c;
+            color: #8c1c1c;
             margin: 10px 0;
             font-weight: bold;
         }
@@ -392,7 +405,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
             </div>
 
-            <form id="attendanceForm">
+            <form id="attendanceForm" method="POST">
                 <input type="text" id="employeeId" name="employeeId" placeholder="Enter ID" required>
                 <button type="submit">Logout</button>
             </form>
@@ -423,7 +436,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             fetch(window.location.href, {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
                 })
                 .then(response => response.json())
                 .then(data => {

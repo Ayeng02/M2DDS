@@ -20,114 +20,123 @@ $response = [
     'success_message' => ''
 ];
 
-// Handle form submission
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Retrieve the employee ID from the POST request and sanitize input
-    $emp_id = strtoupper(trim($_POST['employeeId'])); // Convert emp_id to uppercase and trim spaces
+try {
+    // Handle form submission
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        // Retrieve the employee ID from the POST request and sanitize input
+        $emp_id = strtoupper(trim($_POST['employeeId'])); // Convert emp_id to uppercase and trim spaces
 
-    // Use server time instead of fetching time from an external API
-    $current_time = new DateTime(); // Get the current server time
-    $current_time_str = $current_time->format('H:i:s'); // Get current time in HH:MM:SS format
+        // Use server time instead of fetching time from an external API
+        $current_time = new DateTime(); // Get the current server time
+        $current_time_str = $current_time->format('H:i:s'); // Get current time in HH:MM:SS format
 
-    // Retrieve login window from AttendSched_tbl
-    $stmt = $conn->prepare("SELECT am_login_start, am_login_end FROM AttendSched_tbl");
-    $stmt->execute();
-    $result = $stmt->get_result();
+        // Retrieve login window from AttendSched_tbl
+        $stmt = $conn->prepare("SELECT am_login_start, am_login_end FROM AttendSched_tbl");
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-    if ($row = $result->fetch_assoc()) {
-        $login_start = $row['am_login_start'];
-        $login_end = $row['am_login_end'];
+        if ($row = $result->fetch_assoc()) {
+            $login_start = $row['am_login_start'];
+            $login_end = $row['am_login_end'];
 
-        // Convert login times into DateTime objects for comparison
-        $login_start_time = new DateTime($login_start);
-        $login_end_time = new DateTime($login_end);
+            // Convert login times into DateTime objects for comparison
+            $login_start_time = new DateTime($login_start);
+            $login_end_time = new DateTime($login_end);
 
-        // Format the times for the response
-        $login_start_formatted = $login_start_time->format('h:i A');
-        $login_end_formatted = $login_end_time->format('h:i A');
+            // Format the times for the response
+            $login_start_formatted = $login_start_time->format('h:i A');
+            $login_end_formatted = $login_end_time->format('h:i A');
 
-        // Check if the login time spans midnight
-        if ($login_start_time > $login_end_time) {
-            // The login window spans midnight
-            if ($current_time_str >= $login_start && $current_time_str < '23:59:59' || $current_time_str >= '00:00:00' && $current_time_str < $login_end) {
-                // Valid login time
+            // Check if the login time spans midnight
+            if ($login_start_time > $login_end_time) {
+                // The login window spans midnight
+                if ($current_time_str >= $login_start && $current_time_str < '23:59:59' || $current_time_str >= '00:00:00' && $current_time_str < $login_end) {
+                    // Valid login time
+                } else {
+                    $response['error'] = "Login is open between $login_start_formatted and $login_end_formatted";
+                    echo json_encode($response);
+                    exit;
+                }
             } else {
-                $response['error'] = "Login is open between $login_start_formatted and $login_end_formatted";
-                echo json_encode($response);
-                exit;
+                // Normal login window, doesn't span midnight
+                if ($current_time_str < $login_start || $current_time_str >= $login_end) {
+                    $response['error'] = "Login is open between $login_start_formatted and $login_end_formatted";
+                    echo json_encode($response);
+                    exit;
+                }
             }
         } else {
-            // Normal login window, doesn't span midnight
-            if ($current_time_str < $login_start || $current_time_str >= $login_end) {
-                $response['error'] = "Login is open between $login_start_formatted and $login_end_formatted";
-                echo json_encode($response);
-                exit;
-            }
+            // Handle case where no schedule is found
+            $response['error'] = "Login schedule not found.";
+            echo json_encode($response);
+            exit;
         }
-    } else {
-        // Handle case where no schedule is found
-        $response['error'] = "Login schedule not found.";
+
+        // Proceed with login logic after time window check
+        $stmt = $conn->prepare("SELECT * FROM emp_tbl WHERE emp_id = ?");
+        $stmt->bind_param("s", $emp_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($employee = $result->fetch_assoc()) {
+            $current_timestamp = date("Y-m-d H:i:s"); // Record current timestamp
+            $current_date = date("Y-m-d"); // Current date
+
+            // Check if an attendance record exists for today with no time_out
+            $stmt = $conn->prepare("SELECT * FROM att_tbl WHERE emp_id = ? AND att_date = ? AND time_out IS NULL");
+            $stmt->bind_param("ss", $emp_id, $current_date);
+            $stmt->execute();
+            $attendance_result = $stmt->get_result();
+
+            if ($attendance_row = $attendance_result->fetch_assoc()) {
+                // Employee has already logged in today and has not logged out yet
+                $response['error'] = "You're already logged in. Please log out first.";
+            } else {
+                // Check if there is a previous record for the same day but with time_out
+                $stmt = $conn->prepare("SELECT * FROM att_tbl WHERE emp_id = ? AND att_date = ? AND time_out IS NOT NULL");
+                $stmt->bind_param("ss", $emp_id, $current_date);
+                $stmt->execute();
+                $previous_attendance = $stmt->get_result();
+
+                // Allow login if either no record exists for today, or there is a time_out
+                if ($previous_attendance->num_rows > 0 || $attendance_result->num_rows === 0) {
+                    // Insert new attendance record (time_in)
+                    $stmt = $conn->prepare("INSERT INTO att_tbl (emp_id, time_in, att_date) VALUES (?, ?, ?)");
+                    $stmt->bind_param("sss", $emp_id, $current_timestamp, $current_date);
+                    $stmt->execute();
+
+                    // Set successful response with employee details
+                    $response['success'] = true;
+                    $response['success_message'] = "Login Success";
+                    $response['image'] = $employee['emp_img'] ? '../' . $employee['emp_img'] : '../Shipper_Upload/sample1.png'; // Default image path if not set
+                    $response['name'] = $employee['emp_fname'] . ' ' . $employee['emp_lname'];
+                    $response['role'] = $employee['emp_role'];
+                } else {
+                    // Unexpected error case (shouldn't happen)
+                    $response['error'] = "Unexpected error. Please try again.";
+                }
+            }
+        } else {
+            // Employee not found in emp_tbl
+            $response['error'] = "Employee ID Not Found.";
+        }
+
+        // Close statement and connection
+        $stmt->close();
+        $conn->close();
+
+        // Send response back as JSON
         echo json_encode($response);
         exit;
     }
-
-    // Proceed with login logic after time window check
-    $stmt = $conn->prepare("SELECT * FROM emp_tbl WHERE emp_id = ?");
-    $stmt->bind_param("s", $emp_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($employee = $result->fetch_assoc()) {
-        $current_timestamp = date("Y-m-d H:i:s"); // Record current timestamp
-        $current_date = date("Y-m-d"); // Current date
-
-        // Check if an attendance record exists for today with no time_out
-        $stmt = $conn->prepare("SELECT * FROM att_tbl WHERE emp_id = ? AND att_date = ? AND time_out IS NULL");
-        $stmt->bind_param("ss", $emp_id, $current_date);
-        $stmt->execute();
-        $attendance_result = $stmt->get_result();
-
-        if ($attendance_row = $attendance_result->fetch_assoc()) {
-            // Employee has already logged in today and has not logged out yet
-            $response['error'] = "You're already logged in. Please log out first.";
-        } else {
-            // Check if there is a previous record for the same day but with time_out
-            $stmt = $conn->prepare("SELECT * FROM att_tbl WHERE emp_id = ? AND att_date = ? AND time_out IS NOT NULL");
-            $stmt->bind_param("ss", $emp_id, $current_date);
-            $stmt->execute();
-            $previous_attendance = $stmt->get_result();
-
-            // Allow login if either no record exists for today, or there is a time_out
-            if ($previous_attendance->num_rows > 0 || $attendance_result->num_rows === 0) {
-                // Insert new attendance record (time_in)
-                $stmt = $conn->prepare("INSERT INTO att_tbl (emp_id, time_in, att_date) VALUES (?, ?, ?)");
-                $stmt->bind_param("sss", $emp_id, $current_timestamp, $current_date);
-                $stmt->execute();
-
-                // Set successful response with employee details
-                $response['success'] = true;
-                $response['success_message'] = "Login Success";
-                $response['image'] = $employee['emp_img'] ? '../' . $employee['emp_img'] : '../Shipper_Upload/sample1.png'; // Default image path if not set
-                $response['name'] = $employee['emp_fname'] . ' ' . $employee['emp_lname'];
-                $response['role'] = $employee['emp_role'];
-            } else {
-                // Unexpected error case (shouldn't happen)
-                $response['error'] = "Unexpected error. Please try again.";
-            }
-        }
-    } else {
-        // Employee not found in emp_tbl
-        $response['error'] = "Employee ID Not Found.";
-    }
-
-    // Close statement and connection
-    $stmt->close();
-    $conn->close();
-
-    // Send response back as JSON
+} catch (Exception $e) {
+    // Handle any unexpected errors
+    $response['success'] = false;
+    $response['error'] = 'An unexpected error occurred: ' . $e->getMessage();
     echo json_encode($response);
-    exit;
+    exit();
 }
+?>
 ?>
 
 
@@ -456,7 +465,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             fetch(window.location.href, {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
                 })
                 .then(response => response.json())
                 .then(data => {
