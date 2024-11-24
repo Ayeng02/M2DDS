@@ -74,46 +74,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (password_verify($password, $empHashedPassword)) {
                 // Check if the employee has logged in attendance for the current day
                 $today = date('Y-m-d');
-                $attSql = "SELECT att_id FROM att_tbl WHERE emp_id = ? AND DATE(att_date) = ?";
+                $attSql = "SELECT att_id, time_out FROM att_tbl WHERE emp_id = ? AND DATE(att_date) = ?";
                 $attStmt = $conn->prepare($attSql);
                 $attStmt->bind_param("ss", $empId, $today);
                 $attStmt->execute();
                 $attStmt->store_result();
+                $attStmt->bind_result($attId, $timeOut);
 
                 if ($attStmt->num_rows > 0) {
-                    // Employee has already logged in for the day, proceed with redirection
-                    $_SESSION['EmpLogExist'] = true;
-                    $_SESSION['emp_id'] = $empId;
-                    $_SESSION['emp_role'] = $empRole;
+                    $attStmt->fetch();
 
-                    // Update employee status to 'Active' only if the current status is not 'On Shipped'
-                    $statusUpdateSql = "UPDATE emp_tbl SET emp_status = 'Active' WHERE emp_id = ? AND emp_status != 'On Shipped'";
-                    $statusUpdateStmt = $conn->prepare($statusUpdateSql);
-                    $statusUpdateStmt->bind_param("s", $empId);
-                    $statusUpdateStmt->execute();
-                    $statusUpdateStmt->close();
+                    // Check if the time_out is already recorded for the day
+                    if (!is_null($timeOut)) {
+                        // Employee has logged out for the day, deny login
+                        $error_message = 'Ooopss. You have already logged out for today!';
+                    } else {
+                        // Employee has already logged in for the day, proceed with redirection
+                        $_SESSION['EmpLogExist'] = true;
+                        $_SESSION['emp_id'] = $empId;
+                        $_SESSION['emp_role'] = $empRole;
 
+                        // Update employee status to 'Active' only if the current status is not 'On Shipped'
+                        $statusUpdateSql = "UPDATE emp_tbl SET emp_status = 'Active' WHERE emp_id = ? AND emp_status != 'On Shipped'";
+                        $statusUpdateStmt = $conn->prepare($statusUpdateSql);
+                        $statusUpdateStmt->bind_param("s", $empId);
+                        $statusUpdateStmt->execute();
+                        $statusUpdateStmt->close();
 
-                    $redirectUrl = '';
-                    switch ($empRole) {
-                        case 'Shipper':
-                            $redirectUrl = './shipper/shipper.php';
-                            break;
-                        case 'Order Manager':
-                            $redirectUrl = './ordr_manager/order_manager.php';
-                            break;
-                        case 'Cashier':
-                            $redirectUrl = './cashier/cashier.php';
-                            break;
-                        default:
-                            $redirectUrl = 'login.php'; 
-                            break;
+                        $redirectUrl = '';
+                        switch ($empRole) {
+                            case 'Shipper':
+                                $redirectUrl = './shipper/shipper.php';
+                                break;
+                            case 'Order Manager':
+                                $redirectUrl = './ordr_manager/order_manager.php';
+                                break;
+                            case 'Cashier':
+                                $redirectUrl = './cashier/cashier.php';
+                                break;
+                            default:
+                                $redirectUrl = 'login.php';
+                                break;
+                        }
+                        header("Location: $redirectUrl");
+                        exit();
                     }
-                    header("Location: $redirectUrl");
-                    exit();
                 } else {
                     // Employee has not logged in for the day, redirect to attendance page
-                   $error_message = 'Ooopss. You did not log your attendance yet!';
+                    $error_message = 'Ooopss. You did not log your attendance yet!';
                 }
             } else {
                 $error_message = 'Invalid email or password';
@@ -131,6 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -142,56 +151,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="./css/loginstake.css">
     <link rel="icon" href="./img/mtdd_logo.png" type="image/x-icon">
 </head>
+
 <body>
-<div class="login-container">
-    <!-- Logo Section -->
-    <div class="logo">
-        <img src="./img/mtdd_logo.png" alt="Logo">
+    <div class="login-container">
+        <!-- Logo Section -->
+        <div class="logo">
+            <img src="./img/mtdd_logo.png" alt="Logo">
+        </div>
+        <h2>Login</h2>
+
+        <!-- Display Error Message -->
+        <?php if (isset($error_message)): ?>
+            <div id="error-alert" class="alert alert-danger">
+                <?php echo htmlspecialchars($error_message); ?>
+            </div>
+        <?php endif; ?>
+
+        <form id="loginForm" method="POST">
+            <div class="mb-3">
+                <label for="email" class="form-label">Email address</label>
+                <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+            </div>
+            <!-- Show Password Checkbox -->
+            <div class="show-password">
+                <input type="checkbox" id="showPassword">
+                <label for="showPassword">Show Password</label>
+            </div>
+            <button type="submit" class="btn btn-custom w-100">Login</button>
+        </form>
     </div>
-    <h2>Login</h2>
 
-    <!-- Display Error Message -->
-    <?php if (isset($error_message)): ?>
-        <div id="error-alert" class="alert alert-danger">
-            <?php echo htmlspecialchars($error_message); ?>
-        </div>
-    <?php endif; ?>
+    <!-- Bootstrap JS and Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 
-    <form id="loginForm" method="POST">
-        <div class="mb-3">
-            <label for="email" class="form-label">Email address</label>
-            <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
-        </div>
-        <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
-            <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
-        </div>
-        <!-- Show Password Checkbox -->
-        <div class="show-password">
-            <input type="checkbox" id="showPassword">
-            <label for="showPassword">Show Password</label>
-        </div>
-        <button type="submit" class="btn btn-custom w-100">Login</button>
-    </form>
-</div>
+    <!-- Custom JS for Show Password -->
+    <script>
+        document.getElementById('showPassword').addEventListener('change', function() {
+            const passwordInput = document.getElementById('password');
+            passwordInput.type = this.checked ? 'text' : 'password';
+        });
 
-<!-- Bootstrap JS and Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- Custom JS for Show Password -->
-<script>
-    document.getElementById('showPassword').addEventListener('change', function () {
-        const passwordInput = document.getElementById('password');
-        passwordInput.type = this.checked ? 'text' : 'password';
-    });
-
-    // Hide the alert after 5 seconds
-    setTimeout(function() {
-        var errorAlert = document.getElementById('error-alert');
-        if (errorAlert) {
-            errorAlert.style.display = 'none';
-        }
-    }, 5000); // 5 seconds
-</script>
+        // Hide the alert after 5 seconds
+        setTimeout(function() {
+            var errorAlert = document.getElementById('error-alert');
+            if (errorAlert) {
+                errorAlert.style.display = 'none';
+            }
+        }, 5000); // 5 seconds
+    </script>
 </body>
+
 </html>
