@@ -291,7 +291,7 @@ if ($shop_vid_result && $shop_vid_result->num_rows > 0) {
         <!-- Product Cards for what's New-->
         <h3 class="mb-4" style="text-align: center; padding-top: 20px; font-weight: bold; color: crimson;">What's New</h3>
         <hr class="under">
-        <div class="row">
+        <div class="row g-1">
             <?php
             include '../includes/db_connect.php';
 
