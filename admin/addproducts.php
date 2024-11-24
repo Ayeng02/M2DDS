@@ -500,7 +500,7 @@ ob_end_flush();
                     <form class="row g-3" id="insertProductForm" action="" method="POST" enctype="multipart/form-data">
                         <div class="col-md-3">
                             <label for="category_code">Category</label>
-                            <select id="inputState" name="category_code" class="form-select" required>
+                            <select id="inputState category_code" name="category_code" class="form-select" required>
                                 <option value="">Select a category</option>
                                 <?php while ($row = $categories->fetch_assoc()): ?>
                                     <option value="<?php echo htmlspecialchars($row['category_code']); ?>">
