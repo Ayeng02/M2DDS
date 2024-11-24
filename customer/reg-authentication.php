@@ -135,6 +135,7 @@ $conn->close();
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.7);
         }
         .verification-header {
             text-align: center;
@@ -178,7 +179,7 @@ $conn->close();
 <div class="background-animation"></div>
 <div class="container verification-container">
         <div class="verification-header">
-            <img src="../img/logo.ico" alt="Meat-To-Door Logo" class="img-fluid">
+            <img src="../img/mtdd_logo.png" alt="Meat-To-Door Logo" class="img-fluid">
             <h1>Verify Your Email</h1>
             <p>Please enter the verification code sent to your email address.</p>
             <?php if ($redirect): ?>
@@ -205,9 +206,6 @@ $conn->close();
             <button type="submit" id="btn-code" class="btn btn-primary btn-block btn1">Verify Code</button>
             <button type="submit" class="btn btn-secondary btn-block mt-2 btn1" id="resend-btn" name="resend_code">Resend Code</button>
         </form>
-        <div class="verification-footer">
-            <p>Didn't receive the code? <a href="resend-code.php">Resend it here</a></p>
-        </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
@@ -244,7 +242,6 @@ $conn->close();
                 codeInput.disabled = true;
                 codeBtn.hidden = true;
                 resendBtn.disabled = false;
-                resendBtn.hidden = false;
             } else {
                 timerDisplay.innerHTML = `Code expires in ${timeLeft} seconds`;
             }
@@ -253,7 +250,6 @@ $conn->close();
 
         // Resend button should be disabled initially
         resendBtn.disabled = true;
-        resendBtn.hidden = true;
         <?php endif; ?>
     </script>
 </body>
