@@ -482,7 +482,14 @@ ob_end_flush();
 ?>
 
 <?php
-   include '../includes/db_connect.php'
+    // Fetch categories from the database
+    include '../includes/db_connect.php';
+
+    $categories = $conn->query("SELECT category_code, category_name FROM category_tbl");
+
+    if ($categories === false) {
+        die('Query failed: ' . htmlspecialchars($conn->error));
+    }
     ?>
         <div class="container-fluid">
             <div class="content-header">
