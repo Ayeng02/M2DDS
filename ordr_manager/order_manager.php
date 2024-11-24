@@ -754,31 +754,6 @@ label{
         </div>
 
         <hr>
-
-
-
-        <!-- Order Cards -->
-        <div class="container-fluid">
-            <h1 class="my-4">Orders</h1>
-            <div class="row g-3">
-                <div class="col-6 col-md-3 mb-1">
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title">Order #12345</h5>
-                            <p class="card-text">Customer: John Doe</p>
-                            <p class="card-text">Status: <span class="badge bg-success">Shipped</span></p>
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#orderModal">
-                                View Details
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-
-                <!-- More cards can be added here -->
-            </div>
-        </div>
-
     </div> <!--End of Container-->
 
     <!-- Order Details Modal -->
