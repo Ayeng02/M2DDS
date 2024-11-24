@@ -77,7 +77,6 @@ if ($getEmpResult->num_rows > 0) {
             <i class="fas fa-calendar-days"></i> <span>My DTR</span>
         </a>
 
-
         <!-- Logout link at the bottom -->
         <a href="#" class="text-light logout" id="logoutBtn">
             <i class="fas fa-sign-out-alt"></i> <span>Logout</span>

@@ -79,12 +79,12 @@ if (isset($_POST['logout']) && $_POST['logout'] === 'true') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <style>
     .swal2-container {
         z-index: 9999 !important;
     }
 </style>
+
 
 </head>
 
