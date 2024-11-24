@@ -157,4 +157,22 @@
     }
 
 
-    
+     /* Responsive Design */
+@media (max-width: 768px) {
+    .chat-box {
+        width: 90%; 
+        height: auto; 
+        bottom: 20px;
+        right: 5%;
+    }
+}
+
+@media (max-width: 480px) {
+    .chat-box {
+        width: 100%; 
+        height:auto; 
+        bottom: 0;
+        right: 0;
+        border-radius: 0; /* Remove rounded corners */
+    }
+}
