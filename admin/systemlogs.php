@@ -173,30 +173,43 @@
         });
 
         $.ajax({
-    url: 'fetch_employee_logs.php', 
-    method: 'GET',
-    dataType: 'json',
-    success: function (data) {
-        var tableBody = $('#employeeLogsTable tbody');
-        data.forEach(function (log) {
-            var row = '<tr>' +
-                '<td>' + log.emplog_id + '</td>' +
-                '<td>' + log.emp_id + '</td>' +
-                '<td>' + log.order_id + '</td>' +
-                '<td>' + log.emplog_action + '</td>' +
-                '<td>' + log.employee_name + '</td>' + 
-                '<td>' + new Date(log.emplog_date).toLocaleString() + '</td>' +
-                '</tr>';
-            tableBody.append(row);
+            url: 'fetch_employee_logs.php',
+            method: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                var tableBody = $('#employeeLogsTable tbody');
+
+                // Clear any existing rows to avoid duplication
+                tableBody.empty();
+
+                // Append logs to the table
+                data.forEach(function(log) {
+                    var row = '<tr>' +
+                        '<td>' + log.emplog_id + '</td>' +
+                        '<td>' + log.emp_id + '</td>' +
+                        '<td>' + log.order_id + '</td>' +
+                        '<td>' + log.emplog_action + '</td>' +
+                        '<td>' + log.employee_name + '</td>' +
+                        '<td>' + new Date(log.emplog_date).toLocaleString() + '</td>' +
+                        '</tr>';
+                    tableBody.append(row);
+                });
+
+                // Initialize DataTable and set default sorting
+                $('#employeeLogsTable').DataTable({
+                    order: [
+                        [0, 'desc']
+                    ] // Sort by the first column (emplog_id) in descending order
+                });
+
+                // Hide loading spinner
+                $('.loading').hide();
+            },
+            error: function() {
+                console.error("Error fetching employee logs.");
+                $('.loading').hide();
+            }
         });
-        $('#employeeLogsTable').DataTable();
-        $('.loading').hide();
-    },
-    error: function () {
-        console.error("Error fetching employee logs.");
-        $('.loading').hide();
-    }
-});
 
     </script>
 </body>

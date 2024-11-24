@@ -14,7 +14,8 @@ $sql = "SELECT
             e.emplog_date,
             CONCAT(emp.emp_fname, ' ', emp.emp_lname) AS employee_name
         FROM emplog_tbl e
-        JOIN emp_tbl emp ON e.emp_id = emp.emp_id";
+        JOIN emp_tbl emp ON e.emp_id = emp.emp_id
+        ORDER BY e.emplog_id DESC";
 
 $result = $conn->query($sql);
 
