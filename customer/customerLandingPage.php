@@ -205,7 +205,7 @@ if ($shop_vid_result && $shop_vid_result->num_rows > 0) {
                                 s.status_name AS status,
                                 o.order_total
                             FROM 
-                                Order_tbl o
+                                order_tbl o
                             JOIN 
                                 status_tbl s ON o.status_code = s.status_code
                             WHERE 
