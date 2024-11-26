@@ -36,7 +36,7 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>In/Out Config</title>
+    <title>Barangay Config</title>
     <link rel="icon" href="../img/mtdd_logo.png" type="image/x-icon">
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
@@ -144,17 +144,17 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                                 <!-- Barangay Name -->
                                 <div class="form-group">
                                     <label for="barangayName">Barangay Name</label>
-                                    <input type="text" name="barangay_name" id="barangayName" class="form-control" placeholder="Enter Barangay Name" required>
+                                    <input type="text" name="barangay_name" id="barangayName" class="form-control" placeholder="Enter Barangay Name">
                                 </div>
                                 <!-- Barangay Fee -->
                                 <div class="form-group">
                                     <label for="barangayFee">Barangay Fee</label>
-                                    <input type="number" name="barangay_fee" id="barangayFee" class="form-control" placeholder="Enter Barangay Fee" step="0.01" required>
+                                    <input type="number" name="barangay_fee" id="barangayFee" class="form-control" placeholder="Enter Barangay Fee" step="0.01">
                                 </div>
                                 <!-- Route -->
                                 <div class="form-group">
                                     <label for="barangayRoute">Route</label>
-                                    <input type="text" name="barangay_route" id="barangayRoute" class="form-control" placeholder="Enter Barangay Route" required>
+                                    <input type="text" name="barangay_route" id="barangayRoute" class="form-control" placeholder="Enter Barangay Route">
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -182,17 +182,17 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                     <!-- Barangay Name -->
                     <div class="form-group">
                         <label for="editBarangayName">Barangay Name</label>
-                        <input type="text" name="barangay_name" id="editBarangayName" class="form-control" required>
+                        <input type="text" name="barangay_name" id="editBarangayName" class="form-control">
                     </div>
                     <!-- Barangay Fee -->
                     <div class="form-group">
                         <label for="editBarangayFee">Barangay Fee</label>
-                        <input type="number" name="barangay_fee" id="editBarangayFee" class="form-control" step="0.01" required>
+                        <input type="number" name="barangay_fee" id="editBarangayFee" class="form-control" step="0.01">
                     </div>
                     <!-- Route -->
                     <div class="form-group">
                         <label for="editBarangayRoute">Route</label>
-                        <input type="text" name="barangay_route" id="editBarangayRoute" class="form-control" required>
+                        <input type="text" name="barangay_route" id="editBarangayRoute" class="form-control">
                     </div>
                     <!-- Hidden Field for Barangay ID -->
                     <input type="hidden" name="barangay_id" id="editBarangayId">
