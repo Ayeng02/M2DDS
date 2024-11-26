@@ -95,7 +95,7 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                     </thead>
                     <tbody>
                         <?php
-                        $query = "SELECT * FROM Brgy_Tbl ORDER BY Brgy_num ASC";
+                        $query = "SELECT * FROM brgy_tbl ORDER BY Brgy_num ASC";
                         $result = mysqli_query($conn, $query);
 
                         if (mysqli_num_rows($result) > 0) {
