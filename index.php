@@ -22,7 +22,6 @@ include './includes/prefereces_shop.php';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="icon" href="../img/mtdd_logo.png" type="image/x-icon">
-    <link rel="manifest" href="./json/manifest.json">
     <style>
         body {
             background-color: #f0f0f0;
@@ -329,8 +328,8 @@ include './includes/prefereces_shop.php';
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" id="installPWA">
-                        <i class="fas fa-download"></i> Install PWA App
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-book"></i> User Manual
                     </a>
                 </li>
             </ul>
@@ -588,49 +587,6 @@ include './includes/prefereces_shop.php';
                 // You can also implement AJAX call or other actions here
             <?php } ?>
         }
-
-
-        if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js')
-        .then((registration) => {
-          console.log('Service Worker registered with scope:', registration.scope);
-        })
-        .catch((error) => {
-          console.log('Service Worker registration failed:', error);
-        });
-    });
-  }
-
-  let deferredPrompt;  // Variable to store the event
-
-// Listen for the beforeinstallprompt event
-window.addEventListener('beforeinstallprompt', (e) => {
-  // Prevent the mini-infobar from appearing on mobile
-  e.preventDefault();
-  // Save the event for triggering later
-  deferredPrompt = e;
-  // Show the install button
-  document.getElementById('installPWA').style.display = 'block';
-});
-
-// Handle the install button click
-document.getElementById('installPWA').addEventListener('click', (e) => {
-  // Show the install prompt
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    // Wait for the user's response to the prompt
-    deferredPrompt.userChoice.then((choiceResult) => {
-      if (choiceResult.outcome === 'accepted') {
-        console.log('User accepted the install prompt');
-      } else {
-        console.log('User dismissed the install prompt');
-      }
-      // Reset the deferred prompt variable
-      deferredPrompt = null;
-    });
-  }
-});
     </script>
 
 </body>
