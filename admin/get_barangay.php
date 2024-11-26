@@ -4,7 +4,7 @@ include '../includes/db_connect.php';
 if (isset($_GET['id'])) {
     $barangayId = $_GET['id'];
 
-    $query = "SELECT * FROM Brgy_Tbl WHERE Brgy_num = ?";
+    $query = "SELECT * FROM brgy_tbl WHERE Brgy_num = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("i", $barangayId);
     $stmt->execute();

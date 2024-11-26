@@ -7,7 +7,7 @@ if (isset($_POST['barangay_id']) && isset($_POST['barangay_name']) && isset($_PO
     $barangayFee = $_POST['barangay_fee'];
     $barangayRoute = $_POST['barangay_route'];
 
-    $query = "UPDATE Brgy_Tbl SET Brgy_Name = ?, Brgy_df = ?, brgy_route = ? WHERE Brgy_num = ?";
+    $query = "UPDATE brgy_tbl SET Brgy_Name = ?, Brgy_df = ?, brgy_route = ? WHERE Brgy_num = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("sdsi", $barangayName, $barangayFee, $barangayRoute, $barangayId);
 
