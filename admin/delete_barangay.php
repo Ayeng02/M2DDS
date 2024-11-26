@@ -4,7 +4,7 @@ include '../includes/db_connect.php';
 if (isset($_GET['id'])) {
     $id = mysqli_real_escape_string($conn, $_GET['id']);
 
-    $deleteQuery = "DELETE FROM Brgy_Tbl WHERE Brgy_num = '$id'";
+    $deleteQuery = "DELETE FROM brgy_tbl WHERE Brgy_num = '$id'";
     if (mysqli_query($conn, $deleteQuery)) {
         echo json_encode([
             'status' => 'success',
