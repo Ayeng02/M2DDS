@@ -1,4 +1,5 @@
 {
+	"author": "Melo's Organization",
 	"name": "Meat-To-Door Delivery System",
 	"short_name": "Meat-To-Door",
 	"description": "We Provide a Product Where Quality Meet Affordability",
@@ -16,5 +17,11 @@
 			"type": "image/png"
 		}
 	],
-	"version": "0.2"
+	"manifest_version": 3,
+	"version": "0.2",
+	"applications": {
+		"gecko": {
+			"id": "arieldohinogbusiness@gmail.com"
+		}
+	}
 }
