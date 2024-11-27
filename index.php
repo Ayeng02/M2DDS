@@ -23,7 +23,6 @@ include './includes/prefereces_shop.php';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="icon" href="../img/mtdd_logo.png" type="image/x-icon">
     <link rel="manifest" href="./manifest.json"/>
-    <script src="./serviceWorker.js"></script>
     <style>
         body {
             background-color: #f0f0f0;

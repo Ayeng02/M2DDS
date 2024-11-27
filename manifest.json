@@ -7,8 +7,8 @@
 	"start_url": "./",
 	"scope": "./",
 	"display": "standalone",
-	"background_color": "grey",
-	"theme_color": "#238ee0",
+	"background_color": "#FF8225",
+	"theme_color": "#A72828",
 	"icons": [
 		{
 			"src": "./img/mtdd_logo.png",
