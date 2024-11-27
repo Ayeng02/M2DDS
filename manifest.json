@@ -1,5 +1,4 @@
 {
-	"author": "Melo's Organization",
 	"name": "Meat-To-Door Delivery System",
 	"short_name": "Meat-To-Door",
 	"description": "We Provide a Product Where Quality Meet Affordability",
@@ -9,6 +8,7 @@
 	"display": "standalone",
 	"background_color": "#FF8225",
 	"theme_color": "#A72828",
+	"lang": "en",
 	"icons": [
 		{
 			"src": "./img/mtdd_logo.png",
@@ -16,11 +16,5 @@
 			"type": "image/png"
 		}
 	],
-	"manifest_version": 3,
-	"version": "0.2",
-	"applications": {
-		"gecko": {
-			"id": "arieldohinogbusiness@gmail.com"
-		}
-	}
+	"version": "0.2"
 }
