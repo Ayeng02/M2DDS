@@ -72,6 +72,7 @@ $processingQuery = "
 
 $processingResult = $conn->query($processingQuery);
 
+
 // Fetch distinct brgy_route from brgy_tbl
 $routeSql = "SELECT DISTINCT brgy_route FROM brgy_tbl ORDER BY brgy_route ASC";
 $routeResult = $conn->query($routeSql);
@@ -114,7 +115,8 @@ $transactQuery = "SELECT shipper_id, emp_tbl.emp_img, CONCAT(emp_tbl.emp_fname, 
                   SUM(CASE WHEN transact_status = 'Success' THEN 1 ELSE 0 END) AS completed_orders,
                   SUM(CASE WHEN transact_status = 'Ongoing' THEN 1 ELSE 0 END) AS ongoing_orders,
                   SUM(CASE WHEN transact_status = 'Failed' THEN 1 ELSE 0 END) AS failed_orders,
-                  DATE_FORMAT(transact_date, '%H:%i') AS transact_time
+                  DATE_FORMAT(transact_date, '%H:%i') AS transact_time,
+                  GROUP_CONCAT(DISTINCT transact_status) AS statuses
                   FROM delivery_transactbl
                   INNER JOIN emp_tbl ON delivery_transactbl.shipper_id = emp_tbl.emp_id
                   WHERE DATE(transact_date) = CURDATE()
@@ -129,46 +131,39 @@ $failedOrders = [];     // Orders that failed delivery
 
 if (mysqli_num_rows($transactResult) > 0) {
     while ($row = mysqli_fetch_assoc($transactResult)) {
-        // Calculate progress percentage
-        $progress = ($row['total_orders'] > 0) ? round(($row['completed_orders'] / $row['total_orders']) * 100) : 0;
+        // Calculate progress percentage including both completed and failed orders
+        $progress = ($row['total_orders'] > 0)
+            ? round((($row['completed_orders'] + $row['failed_orders']) / $row['total_orders']) * 100)
+            : 0;
 
-        // Separate ongoing, completed, and failed orders
-        if ($row['completed_orders'] == $row['total_orders']) {
+        // If progress is 100%, move the order to Completed Orders
+        if ($progress == 100) {
             $completedOrders[] = [
                 'shipper_id' => $row['shipper_id'],
                 'full_name' => $row['full_name'],
                 'total_orders' => $row['total_orders'],
                 'completed_orders' => $row['completed_orders'],
                 'progress' => $progress,
-                'shipper_img' => $row['emp_img'],
-            ];
-        } elseif ($row['failed_orders'] > 0) {
-            // Failed orders
-            $failedOrders[] = [
-                'shipper_id' => $row['shipper_id'],
-                'full_name' => $row['full_name'],
-                'total_orders' => $row['total_orders'],
                 'failed_orders' => $row['failed_orders'],
-                'progress' => 0, // Failed orders don't need a progress bar, they are considered 0% completed
                 'shipper_img' => $row['emp_img'],
             ];
         } else {
-            // Ongoing orders
-            if ($row['ongoing_orders'] > 0) {
-                $ongoingOrders[] = [
-                    'shipper_id' => $row['shipper_id'],
-                    'full_name' => $row['full_name'],
-                    'total_orders' => $row['total_orders'],
-                    'completed_orders' => $row['completed_orders'],
-                    'progress' => $progress,
-                    'shipper_img' => $row['emp_img'],
-                ];
-            }
+            // Otherwise, the order is ongoing
+            $ongoingOrders[] = [
+                'shipper_id' => $row['shipper_id'],
+                'full_name' => $row['full_name'],
+                'total_orders' => $row['total_orders'],
+                'completed_orders' => $row['completed_orders'],
+                'ongoing_orders' => $row['ongoing_orders'],
+                'progress' => $progress,
+                'shipper_img' => $row['emp_img'],
+            ];
         }
     }
 }
-// Close the database connection
-$conn->close();
+
+
+
 ?>
 
 
@@ -193,7 +188,8 @@ $conn->close();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/2.1.5/css/dataTables.bootstrap5.css">
 
-
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../css/ordr_css.css">
 
     <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
@@ -210,166 +206,26 @@ $conn->close();
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/3.0.3/js/responsive.bootstrap5.js">
 
     <link rel="icon" href="../img/logo.ico" type="image/x-icon">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="../css/ordr_css.css">
+
     <style>
-        
-.accBtn,
-.shipBtn,
-.trackBtn{
-    background-color: #FF8225; 
-    color: white;
-    transition: background-color 0.3s ease-in-out;
-    border: none;
-}
+        .active1 {
+            background: linear-gradient(180deg, #ff83259b, #a72828);
+        }
 
-.printAllBtn{
-    background-color: #ec4242; 
-    color: white;
-    transition:background-color 0.3s ease-in-out;
-    border: none;
-}
+        .DeclineBtn {
+            background-color: #ec4242;
+            color: white;
+            transition: background-color 0.3s ease-in-out;
+            border: none;
+        }
 
-.printAllBtn:hover{
-    background-color: #c12e2e; 
-    color: white;
+        .DeclineBtn:hover {
+            background-color: #c12e2e;
+            color: white;
 
-}
+        }
 
-.accBtn:hover,
-.shipBtn:hover,
-.trackBtn:hover{
-    background-color: #c12e2e; 
-    color: white;
-}
-
-
-
-.form-control:focus {
-    border-color: #FF8225;
-    box-shadow: 0 0 5px rgba(255, 130, 37, 0.8);
-}
-
-/* For Webkit browsers */
-::-webkit-scrollbar {
-width: 12px; /* Width of the scrollbar */
-}
-
-::-webkit-scrollbar-track {
-background: #f1f1f1; /* Color of the track */
-}
-
-::-webkit-scrollbar-thumb {
-background: linear-gradient(180deg, #ff83259b, #a72828);
-border-radius: 10px; /* Rounded corners of the scrollbar thumb */
-}
-
-::-webkit-scrollbar-thumb:hover {
-background: linear-gradient(380deg, #a72828, #343a40);
-}
-
- /* Custom scrollbar for the table */
- .table-responsive::-webkit-scrollbar {
-    width: 8px;
-}
-
-.table-responsive::-webkit-scrollbar-thumb {
-    background-color: #FF8225;
-    border-radius: 4px;
-
-}
-
-.table-responsive::-webkit-scrollbar-track {
-    background-color: #f1f1f1;
-}
-
-label{
-    margin-bottom: 10px;
-}
-
-/* Custom CSS to make the tooltip small */
-.tooltip-inner {
-    font-size: 0.8rem; /* Adjust font size for smaller tooltip */
-    padding: 0.5rem 0.5rem; /* Adjust padding for smaller tooltip */
-    background-color: #414141;
-    color: #fff; 
-  }
-
-  .tooltip-arrow {
-    display: none; 
-  }
-
-.modal-content {
-    background-color: #fff;
-    color: #333;
-}
-.modal-header {
-    background-color: #FF8225; /* Theme color */
-    border-bottom: none;
-}
-.modal-footer {
-    border-top: none;
-}
-.btn.confirm-btn {
-    background-color: #a72828; /* Theme color */
-    border-color: #a72828;
-    color: #fff;
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    border-radius: 0.25rem;
-}
-.btn-primary{
-    background-color: #a72828; 
-}
-.btn.confirm-btn:hover,
-.btn-primary {
-    background-color: #8a1b1b; /* Darker shade for hover effect */
-    border-color: #8a1b1b;
-}
-.btn.cancel-btn {
-    background-color: #fff;
-    color: #FF8225;
-    border: 1px solid #FF8225;
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    border-radius: 10px;
-}
-.btn.cancel-btn:hover {
-    background-color: #FF8225;
-    color: #fff;
-}
-.list_orders{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-title{
-    color: white;
-}
-
-.profile-container img{
-    image-rendering: crisp-edges;
-}
-
-.active1{
-    background: linear-gradient(180deg, #ff83259b, #a72828);
-}
-
-
-.DeclineBtn{
-    background-color: #ec4242; 
-    color: white;
-    transition:background-color 0.3s ease-in-out;
-    border: none;
-}
-
-.DeclineBtn:hover{
-    background-color: #c12e2e; 
-    color: white;
-
-}
-.product-img {
+        .product-img {
             width: 60px;
             height: auto;
             border-radius: 5px;
@@ -489,8 +345,8 @@ label{
                         <i class="fa fa-circle-check"></i> Accept Order(s)
                     </button>
                 </div>
-                  <!-- Decline button -->
-                  <div class="col-12 col-sm-auto">
+                <!-- Decline button -->
+                <div class="col-12 col-sm-auto">
                     <button class="btn DeclineBtn w-100 w-sm-auto" id="cancellationBtn" data-bs-toggle="tooltip" data-bs-placement="right" title="Decline orders" style="color: #ffffff;">
                         <i class="fas fa-square-minus" style="color: #ffffff;"></i> Decline Order(s)
                     </button>
@@ -525,7 +381,7 @@ label{
                                     <td><?php echo htmlspecialchars($row['order_id']); ?></td>
                                     <td class="text-center">
                                         <div class="d-flex align-items-center">
-                                            <img src="../<?php echo htmlspecialchars($row['prod_img']);?>" alt="<?php echo htmlspecialchars($row['prod_name']);?>" class="product-img">
+                                            <img src="../<?php echo htmlspecialchars($row['prod_img']); ?>" alt="<?php echo htmlspecialchars($row['prod_name']); ?>" class="product-img">
                                             <span class="ms-2"><?php echo htmlspecialchars($row['prod_name']); ?></span>
                                         </div>
                                     </td>
@@ -561,43 +417,43 @@ label{
 
             <!-- Checkbox, Input, and Button Section -->
             <div class="row g-2 mb-3 align-items-center">
-    <!-- Dropdown filter -->
-    <div class="col-12 col-sm-auto">
-        <select id="orderFilter" class="form-select" onchange="applyFilter()" data-bs-toggle="tooltip" data-bs-placement="right" title="Filter orders">
-            <option value="default">Filter by</option>
-            <option value="az">A-Z</option>
-            <option value="za">Z-A</option>
+                <!-- Dropdown filter -->
+                <div class="col-12 col-sm-auto">
+                    <select id="orderFilter" class="form-select" onchange="applyFilter()" data-bs-toggle="tooltip" data-bs-placement="right" title="Filter orders">
+                        <option value="default">Filter by</option>
+                        <option value="az">A-Z</option>
+                        <option value="za">Z-A</option>
 
-            <!-- Populate brgy_route dynamically -->
-            <?php if ($routeResult->num_rows > 0): ?>
-                <?php while ($row = $routeResult->fetch_assoc()): ?>
-                    <option value="<?php echo htmlspecialchars($row['brgy_route']); ?>">
-                        <?php echo htmlspecialchars($row['brgy_route']); ?>
-                    </option>
-                <?php endwhile; ?>
-            <?php endif; ?>
-        </select>
-    </div>
+                        <!-- Populate brgy_route dynamically -->
+                        <?php if ($routeResult->num_rows > 0): ?>
+                            <?php while ($row = $routeResult->fetch_assoc()): ?>
+                                <option value="<?php echo htmlspecialchars($row['brgy_route']); ?>">
+                                    <?php echo htmlspecialchars($row['brgy_route']); ?>
+                                </option>
+                            <?php endwhile; ?>
+                        <?php endif; ?>
+                    </select>
+                </div>
 
-    <!-- Number input -->
-    <div class="col-12 col-sm-auto">
-        <input type="number" id="processOrderNumber" placeholder="Enter Number" class="form-control" data-bs-toggle="tooltip" data-bs-placement="right" title="Enter # to ship orders" />
-    </div>
+                <!-- Number input -->
+                <div class="col-12 col-sm-auto">
+                    <input type="number" id="processOrderNumber" placeholder="Enter Number" class="form-control" data-bs-toggle="tooltip" data-bs-placement="right" title="Enter # to ship orders" />
+                </div>
 
-    <!-- Ship button -->
-    <div class="col-12 col-sm-auto">
-        <button class="btn shipBtn w-100 w-sm-auto" id="shipBtn" data-bs-toggle="tooltip" data-bs-placement="right" title="Click to ship selected orders" style="color: #ffffff; ">
-            <i class="fa fa-truck" style="color: #ffffff;"></i> Ship Order(s)
-        </button>
-    </div>
+                <!-- Ship button -->
+                <div class="col-12 col-sm-auto">
+                    <button class="btn shipBtn w-100 w-sm-auto" id="shipBtn" data-bs-toggle="tooltip" data-bs-placement="right" title="Click to ship selected orders" style="color: #ffffff;">
+                        <i class="fa fa-truck" style="color: #ffffff;"></i> Ship Order(s)
+                    </button>
+                </div>
 
-    <!-- Print button -->
-    <div class="col-12 col-sm-auto">
-        <button class="btn printAllBtn w-100 w-sm-auto" id="printAllBtn" data-bs-toggle="tooltip" data-bs-placement="right" title="Print orders" style="color: #ffffff; ">
-            <i class="fas fa-print" style="color: #ffffff;"></i> Print Order(s)
-        </button>
-    </div>
-</div>
+                <!-- Print button -->
+                <div class="col-12 col-sm-auto">
+                    <button class="btn printAllBtn w-100 w-sm-auto" id="printAllBtn" data-bs-toggle="tooltip" data-bs-placement="right" title="Print orders" style="color: #ffffff;">
+                        <i class="fas fa-print" style="color: #ffffff;"></i> Print Order(s)
+                    </button>
+                </div>
+            </div>
 
 
             <div class="table-responsive overflow-auto">
@@ -628,7 +484,7 @@ label{
                                     <td><?php echo htmlspecialchars($row['order_id']); ?></td>
                                     <td class="text-center">
                                         <div class="d-flex align-items-center">
-                                            <img src="../<?php echo htmlspecialchars($row['prod_img']);?>" alt="<?php echo htmlspecialchars($row['prod_name']);?>" class="product-img">
+                                            <img src="../<?php echo htmlspecialchars($row['prod_img']); ?>" alt="<?php echo htmlspecialchars($row['prod_name']); ?>" class="product-img">
                                             <span class="ms-2"><?php echo htmlspecialchars($row['prod_name']); ?></span>
                                         </div>
                                     </td>
@@ -679,8 +535,11 @@ label{
                                         <span class="badge" style="background: #a72828;">Ongoing Delivery</span>
                                     </p>
                                     <div class="progress mt-3" style="height: 20px;">
-                                        <div class="progress-bar bg-success" role="progressbar" style="width: <?php echo $person['progress']; ?>%;" aria-valuenow="<?php echo $person['progress']; ?>" aria-valuemin="0" aria-valuemax="100">
-                                            <?php echo $person['progress']; ?>% Completed
+                                        <div class="progress-bar bg-success" role="progressbar"
+                                            style="width: <?php echo $person['progress']; ?>%;"
+                                            aria-valuenow="<?php echo $person['progress']; ?>"
+                                            aria-valuemin="0" aria-valuemax="100">
+                                            <?php echo $person['progress']; ?>% Processed
                                         </div>
                                     </div>
                                     <button type="button" class="trackBtn btn mt-3" data-shipper-id="<?php echo $person['shipper_id']; ?>" style="color: white;">Track Delivery</button>
@@ -697,35 +556,48 @@ label{
             <h3 class="mb-4 text-center" style="margin-top: 50px;">Completed Orders</h3>
             <?php if (!empty($completedOrders)): ?>
                 <?php foreach ($completedOrders as $person): ?>
-                    <div class="card mb-3 shadow-lg" style="background: url('../img/bg.png') no-repeat center; background-size: cover; object-fit:cover;">
-                        <div class="row g-0">
-                            <div class="col-md-4 d-flex justify-content-center align-items-center p-4">
-                                <div class="profile-container">
-                                    <img src="../<?php echo $person['shipper_img']; ?>" class="rounded-circle img-fluid" alt="Employee Profile" style="width: 150px; height: 150px;">
+                    <!-- Wrap the entire card with a clickable link -->
+                    <a href="./trackShipper.php" style="text-decoration: none; color: inherit;">
+                        <div class="card mb-3 shadow-lg" style="background: url('../img/bg.png') no-repeat center; background-size: cover; object-fit:cover;">
+                            <div class="row g-0">
+                                <div class="col-md-4 d-flex justify-content-center align-items-center p-4">
+                                    <div class="profile-container">
+                                        <img src="../<?php echo $person['shipper_img']; ?>" class="rounded-circle img-fluid" alt="Employee Profile" style="width: 150px; height: 150px;">
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-md-8">
-                                <div class="card-body">
-                                    <h5 class="card-title">Total Orders: <?php echo $person['total_orders']; ?></h5>
-                                    <p class="card-text">Delivery Personnel: <strong><?php echo $person['full_name']; ?></strong></p>
-                                    <p class="card-text">Current Status:
-                                        <span class="badge" style="background: #a72828;">All Delivered</span>
-                                    </p>
-                                    <div class="progress mt-3" style="height: 20px;">
-                                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
-                                            100% Completed
+                                <div class="col-md-8">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Total Orders: <?php echo $person['total_orders']; ?></h5>
+                                        <p class="card-text">Delivery Personnel: <strong><?php echo $person['full_name']; ?></strong></p>
+                                        <p class="card-text">Current Status:
+                                            <span class="badge" style="background: #a72828;">Completed</span>
+                                        </p>
+                                        <p class="card-text">No. of failed attempt:
+                                            <span class="badge" style="background: #FF8225;"><?php echo $person['failed_orders']; ?> </span>
+                                        </p>
+                                        <div class="progress mt-3" style="height: 20px;">
+                                            <div class="progress-bar bg-success" role="progressbar"
+                                                style="width: <?php echo $person['progress']; ?>%;"
+                                                aria-valuenow="<?php echo $person['progress']; ?>"
+                                                aria-valuemin="0" aria-valuemax="100">
+                                                <?php echo $person['progress']; ?>% Processed
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </a>
                 <?php endforeach; ?>
             <?php else: ?>
-                <p class="text-center" style="opacity: 0.65;"> <i class="fas fa-box" style="font-size: 50px; color: #495057; opacity: 0.65;"></i> <br> No completed orders found for today.</p>
+                <p class="text-center" style="opacity: 0.65;">
+                    <i class="fas fa-box" style="font-size: 50px; color: #495057; opacity: 0.65;"></i> <br>
+                    No completed orders found for today.
+                </p>
             <?php endif; ?>
 
             <!-- Failed Delivery Attempts Section -->
+            <!--
             <h3 class="mb-4 text-center" style="margin-top: 50px;">Failed Delivery Attempt Orders</h3>
             <?php if (!empty($failedOrders)): ?>
                 <?php foreach ($failedOrders as $person): ?>
@@ -751,6 +623,7 @@ label{
             <?php else: ?>
                 <p class="text-center" style="opacity: 0.65;"> <i class="fas fa-box" style="font-size: 50px; color: #495057; opacity: 0.65;"></i> <br> No failed delivery attempt orders found for today.</p>
             <?php endif; ?>
+            -->
         </div>
 
         <hr>
@@ -848,40 +721,40 @@ label{
         </div>
     </div>
 
-      <!-- Decline Order Modal -->
-<div class="modal fade" id="declineModal" tabindex="-1" aria-labelledby="declineModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="declineModalLabel">Decline Selected Orders</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Order ID</th>
-                            <th>Product</th>
-                            <th>Full Name</th>
-                        </tr>
-                    </thead>
-                    <tbody id="declineOrderTable">
-                        <!-- Selected orders will be populated here via JS -->
-                    </tbody>
-                </table>
-                <div class="mb-3">
-                    <label for="declineReason" class="form-label">Reason for Declining</label>
-                    <textarea class="form-control" id="declineReason" rows="3" placeholder="Please enter a reason"></textarea>
+
+    <!-- Decline Order Modal -->
+    <div class="modal fade" id="declineModal" tabindex="-1" aria-labelledby="declineModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="declineModalLabel">Decline Selected Orders</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" id="confirmDeclineBtn" class="btn btn-danger">Confirm Decline</button>
+                <div class="modal-body">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Product</th>
+                                <th>Full Name</th>
+                            </tr>
+                        </thead>
+                        <tbody id="declineOrderTable">
+                            <!-- Selected orders will be populated here via JS -->
+                        </tbody>
+                    </table>
+                    <div class="mb-3">
+                        <label for="declineReason" class="form-label">Reason for Declining</label>
+                        <textarea class="form-control" id="declineReason" rows="3" placeholder="Please enter a reason"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="confirmDeclineBtn" class="btn btn-danger">Confirm Decline</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
-
 
 
     <!-- DataTables JS -->
@@ -913,34 +786,34 @@ label{
         });
 
         $(document).ready(function() {
-    let selectedOrders = [];
+            let selectedOrders = [];
 
-    // Check All functionality
-    $('#checkAll').on('change', function() {
-        var checkboxes = $('.orderCheckbox');
-        checkboxes.prop('checked', this.checked);
-    });
+            // Check All functionality
+            $('#checkAll').on('change', function() {
+                var checkboxes = $('.orderCheckbox');
+                checkboxes.prop('checked', this.checked);
+            });
 
-    // Decline Button - Open Modal and Populate Data
-    $('#cancellationBtn').on('click', function() {
-        selectedOrders = [];
-        const checkboxes = $('.orderCheckbox:checked');
+            // Decline Button - Open Modal and Populate Data
+            $('#cancellationBtn').on('click', function() {
+                selectedOrders = [];
+                const checkboxes = $('.orderCheckbox:checked');
 
-        // Validate selected orders
-        if (checkboxes.length === 0) {
-            Swal.fire('Warning', 'Please select orders to decline.', 'warning');
-            return;
-        }
+                // Validate selected orders
+                if (checkboxes.length === 0) {
+                    Swal.fire('Warning', 'Please select orders to decline.', 'warning');
+                    return;
+                }
 
-        // Populate modal table with selected orders
-        $('#declineOrderTable').empty();
-        checkboxes.each(function() {
-            const orderRow = $(this).closest('tr');
-            const orderId = orderRow.find('td:eq(1)').text();
-            const productName = orderRow.find('td:eq(2)').text();
-            const fullName = orderRow.find('td:eq(3)').text();
+                // Populate modal table with selected orders
+                $('#declineOrderTable').empty();
+                checkboxes.each(function() {
+                    const orderRow = $(this).closest('tr');
+                    const orderId = orderRow.find('td:eq(1)').text();
+                    const productName = orderRow.find('td:eq(2)').text();
+                    const fullName = orderRow.find('td:eq(3)').text();
 
-            $('#declineOrderTable').append(`
+                    $('#declineOrderTable').append(`
                 <tr>
                     <td>${orderId}</td>
                     <td>${productName}</td>
@@ -948,63 +821,62 @@ label{
                 </tr>
             `);
 
-            selectedOrders.push({
-                order_id: $(this).val(),
-                prod_name: productName,
-                order_fullname: fullName
+                    selectedOrders.push({
+                        order_id: $(this).val(),
+                        prod_name: productName,
+                        order_fullname: fullName
+                    });
+                });
+
+                // Open the modal
+                $('#declineModal').modal('show');
+            });
+
+            // Confirm Decline - Send Data to Server
+            $('#confirmDeclineBtn').on('click', function() {
+                const reason = $('#declineReason').val().trim();
+
+                if (!reason) {
+                    Swal.fire('Warning', 'Please provide a reason for declining.', 'warning');
+                    return;
+                }
+
+                // Send declined orders and reason to the server via AJAX
+                fetch('decline_orders.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            orders: selectedOrders,
+                            reason: reason
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Success',
+                                text: 'Orders successfully declined!',
+                                icon: 'success'
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire('Error', 'Failed to decline orders: ' + data.error, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error); // Log the error for debugging
+                        Swal.fire('Error', 'An error occurred while declining orders.', 'error');
+                    });
             });
         });
-
-        // Open the modal
-        $('#declineModal').modal('show');
-    });
-
-    // Confirm Decline - Send Data to Server
-    $('#confirmDeclineBtn').on('click', function() {
-        const reason = $('#declineReason').val().trim();
-        
-        if (!reason) {
-            Swal.fire('Warning', 'Please provide a reason for declining.', 'warning');
-            return;
-        }
-
-        // Send declined orders and reason to the server via AJAX
-        fetch('decline_orders.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                orders: selectedOrders,
-                reason: reason
-            })
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                Swal.fire({
-                    title: 'Success',
-                    text: 'Orders successfully declined!',
-                    icon: 'success'
-                }).then(() => {
-                    window.location.reload();
-                });
-            } else {
-                Swal.fire('Error', 'Failed to decline orders: ' + data.error, 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error); // Log the error for debugging
-            Swal.fire('Error', 'An error occurred while declining orders.', 'error');
-        });
-    });
-});
-
     </script>
 </body>
 
