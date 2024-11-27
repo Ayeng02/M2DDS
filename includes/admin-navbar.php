@@ -108,6 +108,7 @@ $notificationCount = $conn->query("SELECT COUNT(*) FROM adminnotif_tbl WHERE not
                                 <li><a class="dropdown-item" href="../admin/editRate.php"> <i class="fas fa-calendar-plus"></i> Daily Rates</a></li>
                                 <li><a class="dropdown-item" href="../admin/attendanceConfig.php"> <i class="fas fa-clock"></i> In/Out Config</a></li>
                                 <li><a class="dropdown-item" href="../admin/brgy.php"> <i class="fas fa-house-medical"></i> BRGY Config</a></li>
+                                <li><a class="dropdown-item" href="../admin/configRatings.php"> <i class="fa-solid fa-comment"></i> Customers Feedback</a></li>
                             </ul>
                         </ul>
 
