@@ -623,7 +623,7 @@ include './includes/prefereces_shop.php';
         // Optionally, listen for the `appinstalled` event
         window.addEventListener('appinstalled', () => {
             console.log('[PWA] App successfully installed');
-            alert('App installed successfully!');
+            alert('Installing...');
         });
     </script>
 
