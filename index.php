@@ -1,11 +1,10 @@
-<?php 
+<?php
 
 session_start();
 
 // Redirect to landing page if already logged in
 if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
     header('Location: ./customer/customerLandingPage.php');
-  
 }
 
 include './includes/prefereces_shop.php';
@@ -22,7 +21,7 @@ include './includes/prefereces_shop.php';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="icon" href="../img/mtdd_logo.png" type="image/x-icon">
-    <link rel="manifest" href="./manifest.json"/>
+    <link rel="manifest" href="./manifest.json" />
     <style>
         body {
             background-color: #f0f0f0;
@@ -232,6 +231,10 @@ include './includes/prefereces_shop.php';
             transition: all 0.5s ease-in-out;
         }
 
+        #installApp {
+            display: none;
+        }
+
         /* Adjustments for screens between 600px and 900px */
         @media (min-width: 500px) and (max-width: 1000px) {
             .carousel-caption h5 {
@@ -329,8 +332,8 @@ include './includes/prefereces_shop.php';
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="fas fa-book"></i> User Manual
+                    <a id="installApp" class="nav-link" href="#">
+                        <i class="fas fa-download"></i> Install App
                     </a>
                 </li>
             </ul>
@@ -588,6 +591,40 @@ include './includes/prefereces_shop.php';
                 // You can also implement AJAX call or other actions here
             <?php } ?>
         }
+
+        let deferredPrompt; // Variable to store the beforeinstallprompt event
+
+        // Listen for the `beforeinstallprompt` event
+        window.addEventListener('beforeinstallprompt', (event) => {
+            event.preventDefault(); // Prevent the default mini-infobar prompt
+            deferredPrompt = event; // Save the event for triggering later
+            console.log('[PWA] beforeinstallprompt fired');
+            document.getElementById('installApp').style.display = 'block'; // Show the Install button
+        });
+
+        // Handle "Install App" click
+        document.getElementById('installApp').addEventListener('click', async () => {
+            if (!deferredPrompt) {
+                console.log('[PWA] No deferred prompt available');
+                return;
+            }
+
+            // Show the install prompt
+            deferredPrompt.prompt();
+
+            // Wait for the user to respond to the prompt
+            const choiceResult = await deferredPrompt.userChoice;
+            console.log(`[PWA] User response to the install prompt: ${choiceResult.outcome}`);
+
+            // Clear the saved prompt, as it can only be used once
+            deferredPrompt = null;
+        });
+
+        // Optionally, listen for the `appinstalled` event
+        window.addEventListener('appinstalled', () => {
+            console.log('[PWA] App successfully installed');
+            alert('App installed successfully!');
+        });
     </script>
 
 </body>
