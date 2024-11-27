@@ -583,9 +583,9 @@ ob_end_flush();
             </div>
             </div>
 
-           <button id="copyTableBtn" class="btn btn-info"><i class="fas fa-copy"></i>  Copy to Clipboard</button>
-           <button id="downloadPDF" class="btn btn-danger "><i class="fas fa-file-pdf"></i> Download as PDF</button>
-              <button id="downloadExcel" class="btn btn-success"><i class="fas fa-file-excel"></i> Download as Excel</button>
+           <button id="copyTableBtn" class="btn btn-info"><i class="fas fa-copy"></i>  Copy</button>
+           <button class="btn btn-danger" onclick="downloadPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
+              <button class="btn btn-success" onclick="downloadExcel()"><i class="fas fa-file-excel"></i> Excel</button>
             <div class="category-table-container">
                <div class="combo-box">
                 <label for="sort">Sort by category Name: </label>
@@ -902,26 +902,13 @@ document.getElementById('copyTableBtn').addEventListener('click', function() {
     }, 1000);
 });
 //download as excel
- document.getElementById('downloadExcel').addEventListener('click', function() {
-        const table = document.getElementById('categoryTable');
-        const workbook = XLSX.utils.table_to_book(table, { sheet: "Products" });
-        XLSX.writeFile(workbook, 'category_table.xlsx');
-    });
+function downloadExcel(){
+    window.location.href = 'categoryExcel.php';
+}
 //Download as pdf
-document.getElementById('downloadPDF').addEventListener('click', function() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    doc.autoTable({
-        html: '#categoryTable',
-        startY: 20,
-        theme: 'grid',
-        headStyles: { fillColor: [0, 150, 0] },  // Custom header color
-        margin: { top: 10 },
-    });
-
-    doc.save('category_table.pdf');
-});
+ function downloadPDF() {
+            window.location.href = 'categoryPdf.php';
+        }
 // confirmation for deleting product
 function confirmDelete(event, prodCode) {
     event.preventDefault(); // Prevent default anchor behavior

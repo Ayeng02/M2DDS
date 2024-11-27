@@ -40,8 +40,6 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome for icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
-     <script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
-      <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <!-- Custom CSS -->
     <style>
         body {
@@ -390,9 +388,9 @@ include '../includes/sidebar.php';
 }
             ?>
 
-           <button id="copyTableBtn" class="btn btn-info"><i class="fas fa-copy"></i>  Copy to Clipboard</button>
-           <button id="downloadPDF" class="btn btn-danger "> <i class="fas fa-file-pdf"></i> Download as PDF</button>
-              <button id="downloadExcel" class="btn btn-success"><i class="fas fa-file-excel"></i> Download as Excel</button>
+           <button id="copyTableBtn" class="btn btn-info"><i class="fas fa-copy"></i> Copy</button>
+           <button id="downloadPDF" class="btn btn-danger" onclick="downloadPDF()"> <i class="fas fa-file-pdf"></i> PDF</button>
+              <button id="downloadExcel" class="btn btn-success" onclick="downloadExcel()"><i class="fas fa-file-excel"></i> Excel</button>
             <div class="order-table-container">
                <div class="combo-box">
                 <label for="sort">Sort by Buyer Name: </label>
@@ -493,7 +491,7 @@ include '../includes/sidebar.php';
                                     
                                     <td>
                                         <!-- Edit button trigger modal -->
-                                        <a href="#" class="edit-icon" data-bs-toggle="modal" data-bs-target="#editModal"
+                                       <!-- <a href="#" class="edit-icon" data-bs-toggle="modal" data-bs-target="#editModal"
                                             data-oder-id="<?php echo htmlspecialchars($order['order_id']); ?>"
                                             data-full-name="<?php echo htmlspecialchars($order['order_fullname']); ?>"
                                             data-contact="<?php echo htmlspecialchars($order['order_phonenum']); ?>"
@@ -505,7 +503,7 @@ include '../includes/sidebar.php';
                                             data-change="<?php echo htmlspecialchars($order['order_change']); ?>"
                                             data-status="<?php echo htmlspecialchars($order['status_name']); ?>">
                                             <i class="fa fa-edit"></i>
-                                        </a>
+                                        </a> -->
 
                                         <!-- Delete button -->
                                         <a href="order_delete.php?id=<?php echo htmlspecialchars($order['order_id']); ?>" class="delete-icon" onclick="confirmDelete(event, '<?php echo htmlspecialchars($order['order_id']); ?>')">
@@ -522,13 +520,9 @@ include '../includes/sidebar.php';
                         </tbody>
                     </table>
                 </div>
-                       
-
-
-
-           
+                             
              <!-- Edit Order Modal -->
-<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+<!-- <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
@@ -536,8 +530,8 @@ include '../includes/sidebar.php';
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form class="row g-3" id="editOrderForm" method="post" action="update_order.php">
-          <input type="hidden" id="edit-order-id" name="order_id">
+        <form class="row g-3" id="editOrderForm" method="POST" action="update_order.php">
+          <input type="text" id="edit-order-id" name="order_id" readonly>
 
           <div class="col-md-4">
             <label for="edit-full-name" class="form-label">Full Name</label>
@@ -599,7 +593,7 @@ include '../includes/sidebar.php';
       </div>
     </div>
   </div>
-</div>
+</div> -->
 
         <?php
         // Check if the 'success' parameter exists in the URL
@@ -720,6 +714,37 @@ $("#menu-toggle, #menu-toggle-top").click(function(e) {
         icon.removeClass("fa-chevron-left").addClass("fa-chevron-right");
     }
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+    const editButtons = document.querySelectorAll('.edit-icon');
+    editButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const orderId = this.getAttribute('data-order-id');
+            const fullName = this.getAttribute('data-full-name');
+            const contact = this.getAttribute('data-contact');
+            const address = this.getAttribute('data-address');
+            const mop = this.getAttribute('data-mop');
+            const qty = this.getAttribute('data-qty');
+            const total = this.getAttribute('data-total');
+            const cash = this.getAttribute('data-cash');
+            const change = this.getAttribute('data-change');
+            const status = this.getAttribute('data-status');
+
+            // Fill the modal form
+            document.getElementById('edit-order-id').value = orderId;
+            document.getElementById('edit-full-name').value = fullName;
+            document.getElementById('edit-contact').value = contact;
+            document.getElementById('edit-address').value = address;
+            document.getElementById('edit-mop').value = mop;
+            document.getElementById('edit-qty').value = qty;
+            document.getElementById('edit-total').value = total;
+            document.getElementById('edit-cash').value = cash;
+            document.getElementById('edit-change').value = change;
+            document.getElementById('status_name').value = status;
+        });
+    });
+});
+
 
 //sorting by calendar
 //edit modal
@@ -865,26 +890,14 @@ document.getElementById('copyTableBtn').addEventListener('click', function() {
     }, 1000);
 });
 //download as excel
- document.getElementById('downloadExcel').addEventListener('click', function() {
-        const table = document.getElementById('orderTable');
-        const workbook = XLSX.utils.table_to_book(table, { sheet: "Products" });
-        XLSX.writeFile(workbook, 'order_table.xlsx');
-    });
+  function downloadExcel() {
+            window.location.href = 'orderExcel.php';
+        }
+
 //Download as pdf
-document.getElementById('downloadPDF').addEventListener('click', function() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    doc.autoTable({
-        html: '#orderTable',
-        startY: 20,
-        theme: 'grid',
-        headStyles: { fillColor: [0, 150, 0] },  // Custom header color
-        margin: { top: 10 },
-    });
-
-    doc.save('order_table.pdf');
-});
+ function downloadPDF() {
+            window.location.href = 'orderPdf.php';
+        }
 // confirmation for deleting product
 function confirmDelete(event, orderId) {
     event.preventDefault(); // Prevent default anchor behavior

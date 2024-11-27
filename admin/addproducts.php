@@ -42,8 +42,6 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome for icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
-     <script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
-      <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <!-- Custom CSS -->
     <style>
         body {
@@ -483,7 +481,10 @@ ob_end_flush();
 
 <?php
     // Fetch categories from the database
-    include '../includes/db_connect.php';
+    $conn = new mysqli('localhost', 'root', '', 'm2dds');
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
 
     $categories = $conn->query("SELECT category_code, category_name FROM category_tbl");
 
@@ -659,10 +660,11 @@ ob_end_flush();
             }
             ?>
 
-            <button id="copyToClipboard" class="btn btn-info"><i class="fas fa-copy"></i>  Copy to Clipboard</button>
-             <button id="downloadPDF" class="btn btn-danger"><i class="fas fa-file-pdf"></i> Download as PDF</button>
-              <button id="downloadExcel" class="btn btn-success"><i class="fas fa-file-excel"></i> Download as Excel</button>
-              <button style="margin-left: 45%;" id="printAll" onclick="printAllCategories()" class="btn btn-warning"><i class="fa fa-print"></i> Print All Barcode</button>
+            <button id="copyToClipboard" class="btn btn-info"><i class="fas fa-copy"></i> Copy</button>
+             <button class="btn btn-danger" onclick="downloadPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
+              <button  class="btn btn-success" onclick="downloadExcel()"><i class="fas fa-file-excel"></i> Excel</button>
+            
+              <button id="printAll" style="float: right; margin-right: 5%;" onclick="printAllCategories()" class="btn btn-warning"><i class="fa fa-print"></i> Print All Barcode</button>
             <div class="product-table-container">
                <div class="combo-box">
         <label for="sort">Sort by Product Name: </label>
@@ -759,50 +761,79 @@ ob_end_flush();
 
             <!-- Edit Modal -->
 <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="editModalLabel">Edit Product</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form id="editProductForm" method="post" action="update_products.php" enctype="multipart/form-data">
-          <input type="hidden" name="prod_code" id="modalProdCode">
-          <div class="mb-3">
-            <label for="modalCategoryName" class="form-label">Category Name</label>
-            <input  type="text" class="form-control" id="modalCategoryName" name="category_name" readonly>
-          </div>
-          <div class="mb-3">
-            <label for="modalProdName" class="form-label">Product Name</label>
-            <input type="text" class="form-control" id="modalProdName" name="prod_name">
-          </div>
-          <div class="mb-3">
-            <label for="modalProdPrice" class="form-label">Price</label>
-            <input type="number" class="form-control" id="modalProdPrice" name="prod_price">
-          </div>
-          <div class="mb-3">
-            <label for="modalProdQOH" class="form-label">Quantity</label>
-            <input type="number" class="form-control" id="modalProdQOH" name="prod_qoh">
-          </div>
-          <div class="mb-3">
-            <label for="modalProdDiscount" class="form-label">Discount</label>
-            <input type="number" class="form-control" id="modalProdDiscount" name="prod_discount">
-          </div>
-          <label for="modalProdImage" class="form-label">Product Image</label>
-          <div class="mb-3">
-            
-        
-        <img id="Current-prod-img" src="../" alt="Product Image"  style="width: 150px; margin-bottom: 15px; height: auto; " class="mt-2">
-         
-        <input type="file" class="form-control" id="modalProdImage" name="prod_img" accept="image/*">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Edit Product</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editProductForm" class="row g-3" method="post" action="update_products.php" enctype="multipart/form-data">
+                    <input type="hidden" name="prod_code" id="modalProdCode">
+                    
+                    <div class="col-md-3">
+                        <label for="modalCategoryName">Category Name</label>
+                        <input type="text" class="form-control" id="modalCategoryName" name="category_name" readonly>
+                    </div>
+                    
+                    <div class="col-md-5">
+                        <label for="modalProdName">Product Name</label>
+                        <input type="text" class="form-control" id="modalProdName" name="prod_name" required>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <label for="modalProdPrice">Price</label>
+                        <input type="number" step="0.01" class="form-control" id="modalProdPrice" name="prod_price" required>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label for="qohAction">Quantity Action</label>
+                        <select id="qohAction" name="qoh_action" class="form-select" required>
+                            <option value="add">Add</option>
+                            <option value="subtract">Subtract</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="addOrSubtractQOH">Quantity</label>
+                        <input type="number" step="0.01" class="form-control" id="addOrSubtractQOH" name="add_qoh" required value="0">
+                        <small class="form-text text-muted">Leave as 0 if no quantity added or subtracted.</small>
+                    </div>
+
+                    
+                    <div class="col-md-3">
+                        <label for="modalProdDiscount">Discount</label>
+                        <input type="number" step="0.01" class="form-control" id="modalProdDiscount" name="prod_discount" value="0">
+                        <small class="form-text text-muted">Leave as 0 if no discount.</small>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label for="modalProdImage">Product Image</label>
+                        <img id="currentProdImg" src="" alt="Product Image" style="display: block; width: 150px; margin-bottom: 10px; height: auto;">
+                          <!-- <img id="currentCategoryImage" src="" alt="Category Image" style="width: 350px; height: 100px; margin-top: 10px;">-->
+                        <input type="file" class="form-control-file" id="modalProdImage" name="prod_img" accept="image/*">
+                        <small class="form-text text-muted">Max size: 5MB.</small>
+                    </div>
+                    
+                    <div class="col-sm-10">
+                        <label for="prod_desc">Product Description</label>
+                        <textarea class="form-control" id="prod_desc" name="prod_desc" rows="3"></textarea>
+                    </div>
+                    
+                    <!-- Hidden Input for Current Quantity -->
+                    <input type="hidden" id="hiddenProdQOH" name="prod_qoh">
+
+                    <div class="d-grid gap-2 col-5 mx-auto">
+                        <button type="submit" class="btn btn-primary btn-md">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-          <button type="submit" class="btn btn-primary" >Save Changes</button>
-         
-        </form>
-      </div>
-    </div>
-  </div>
 </div>
+
+
+
 <?php
 // Check if the 'success' parameter exists in the URL
 
@@ -920,8 +951,8 @@ $("#menu-toggle, #menu-toggle-top").click(function(e) {
         
         // Set the initial image source
         var modalImagePreview = editModal.querySelector('#modalImagePreview');
-        modalImagePreview.src = prodImage;
-        modalImagePreview.style.display = 'block'; // Show the image
+        //modalImagePreview.src = prodImage;
+        //modalImagePreview.style.display = 'block'; // Show the image
         
         // Reset the file input
         var fileInput = editModal.querySelector('#modalProdImage');
@@ -932,7 +963,7 @@ $("#menu-toggle, #menu-toggle-top").click(function(e) {
             modalImagePreview.src = prodImage;
             modalImagePreview.style.display = 'block';
         } else {
-            modalImagePreview.style.display = 'none'; // Hide if no image
+           // modalImagePreview.style.display = 'none'; // Hide if no image
         }
 
         // Handle the change event for file input
@@ -1029,26 +1060,14 @@ document.getElementById('copyToClipboard').addEventListener('click', function() 
         });
     });
 //download as excel
- document.getElementById('downloadExcel').addEventListener('click', function() {
-        const table = document.getElementById('productTable');
-        const workbook = XLSX.utils.table_to_book(table, { sheet: "Products" });
-        XLSX.writeFile(workbook, 'product_table.xlsx');
-    });
-//Download as pdf
- document.getElementById('downloadPDF').addEventListener('click', function() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        
-        doc.autoTable({
-            html: '#productTable',
-            startY: 20,
-            theme: 'grid',
-            headStyles: { fillColor: [0, 150, 0] },  // Custom header color
-            margin: { top: 10 },
-        });
+  function downloadExcel() {
+            window.location.href = 'productExcel.php';
+        }
 
-        doc.save('product_table.pdf');
-    });
+//Download as pdf
+ function downloadPDF() {
+            window.location.href = 'productPdf.php';
+        }
 // confirmation for deleting product
 function confirmDelete(event, prodCode) {
     event.preventDefault(); // Prevent default anchor behavior
@@ -1071,9 +1090,9 @@ function confirmDelete(event, prodCode) {
     });
 }
 // edit the product and for update product
-document.addEventListener('DOMContentLoaded', function() {
+ document.addEventListener('DOMContentLoaded', function () {
     var editModal = document.getElementById('editModal');
-    editModal.addEventListener('show.bs.modal', function(event) {
+    editModal.addEventListener('show.bs.modal', function (event) {
         // Button that triggered the modal
         var button = event.relatedTarget;
 
@@ -1082,21 +1101,27 @@ document.addEventListener('DOMContentLoaded', function() {
         var categoryName = button.getAttribute('data-category-name');
         var prodName = button.getAttribute('data-prod-name');
         var prodPrice = button.getAttribute('data-prod-price');
-        var prodQOH = button.getAttribute('data-prod-qoh');
+        var currentQOH = button.getAttribute('data-prod-qoh');
         var prodDiscount = button.getAttribute('data-prod-discount');
-         var prodImg = button.getAttribute('data-prod-img');
-
+        var prodImg = button.getAttribute('data-prod-img');
+         
         // Populate the modal's input fields
         document.getElementById('modalProdCode').value = prodCode;
         document.getElementById('modalCategoryName').value = categoryName;
         document.getElementById('modalProdName').value = prodName;
         document.getElementById('modalProdPrice').value = prodPrice;
-        document.getElementById('modalProdQOH').value = prodQOH;
+        //document.getElementById('modalAddQOH').value = 0; // Reset the quantity field
+        document.getElementById('hiddenProdQOH').value = currentQOH; // Store current quantity (hidden)
         document.getElementById('modalProdDiscount').value = prodDiscount;
-        document.getElementById('Current-prod-img').src = "../" + prodImg //
+
         
+        document.getElementById('currentProdImg').src = "../" + prodImg;
+
+        // Reset the QOH action dropdown to default (Add)
+        document.getElementById('qohAction').value = 'add';
     });
 });
+
 
 // sort table by Name
 function sortTable() {

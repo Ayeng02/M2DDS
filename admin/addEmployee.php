@@ -623,9 +623,9 @@ if (isset($_SESSION['alert'])) {
             </div>
             </div>
 
-           <button id="copyTableBtn" class="btn btn-info"><i class="fas fa-copy"></i>  Copy to Clipboard</button>
-           <button id="downloadPDF" class="btn btn-danger "> <i class="fas fa-file-pdf"></i> Download as PDF</button>
-              <button id="downloadExcel" class="btn btn-success"><i class="fas fa-file-excel"></i> Download as Excel</button>
+           <button id="copyTableBtn" class="btn btn-info"><i class="fas fa-copy"></i> Copy</button>
+           <button class="btn btn-danger" onclick="downloadPDF()"> <i class="fas fa-file-pdf"></i> PDF</button>
+              <button class="btn btn-success" onclick="downloadExcel()"><i class="fas fa-file-excel"></i> Excel</button>
             <div class="employee-table-container">
                <div class="combo-box">
                 <label for="sort">Sort by Employee Name: </label>
@@ -731,62 +731,62 @@ if (isset($_SESSION['alert'])) {
 
             <!-- Edit Employee Modal -->
                 <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="editModalLabel">Edit Employee</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Edit Employee</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editEmployeeForm" class="row g-3" action="edit_employee.php" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="emp_id" id="editEmp-id">
+
+                    <div class="col-md-6">
+                        <label for="editFull-name" class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="editFull-name" name="full_name" required>
                     </div>
-                    <form id="editEmployeeForm" action="edit_employee.php" method="POST" enctype="multipart/form-data">
-                        <div class="modal-body">
-                          <label for="ID" class="form-label">Employee ID</label>
-                        <input type="text" class="form-control" name="emp_id" id="editEmp-id" readonly>
 
-                        <div class="mb-3">
-                            <label for="full-name" class="form-label">Full Name</label>
-                            <input type="text" class="form-control" id="editFull-name" name="full_name" required>
-                        </div>
+                    <div class="col-md-6">
+                        <label for="editEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="editEmail" name="email" required>
+                    </div>
 
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="editEmail" name="email" required>
-                        </div>
+                    <div class="col-md-6">
+                        <label for="editContact" class="form-label">Contact Number</label>
+                        <input type="text" class="form-control" id="editContact" name="contact" required>
+                    </div>
 
-                        <div class="mb-3">
-                            <label for="contact" class="form-label">Contact Number</label>
-                            <input type="text" class="form-control" id="editContact" name="contact" required>
-                        </div>
+                    <div class="col-md-6">
+                        <label for="editAddress" class="form-label">Address</label>
+                        <input type="text" class="form-control" id="editAddress" name="address" required>
+                    </div>
 
-                        <div class="mb-3">
-                            <label for="address" class="form-label">Address</label>
-                            <input type="text" class="form-control" id="editAddress" name="address" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="role" class="form-label">Role</label>
-                            <select class="form-select" id="editRole" name="role" required>
+                    <div class="col-md-6">
+                        <label for="editRole" class="form-label">Role</label>
+                        <select class="form-select" id="editRole" name="role" required>
                             <option value="Shipper">Shipper</option>
                             <option value="Butcher">Butcher</option>
                             <option value="Cashier">Cashier</option>
                             <option value="Order Manager">Order Manager</option>
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="emp-img" class="form-label">Employee Image</label>
-                            <input type="file" class="form-control" id="emp-img" name="emp_img" accept="image/*">
-                            <img id="Current-emp-img" src="../" alt="Employee Image" style="width: 50%; height: 150px;" class="mt-2">
-                        </div>
-                        </div>
-
-                        <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Save changes</button>
-                        </div>
-                    </form>
+                        </select>
                     </div>
-                </div>
-                </div>
+
+                    <div class="col-md-6">
+                        <label for="emp-img" class="form-label">Employee Image</label>
+                        <img id="Current-emp-img" src="../" alt="Employee Image" style="display: block; width: 150px; margin-bottom: 10px; height: auto;">
+                        <input type="file" class="form-control-file" id="emp-img" name="emp_img" accept="image/*">
+                        <small class="form-text text-muted">Max size: 5MB.</small>
+                    </div>
+
+                    <div class="d-grid gap-2 col-4 mx-auto">
+                        <button type="submit" class="btn btn-primary btn-md">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 
         <?php
         // Check if the 'success' parameter exists in the URL
@@ -988,26 +988,14 @@ document.getElementById('copyTableBtn').addEventListener('click', function() {
     }, 1000);
 });
 //download as excel
- document.getElementById('downloadExcel').addEventListener('click', function() {
-        const table = document.getElementById('employeeTable');
-        const workbook = XLSX.utils.table_to_book(table, { sheet: "Products" });
-        XLSX.writeFile(workbook, 'employee_table.xlsx');
-    });
+  function downloadExcel() {
+            window.location.href = 'employeeExcel.php';
+        }
+
 //Download as pdf
-document.getElementById('downloadPDF').addEventListener('click', function() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    doc.autoTable({
-        html: '#employeeTable',
-        startY: 20,
-        theme: 'grid',
-        headStyles: { fillColor: [0, 150, 0] },  // Custom header color
-        margin: { top: 10 },
-    });
-
-    doc.save('Employee_table.pdf');
-});
+ function downloadPDF() {
+            window.location.href = 'employeePdf.php';
+        }
 // confirmation for deleting product
 function confirmDelete(event, empId) {
     event.preventDefault(); // Prevent default anchor behavior

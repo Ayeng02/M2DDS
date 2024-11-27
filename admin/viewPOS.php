@@ -396,9 +396,9 @@ include '../includes/sidebar.php';
             </div>
             
             
-           <button id="copyTableBtn" class="btn btn-info"><i class="fas fa-copy"></i>  Copy to Clipboard</button>
-           <button id="downloadPDF" class="btn btn-danger "> <i class="fas fa-file-pdf"></i> Download as PDF</button>
-              <button id="downloadExcel" class="btn btn-success"><i class="fas fa-file-excel"></i> Download as Excel</button>
+           <button id="copyTableBtn" class="btn btn-info"><i class="fas fa-copy"></i>  Copy</button>
+           <button id="downloadPDF" class="btn btn-danger" onclick="downloadPDF()"> <i class="fas fa-file-pdf"></i> PDF</button>
+              <button id="downloadExcel" class="btn btn-success" onclick="downloadExcel()"><i class="fas fa-file-excel"></i> Excel</button>
                     <nav class="navbar navbar-light bg-light" style="float: right;">
             <form class="form-inline" id="searchForm" onsubmit="return false;"> <!-- Prevent form submission -->
                 <input class="form-control mr-sm-2" type="search" id="searchInput" placeholder="Search" aria-label="Search">
@@ -438,7 +438,7 @@ include '../includes/sidebar.php';
 
                     // Fetch orders for the current page with date filtering
                     $sql = "SELECT p.pos_code, pp.prod_name, p.pos_qty, 
-                            p.pos_discount, p.total_amount, p.amount_received, p.pos_change, CONCAT(e.emp_fname, '' , e.emp_lname) as fullname, p.transac_date
+                            p.pos_discount, p.total_amount, p.amount_received, p.pos_change, CONCAT(e.emp_fname, ' ' , e.emp_lname) as fullname, p.transac_date
                             FROM pos_tbl p
                             JOIN emp_tbl e ON p.pos_personnel = e.emp_id
                             JOIN product_tbl pp ON p.prod_code = pp.prod_code";
@@ -496,7 +496,7 @@ include '../includes/sidebar.php';
                                     
                                     <td>
                                         <!-- Edit button trigger modal -->
-                                        <a href="#" class="edit-icon" data-bs-toggle="modal" data-bs-target="#editModal"
+                                        <!--<a href="#" class="edit-icon" data-bs-toggle="modal" data-bs-target="#editModal"
                                             data-pos-id="<?php echo htmlspecialchars($pos['pos_code']); ?>"
                                             data-prod-name="<?php echo htmlspecialchars($pos['prod_name']); ?>"
                                             data-qty="<?php echo htmlspecialchars($pos['pos_qty']); ?>"
@@ -508,7 +508,7 @@ include '../includes/sidebar.php';
                                             data-date="<?php echo date('F j, Y h:i A', strtotime($pos['transac_date'])); ?>"
                                             >
                                             <i class="fa fa-edit"></i>
-                                        </a>
+                                        </a> -->
 
                                         <!-- Delete button -->
                                         <a href="delete_pos.php?id=<?php echo htmlspecialchars($pos['pos_code']); ?>" class="delete-icon" onclick="confirmDelete(event, '<?php echo htmlspecialchars($pos['pos_code']); ?>')">
@@ -529,64 +529,65 @@ include '../includes/sidebar.php';
 
 <!-- Edit Modal -->
 <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
-           <form class="row g-3" id="editOrderForm" method="post" action="update_pos.php">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editModalLabel">Edit POS Record</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Edit POS Record</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editOrderForm" class="row g-3" method="post" action="update_pos.php">
                     <input type="hidden" name="pos_code" id="edit-pos-code">
 
-                    <div class="mb-3">
+                    <div class="col-md-5">
                         <label for="edit-prod-name" class="form-label">Product Name</label>
                         <input type="text" class="form-control" name="prod_name" id="edit-prod-name" readonly>
                     </div>
 
-                    <div class="mb-3">
+                    <div class="col-md-3">
                         <label for="edit-qty" class="form-label">Quantity</label>
                         <input type="number" class="form-control" name="pos_qty" id="edit-qty" required>
                     </div>
 
-                    <div class="mb-3">
+                    <div class="col-md-4">
                         <label for="edit-discount" class="form-label">Discount</label>
                         <input type="text" class="form-control" name="pos_discount" id="edit-discount" required>
                     </div>
 
-                    <div class="mb-3">
+                    <div class="col-md-5">
                         <label for="edit-total" class="form-label">Total Amount</label>
                         <input type="text" class="form-control" name="total_amount" id="edit-total" readonly>
                     </div>
 
-                    <div class="mb-3">
+                    <div class="col-md-3">
                         <label for="edit-receive" class="form-label">Amount Received</label>
                         <input type="text" class="form-control" name="amount_receive" id="edit-receive" required>
                     </div>
 
-                    <div class="mb-3">
+                    <div class="col-md-4">
                         <label for="edit-change" class="form-label">Change</label>
                         <input type="text" class="form-control" name="pos_change" id="edit-change" readonly>
                     </div>
 
-                    <div class="mb-3">
+                    <div class="col-md-6">
                         <label for="edit-fullname" class="form-label">Cashier Name</label>
                         <input type="text" class="form-control" name="fullname" id="edit-fullname" readonly>
                     </div>
 
-                    <div class="mb-3">
+                    <div class="col-md-6">
                         <label for="edit-date" class="form-label">Date</label>
                         <input type="text" class="form-control" name="transac_date" id="edit-date" readonly>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                </div>
-            </form>
+
+                    <div class="d-grid gap-2 col-4 mx-auto mt-3">
+                        <button type="submit" class="btn btn-primary btn-md">Save Changes</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>
+
 
 
         <?php
@@ -829,26 +830,14 @@ document.getElementById('copyTableBtn').addEventListener('click', function() {
     }, 1000);
 });
 //download as excel
- document.getElementById('downloadExcel').addEventListener('click', function() {
-        const table = document.getElementById('orderTable');
-        const workbook = XLSX.utils.table_to_book(table, { sheet: "Products" });
-        XLSX.writeFile(workbook, 'POS_table.xlsx');
-    });
+  function downloadExcel() {
+            window.location.href = 'cashierExcel.php';
+        }
+
 //Download as pdf
-document.getElementById('downloadPDF').addEventListener('click', function() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    doc.autoTable({
-        html: '#orderTable',
-        startY: 20,
-        theme: 'grid',
-        headStyles: { fillColor: [0, 150, 0] },  // Custom header color
-        margin: { top: 10 },
-    });
-
-    doc.save('POS_table.pdf');
-});
+ function downloadPDF() {
+            window.location.href = 'cashierPdf.php';
+        }
 // confirmation for deleting product
 function confirmDelete(event, posCode) {
     event.preventDefault(); // Prevent default anchor behavior
