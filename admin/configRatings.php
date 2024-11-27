@@ -389,7 +389,7 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                             $sql_reviews = "
                             SELECT r.review_id, r.rev_message, r.rev_star, c.f_name, c.l_name, r.rev_date, pt.prod_name
                             FROM ratings_tbl r
-                            JOIN Customers c ON r.cust_id = c.cust_id
+                            JOIN customers c ON r.cust_id = c.cust_id
                             JOIN product_tbl pt ON r.prod_code = pt.prod_code
                             WHERE r.rev_star LIKE '$star_filter' OR '$star_filter' = 0
                             ORDER BY r.rev_date DESC
