@@ -18,7 +18,7 @@ if (isset($data['order_ids']) && is_array($data['order_ids'])) {
     $placeholders = implode(',', array_fill(0, count($order_ids), '?'));
 
     // Prepare the SQL query
-    $query = "UPDATE Order_tbl SET status_code = 2 WHERE order_id IN ($placeholders)";
+    $query = "UPDATE order_tbl SET status_code = 2 WHERE order_id IN ($placeholders)";
     
     // Prepare the statement
     if ($stmt = $conn->prepare($query)) {
