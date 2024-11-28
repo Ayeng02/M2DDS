@@ -1,4 +1,6 @@
 <?php
+    session_start();
+use PhpOffice\PhpSpreadsheet\Chart\Title;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     include '../includes/db_connect.php';
@@ -11,6 +13,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $qoh_action = $_POST['qoh_action']; // Either 'add' or 'subtract'
     $adjust_qoh = (float)$_POST['add_qoh']; // Quantity to adjust
     $image_path = null;
+
+    // Check for duplicate product name
+$sql = "SELECT prod_code FROM product_tbl WHERE prod_name = ? AND prod_code != ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param('ss', $prod_name, $prod_code);
+$stmt->execute();
+$stmt->store_result();
+
+if ($stmt->num_rows > 0) {
+
+    // Set alert data in session
+    $_SESSION['alert'] = [
+        'icon' => 'error',
+        'title' => "Product name already exists. Please choose a different name."
+    ];
+    // Redirect to the add products page
+    header("Location: addproducts.php?alert=1");
+    exit; // Ensure no further code is executed
+}
+
+$stmt->close();
 
    // Check if a new image was uploaded
     if (isset($_FILES['prod_img']) && $_FILES['prod_img']['error'] == UPLOAD_ERR_OK) {
@@ -52,7 +75,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->close();
 
     if (!$category_code) {
-        echo "Invalid category.";
+        echo "";
+        $_SESSION['alert'] = [
+            'icon' => 'error',
+            'title' => "Invalid category."
+        ];
+        // Redirect to the add products page
+        header("Location: addproducts.php?alert=1");
+        exit; // Ensure no further code is executed
         exit;
     }
 
@@ -74,12 +104,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $new_qoh = $current_qoh - $adjust_qoh;
 
         if ($new_qoh < 0) {
-            echo "Error: Quantity on hand cannot be negative.";
-            exit;
+            $_SESSION['alert'] = [
+                'icon' => 'error',
+                'title' => "Quantity on hand cannot be negative."
+            ];
+            // Redirect to the add products page
+            header("Location: addproducts.php?alert=1");
+            exit; // Ensure no further code is executed
+        
         }
     } else {
-        echo "Invalid quantity action.";
-        exit;
+        $_SESSION['alert'] = [
+            'icon' => 'error',
+            'title' => "Invalid quantity action."
+        ];
+        // Redirect to the add products page
+        header("Location: addproducts.php?alert=1");
+        exit; // Ensure no further code is executed
+        
     }
 
     // Update product
@@ -108,6 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header("Location: addproducts.php?success=1");
     } else {
         echo "Error updating product: " . $stmt->error;
+        
     }
 
     $stmt->close();

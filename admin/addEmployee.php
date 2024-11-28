@@ -657,7 +657,7 @@ if (isset($_SESSION['alert'])) {
                     $total_pages = ceil($total_rows / $limit);
 
                     // Fetch employees for the current page
-                    $sql = "SELECT emp_id, emp_fname, emp_lname, emp_email, emp_num, emp_address, emp_role, emp_img 
+                    $sql = "SELECT emp_id, emp_fname, emp_lname, emp_email, emp_num, emp_address, emp_role, emp_img , emp_status
                             FROM emp_tbl 
                             ORDER BY emp_id DESC 
                             LIMIT $limit OFFSET $offset";
@@ -675,7 +675,7 @@ if (isset($_SESSION['alert'])) {
                                 <th>Contact Number</th>
                                 <th>Address</th>
                                 <th>Role</th>
-                               
+                                <th>Status</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -696,6 +696,7 @@ if (isset($_SESSION['alert'])) {
                                     <td><?php echo htmlspecialchars($employee['emp_num']); ?></td>
                                     <td><?php echo htmlspecialchars($employee['emp_address']); ?></td>
                                     <td><?php echo htmlspecialchars($employee['emp_role']); ?></td>
+                                    <td><?php echo htmlspecialchars($employee['emp_status']);?> </td>
                                     
                                     <td>
                                         <!-- Edit button trigger modal -->
@@ -706,6 +707,7 @@ if (isset($_SESSION['alert'])) {
                                             data-contact="<?php echo htmlspecialchars($employee['emp_num']); ?>"
                                             data-address="<?php echo htmlspecialchars($employee['emp_address']); ?>"
                                             data-role="<?php echo htmlspecialchars($employee['emp_role']); ?>"
+                                            data-status="<?php echo htmlspecialchars($employee['emp_status'])?>"
                                             data-emp-img="<?php echo htmlspecialchars($employee['emp_img']); ?>">
                                             <i class="fa fa-edit"></i>
                                         </a>
@@ -770,7 +772,7 @@ if (isset($_SESSION['alert'])) {
                             <option value="Order Manager">Order Manager</option>
                         </select>
                     </div>
-
+                                
                     <div class="col-md-6">
                         <label for="emp-img" class="form-label">Employee Image</label>
                         <img id="Current-emp-img" src="../" alt="Employee Image" style="display: block; width: 150px; margin-bottom: 10px; height: auto;">
