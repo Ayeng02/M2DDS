@@ -262,6 +262,19 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
             font-size: 40px;
             color: #a72828;
             font-weight: bold;
+            margin: 0;
+        }
+        .prod-name {
+            font-size: 35px;
+            color: #a72828;
+            font-weight: bold;
+            margin: 0;
+        }
+        .stars-total{
+            font-size: 23px;
+            color: #FF8225;
+            font-weight: bold;
+            margin: 0;
         }
 
         .sales-label {
@@ -269,6 +282,7 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
             font-size: 20px;
             color: #FF8225;
             font-weight: 600;
+            margin: 0;
         }
 
         .rating_scale-container {
@@ -441,37 +455,66 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                 } else {
                     $total_employee = "No data available";
                 }
-
-
                 ?>
+
+                <?php
+                // Modified query to sum the stars for each product
+                $sql = "SELECT r.prod_code, pt.prod_name, SUM(r.rev_star) AS total_stars
+                FROM ratings_tbl r
+                JOIN product_tbl pt ON r.prod_code = pt.prod_code
+                GROUP BY r.prod_code
+                ORDER BY total_stars DESC 
+                LIMIT 1";
+
+                $result = $conn->query($sql);
+
+                if ($result->num_rows > 0) {
+                    // Output the product with the highest total stars
+                    while ($row = $result->fetch_assoc()) {
+                        $highest_reviews = $row["total_stars"];
+                        $prod_name = $row["prod_name"];
+                    }
+                } else {
+                    $highest_reviews = "No reviews found";
+                }
+                ?>
+
+
                 <div class="container-box-wrapper">
                     <div class="container-box">
                         <i class="fas fa-money-bill-wave"></i>
                         <div>
-                             <a href="viewSales.php" style="text-decoration: none; color: inherit;">
-                            <span class="sales-amount">₱ <?php echo number_format($monthly_sales); ?></span>
-                            <span class="sales-label">Monthly Sales (<?php echo date('F'); ?>) </span>
+                            <a href="viewSales.php" style="text-decoration: none; color: inherit;">
+                                <span class="sales-amount">₱ <?php echo number_format($monthly_sales); ?></span>
+                                <span class="sales-label">Monthly Sales (<?php echo date('F'); ?>) </span>
                             </a>
                         </div>
                     </div>
                     <div class="container-box">
                         <i class="fas fa-users"></i>
                         <div>
-                            
                             <span class="sales-amount"><?php echo number_format($total_customers); ?></span>
                             <span class="sales-label">Customer</span>
                         </div>
                     </div>
-                    
+
                     <div class="container-box">
                         <a href="addEmployee.php" style="text-decoration: none; color: inherit;">
-                        <i class="fas fa-briefcase"></i>
+                            <i class="fas fa-briefcase"></i>
                         </a>
                         <div>
                             <a href="addEmployee.php" style="text-decoration: none; color: inherit;">
-                            <span class="sales-amount"><?php echo number_format($total_employee); ?></span>
-                            <span class="sales-label">Employee</span>
+                                <span class="sales-amount"><?php echo number_format($total_employee); ?></span>
+                                <span class="sales-label">Employee</span>
                             </a>
+                        </div>
+                    </div>
+
+                    <div class="container-box">
+                        <i class="fa-solid fa-star"></i><span class="stars-total"><?php echo ($highest_reviews); ?></span>
+                        <div>
+                            <p class="prod-name"><?php echo ($prod_name); ?></p>
+                            <p class="sales-label">Highest Rated Product</p>
                         </div>
                     </div>
                 </div>
@@ -510,7 +553,7 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                     while ($row = $result->fetch_assoc()) {
                         $dataPoints[] = [
                             "label" => $row['category_name'],
-                            "y" => round($row['purchase_percentage']) 
+                            "y" => round($row['purchase_percentage'])
                         ];
                     }
 
@@ -638,7 +681,7 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                             $topProducts[] = array(
                                 "rank" => $rank,
                                 "prod_name" => $row['prod_name'],
-                               "order_qty" => number_format($row['total_purchased'], 2)
+                                "order_qty" => number_format($row['total_purchased'], 2)
                             );
                             $rank++;
                         }
@@ -664,7 +707,7 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                                     <tr>
                                         <td><?php echo htmlspecialchars($product['rank']); ?></td>
                                         <td><?php echo htmlspecialchars($product['prod_name']); ?></td>
-                                        <td><?php echo number_format($product['order_qty'],2); ?></td>
+                                        <td><?php echo number_format($product['order_qty'], 2); ?></td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
