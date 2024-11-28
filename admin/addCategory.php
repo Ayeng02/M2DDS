@@ -378,16 +378,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $category_img = $_FILES['category_img'];
 
     // Database connection
-    $servername = "localhost";
-    $username = "root";
-    $password = "";
-    $dbname = "m2dds";
-
-    $conn = new mysqli($servername, $username, $password, $dbname);
-
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
-    }
+    include '../includes/db_connect.php';
 
     // Check for duplicate category name
     $check_stmt = $conn->prepare("SELECT COUNT(*) FROM category_tbl WHERE category_name = ?");
