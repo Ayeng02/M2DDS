@@ -125,17 +125,6 @@
     color: #6c757d;
 }
 
-/* Container for status cards */
-.status-container,
-.shipper-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    flex-wrap: wrap;
-
-}
-
 /* Status card styling */
 .status-card {
     display: flex;

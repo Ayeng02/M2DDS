@@ -188,6 +188,18 @@ $TransactResult = $stmt->get_result();
         .failed-count {
             color: #dc3545;
         }
+
+        /* Container for status cards */
+
+        .shipper-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+
+        }
+
         .shipper-card .card-footer {
             background-color: #f8f9fa;
             padding: 10px;
