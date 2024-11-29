@@ -20,6 +20,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Initialize an empty variable for the image path
     $image_path = null;
 
+  // Check for duplicate product name
+  $sql = "SELECT emp_id FROM emp_tbl WHERE emp_email = ? AND emp_id != ?";
+  $stmt = $conn->prepare($sql);
+  $stmt->bind_param('ss', $emp_id, $emp_email);
+  $stmt->execute();
+  $stmt->store_result();
+  
+  if ($stmt->num_rows > 0) {
+  
+      // Set alert data in session
+      $_SESSION['alert'] = [
+          'icon' => 'error',
+          'title' => "Employee email already exists. Please choose a different name."
+      ];
+      // Redirect to the add products page
+      header("Location: addEmployee.php?alert=1");
+      exit; // Ensure no further code is executed
+  }
+    
     // Check if a new image was uploaded
     if (isset($_FILES['emp_img']) && $_FILES['emp_img']['error'] == UPLOAD_ERR_OK) {
         // Handle the file upload

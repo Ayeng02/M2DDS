@@ -1,4 +1,5 @@
 <?php
+session_start();
 // Database connection
 include '../includes/db_connect.php';
 
@@ -9,6 +10,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Initialize an empty variable for the image path
     $image_path = null;
+
+    $sql = "SELECT category_code FROM category_tbl WHERE category_name = ? AND category_code != ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param('ss', $category_name, $category_code);
+    $stmt->execute();
+    $stmt->store_result();
+    
+    if ($stmt->num_rows > 0) {
+    
+        // Set alert data in session
+        $_SESSION['alert'] = [
+            'icon' => 'error',
+            'title' => "Category name already exists. Please choose a different name."
+        ];
+        // Redirect to the add products page
+        header("Location: addCategory.php?alert=1");
+        exit; // Ensure no further code is executed
+    }
 
     // Check if a new image was uploaded
     if (isset($_FILES['category_img']) && $_FILES['category_img']['error'] == UPLOAD_ERR_OK) {
@@ -22,8 +41,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Move the uploaded file to the target directory
         if (!move_uploaded_file($image_file['tmp_name'], $image_path)) {
-            echo "Error uploading image.";
-            exit;
+            
+             $_SESSION['alert'] = [
+            'icon' => 'error',
+            'title' => "Error uploading image."
+        ];
+        // Redirect to the add products page
+        header("Location: addCategory.php?alert=1");
+        exit; 
         }
     } else {
         // If no new image was uploaded, fetch the current image path from the database

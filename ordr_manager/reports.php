@@ -45,7 +45,6 @@ if ($quantity_result->num_rows > 0) {
 
 
 
-
 $sale_sql = "SELECT SUM(order_total) AS daily_sales 
              FROM order_tbl 
              WHERE DATE(order_date) = CURDATE()
@@ -58,8 +57,6 @@ if ($sale_result->num_rows > 0) {
     $row = $sale_result->fetch_assoc();
     $daily_sales = $row['daily_sales'] ?? 0; // Use null coalescing operator to avoid null
 }
-
-
 
 
 $deliv_sql = "SELECT COUNT(*) AS total_deliv 
@@ -208,6 +205,7 @@ if ($result->num_rows > 0) {
                     <div class="card-body" id="card_con">
                         <i class="fa-solid fa-wallet"></i>
                         <h2 class="card-text">₱<?php echo number_format($daily_sales); ?></h2>
+                        <h5 class="card-text"><?php echo date('F j, Y'); ?></h5>
                     </div>
                 </div>
 
@@ -218,6 +216,7 @@ if ($result->num_rows > 0) {
                     <div class="card-body" id="card_con">
                         <i class="fa-solid fa-truck-ramp-box"></i>
                         <h2 class="card-text"><?php echo number_format($total_deliv); ?></h2>
+                        <h5 class="card-text"><?php echo date('F - Y'); ?></h5>
                     </div>
                 </div>
                 <div class="card text-bg-danger mb-3" style="max-width: 20rem;">
@@ -227,6 +226,7 @@ if ($result->num_rows > 0) {
                     <div class="card-body" id="card_con">
                         <i class="fa-solid fa-circle-xmark"></i>
                         <h2 class="card-text"><?php echo number_format($total_can); ?></h2>
+                        <h5 class="card-text"><?php echo date('F - Y'); ?></h5>
                     </div>
                 </div>
             </div>
@@ -299,12 +299,12 @@ if ($result->num_rows > 0) {
 
                             $rank = 1;
                             while ($row = $result->fetch_assoc()) {
-                            echo "<tr>
+                                echo "<tr>
                             <td>" . $rank . "</td>
                             <td>" . $row["prod_name"] . "</td>
                             <td><strong>" . $row["total_purchased"] . "</strong></td>
                             </tr>";
-                            $rank++;
+                                $rank++;
                             }
 
 
@@ -369,7 +369,7 @@ if ($result->num_rows > 0) {
                                 <span class="input-group-text bg-light">
                                     <i class="fas fa-calendar-alt" style="color: #a72828;"></i>
                                 </span>
-                                <input type="text" id="DatePicker" class="form-control datepicker" placeholder="Select Date" >
+                                <input type="text" id="DatePicker" class="form-control datepicker" placeholder="Select Date">
                             </div>
                         </div>
                     </div>
@@ -633,9 +633,16 @@ if ($result->num_rows > 0) {
                             },
                             tooltip: {
                                 enabled: true, // Enable tooltips
+                                callbacks: {
+                                    label: function(context) {
+                                        // Add "Kg" suffix to the tooltip data
+                                        const quantity = context.raw;
+                                        return `${quantity} Kg`;
+                                    }
+                                },
                                 bodyFont: {
                                     size: 16, // Set font size for tooltip text
-                                    color: 'black'
+
                                 },
                                 titleFont: {
                                     size: 18, // Set font size for tooltip title
@@ -645,7 +652,7 @@ if ($result->num_rows > 0) {
                                 bodyColor: 'black',
                                 padding: 15, // Add padding to the tooltip
                                 backgroundColor: '#fff', // Change background color of the tooltip
-                                borderColor: 'black', // Set border color for the tooltip
+                                borderColor: 'gray', // Set border color for the tooltip
                                 borderWidth: 1 // Set border width for the tooltip
                             }
                         },
@@ -653,6 +660,9 @@ if ($result->num_rows > 0) {
                             x: { // Now the x-axis represents the quantities
                                 beginAtZero: true,
                                 ticks: {
+                                    callback: function(value) {
+                                        return value + ' Kg'; // Append "Kg" to the x-axis tick labels
+                                    },
                                     font: {
                                         size: 15
                                     },
@@ -843,9 +853,9 @@ if ($result->num_rows > 0) {
                 });
             </script>
 
-<?php 
- $conn->close();
-?>
+            <?php
+            $conn->close();
+            ?>
 
 
 

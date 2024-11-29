@@ -146,6 +146,7 @@ $totalPages = ceil($totalRows / $limit);
                         <div class="info">
                             <p class="ctitle">Daily Sales</p>
                             <h2 class="card-text">₱ <?php echo number_format($daily_sales, 2); ?></h2>
+                            <h5 class="card-text"><?php echo date('F j, Y'); ?></h5>
                         </div>
                     </div>
                 </div>
@@ -158,6 +159,7 @@ $totalPages = ceil($totalRows / $limit);
                         <div class="info">
                             <p class="ctitle">Total Transaction</p>
                             <h2 class="card-text"> <?php echo number_format($count); ?> </h2>
+                            <h5><?php echo date('F - Y'); ?></h5>
                         </div>
                     </div>
                 </div>
@@ -169,6 +171,7 @@ $totalPages = ceil($totalRows / $limit);
                         <div class="info">
                             <p class="ctitle"> Monthly Sales</p>
                             <h2 class="card-text"> <?php echo number_format($monthly_sales, 2); ?></h2>
+                            <h5><?php echo date('F - Y'); ?></h5>
                         </div>
                     </div>
                 </div>

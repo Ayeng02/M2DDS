@@ -31,7 +31,7 @@ try {
         $current_time_str = $current_time->format('H:i:s'); // Get current time in HH:MM:SS format
 
         // Retrieve login window from AttendSched_tbl
-        $stmt = $conn->prepare("SELECT am_login_start, am_login_end FROM attendsched_tbl");
+        $stmt = $conn->prepare("SELECT am_login_start, am_login_end FROM AttendSched_tbl");
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -80,7 +80,7 @@ try {
 
         if ($employee = $result->fetch_assoc()) {
             $current_timestamp = date("Y-m-d H:i:s"); // Record current timestamp
-            $current_date = date("Y-m-d"); // Current date
+            $current_date = date("Y-m-d H:i:s"); // Current date
 
             // Check if an attendance record exists for today with no time_out
             $stmt = $conn->prepare("SELECT * FROM att_tbl WHERE emp_id = ? AND att_date = ? AND time_out IS NULL");
@@ -137,7 +137,7 @@ try {
     exit();
 }
 ?>
-?>
+
 
 
 

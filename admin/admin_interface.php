@@ -264,13 +264,15 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
             font-weight: bold;
             margin: 0;
         }
+
         .prod-name {
             font-size: 35px;
             color: #a72828;
             font-weight: bold;
             margin: 0;
         }
-        .stars-total{
+
+        .stars-total {
             font-size: 23px;
             color: #FF8225;
             font-weight: bold;
@@ -458,26 +460,38 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                 ?>
 
                 <?php
-                // Modified query to sum the stars for each product
-                $sql = "SELECT r.prod_code, pt.prod_name, SUM(r.rev_star) AS total_stars
-                FROM ratings_tbl r
-                JOIN product_tbl pt ON r.prod_code = pt.prod_code
-                GROUP BY r.prod_code
-                ORDER BY total_stars DESC 
-                LIMIT 1";
+                // Modified query to sum the stars and count the number of reviews for each product
+                $sql = "SELECT r.prod_code, pt.prod_name, SUM(r.rev_star) AS total_stars, COUNT(r.rev_star) AS review_count
+            FROM ratings_tbl r
+            JOIN product_tbl pt ON r.prod_code = pt.prod_code
+            GROUP BY r.prod_code
+            ORDER BY total_stars DESC 
+            LIMIT 1";
 
                 $result = $conn->query($sql);
 
                 if ($result->num_rows > 0) {
-                    // Output the product with the highest total stars
+                    // Output the product with the highest total stars and calculate the average rating
                     while ($row = $result->fetch_assoc()) {
-                        $highest_reviews = $row["total_stars"];
                         $prod_name = $row["prod_name"];
+                        $total_stars = $row["total_stars"];
+                        $review_count = $row["review_count"];
+
+                        // Calculate the average rating (total stars / number of reviews)
+                        if ($review_count > 0) {
+                            $average_rating = round($total_stars / $review_count, 1); // Round to 1 decimal place
+                        } else {
+                            $average_rating = 0;
+                        }
+
+                        // Set the highest reviews string in the format: 4.9/5
+                        $highest_reviews = $average_rating . "/5";
                     }
                 } else {
                     $highest_reviews = "No reviews found";
                 }
                 ?>
+
 
 
                 <div class="container-box-wrapper">
