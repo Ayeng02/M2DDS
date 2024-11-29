@@ -38,6 +38,8 @@ $TransactResult = $stmt->get_result();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Manager</title>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../css/ordr_css.css">
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -48,8 +50,7 @@ $TransactResult = $stmt->get_result();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/2.1.6/css/dataTables.bootstrap5.css">
 
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="../css/ordr_css.css">
+
 
     <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
@@ -187,13 +188,6 @@ $TransactResult = $stmt->get_result();
         .failed-count {
             color: #dc3545;
         }
-
-        .shipper-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
         .shipper-card .card-footer {
             background-color: #f8f9fa;
             padding: 10px;
