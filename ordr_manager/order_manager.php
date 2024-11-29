@@ -243,6 +243,35 @@ if (mysqli_num_rows($transactResult) > 0) {
             font-size: 14px;
             line-height: 1.5;
         }
+
+        .accBtn,
+        .shipBtn,
+        .trackBtn {
+            background-color: #FF8225;
+            color: white;
+            transition: background-color 0.3s ease-in-out;
+            border: none;
+        }
+
+        .printAllBtn {
+            background-color: #ec4242;
+            color: white;
+            transition: background-color 0.3s ease-in-out;
+            border: none;
+        }
+
+        .printAllBtn:hover {
+            background-color: #c12e2e;
+            color: white;
+
+        }
+
+        .accBtn:hover,
+        .shipBtn:hover,
+        .trackBtn:hover {
+            background-color: #c12e2e;
+            color: white;
+        }
     </style>
 
 </head>
