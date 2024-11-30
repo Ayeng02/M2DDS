@@ -31,7 +31,7 @@ try {
         $current_time_str = $current_time->format('H:i:s'); // Get current time in HH:MM:SS format
 
         // Retrieve login window from AttendSched_tbl
-        $stmt = $conn->prepare("SELECT am_login_start, am_login_end FROM AttendSched_tbl");
+        $stmt = $conn->prepare("SELECT am_login_start, am_login_end FROM attendsched_tbl");
         $stmt->execute();
         $result = $stmt->get_result();
 
