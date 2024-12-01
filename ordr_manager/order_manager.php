@@ -237,6 +237,13 @@ if (mysqli_num_rows($transactResult) > 0) {
             font-size: 14px;
             line-height: 1.5;
         }
+        .status-container{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
     </style>
 
 </head>

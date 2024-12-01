@@ -126,7 +126,6 @@
 }
 
 /* Container for status cards */
-.status-container,
 .shipper-container {
     display: flex;
     justify-content: center;
