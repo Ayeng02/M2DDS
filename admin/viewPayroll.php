@@ -511,7 +511,7 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                                                 data-rate="<?php echo '₱ ' . htmlspecialchars($employee['Rate']); ?>"
                                                 data-salary="<?php echo '₱ ' . htmlspecialchars($employee['Salary']); ?>"
                                                 data-emp-img="<?php echo htmlspecialchars($employee['Image']); ?>">
-                                                <i class="fa-solid fa-eye"></i>
+                                                <i class="fa-file-alt"></i>
                                             </a>
                                         </td>
                                     </tr>
