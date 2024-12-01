@@ -686,7 +686,7 @@ $jsonYearlyData = json_encode($yearlyRevenue);
                 </div>
               <div class="most-ordered">
                 <div class="combo-box">
-    <h6 class="table-title">Toal Purchase Products</h6>
+    <h6 class="table-title">Total Purchase Products</h6>
     <label for="orderDate">Select Order Date:</label>
     <input type="date" id="orderDate" onchange="filterOrdersByDate()">
 </div>
