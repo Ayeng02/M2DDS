@@ -125,6 +125,17 @@
     color: #6c757d;
 }
 
+/* Container for status cards */
+.status-container,
+.shipper-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+
+}
+
 /* Status card styling */
 .status-card {
     display: flex;
@@ -198,6 +209,37 @@
         transform: scale(0.9);
     }
 }
+
+.accBtn,
+.shipBtn,
+.trackBtn{
+    background-color: #FF8225; 
+    color: white;
+    transition: background-color 0.3s ease-in-out;
+    border: none;
+}
+
+.printAllBtn{
+    background-color: #ec4242; 
+    color: white;
+    transition:background-color 0.3s ease-in-out;
+    border: none;
+}
+
+.printAllBtn:hover{
+    background-color: #c12e2e; 
+    color: white;
+
+}
+
+.accBtn:hover,
+.shipBtn:hover,
+.trackBtn:hover{
+    background-color: #c12e2e; 
+    color: white;
+}
+
+
 
 .form-control:focus {
     border-color: #FF8225;

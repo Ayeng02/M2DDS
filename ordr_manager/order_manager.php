@@ -205,13 +205,6 @@ if (mysqli_num_rows($transactResult) > 0) {
 
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/3.0.3/js/responsive.bootstrap5.js">
 
-    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.2/css/buttons.bootstrap5.css">
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
-
-
-    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/3.0.3/js/responsive.bootstrap5.js">
-
     <link rel="icon" href="../img/logo.ico" type="image/x-icon">
 
     <style>
@@ -242,35 +235,6 @@ if (mysqli_num_rows($transactResult) > 0) {
         .product-img+span {
             font-size: 14px;
             line-height: 1.5;
-        }
-
-        .accBtn,
-        .shipBtn,
-        .trackBtn {
-            background-color: #FF8225;
-            color: white;
-            transition: background-color 0.3s ease-in-out;
-            border: none;
-        }
-
-        .printAllBtn {
-            background-color: #ec4242;
-            color: white;
-            transition: background-color 0.3s ease-in-out;
-            border: none;
-        }
-
-        .printAllBtn:hover {
-            background-color: #c12e2e;
-            color: white;
-
-        }
-
-        .accBtn:hover,
-        .shipBtn:hover,
-        .trackBtn:hover {
-            background-color: #c12e2e;
-            color: white;
         }
     </style>
 
