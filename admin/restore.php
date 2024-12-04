@@ -47,6 +47,13 @@ if ($_FILES['backupFile']['error'] === UPLOAD_ERR_OK) {
             // Handle INSERT INTO queries
             // Use INSERT IGNORE to automatically skip duplicate entries based on primary key
             $insertIgnoreQuery = str_ireplace("INSERT INTO", "INSERT IGNORE INTO", $query);
+            
+            // Properly escape values in the query (if not already)
+            $insertIgnoreQuery = preg_replace_callback("/'([^']+)'/", function($matches) use ($connection) {
+                return "'" . $connection->real_escape_string($matches[1]) . "'";
+            }, $insertIgnoreQuery);
+
+            // Execute the escaped query
             $connection->query($insertIgnoreQuery);
         } else {
             // Execute other queries (like table structure, indexes, etc.)
