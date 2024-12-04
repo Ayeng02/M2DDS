@@ -139,23 +139,47 @@ document.getElementById('backupBtn').addEventListener('click', function () {
 
 
     // Restore Button Action
-    document.getElementById('restoreBtn').addEventListener('click', function () {
-        Swal.fire({
-            title: 'Restore Database',
-            text: 'This will overwrite the current database. Proceed with caution.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes',
-            cancelButtonText: 'Cancel',
-            confirmButtonColor: '#ffc107',
-            cancelButtonColor: '#d33'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Placeholder for the restore action
-                Swal.fire('Restored!', 'The database has been restored successfully.', 'success');
-            }
-        });
+// Restore Button Action
+document.getElementById('restoreBtn').addEventListener('click', function () {
+    Swal.fire({
+        title: 'Restore Database',
+        text: 'This will overwrite the current database. Proceed with caution.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#ffc107',
+        cancelButtonColor: '#d33'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Trigger file selection for restoring backup
+            let fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.sql';
+            
+            fileInput.onchange = function () {
+                let formData = new FormData();
+                formData.append('backupFile', fileInput.files[0]);
+
+                // Send the backup file to the server for restoring
+                fetch('restore.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.text())
+                .then(data => {
+                    Swal.fire('Restored!', data, 'success');
+                })
+                .catch(error => {
+                    Swal.fire('Error!', 'Something went wrong while restoring the database.', 'error');
+                });
+            };
+            
+            fileInput.click();
+        }
     });
+});
+
 </script>
 
 
