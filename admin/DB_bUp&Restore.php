@@ -104,7 +104,7 @@ document.getElementById('backupBtn').addEventListener('click', function () {
             });
 
             // Perform the backup request using Fetch API
-            fetch('../admin/manual-backup.php')
+            fetch('manual_bakup.php')
                 .then(response => {
                     if (response.ok) {
                         // Trigger download
