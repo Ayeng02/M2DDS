@@ -44,38 +44,10 @@ if ($_FILES['backupFile']['error'] === UPLOAD_ERR_OK) {
                 $connection->query($query);
             }
         } elseif (stripos($query, 'INSERT INTO') !== false) {
-            // Handle INSERT INTO queries (same as before)
-            preg_match("/INSERT INTO `([^`]+)`/i", $query, $matches);
-            $table = $matches[1];
-
-            // Get primary key column(s) of the table to check if data exists
-            $primaryKeyQuery = "SHOW KEYS FROM `$table` WHERE Key_name = 'PRIMARY'";
-            $primaryKeyResult = $connection->query($primaryKeyQuery);
-            $primaryKey = [];
-            while ($row = $primaryKeyResult->fetch_assoc()) {
-                $primaryKey[] = $row['Column_name'];
-            }
-
-            // Get the data values in the query
-            preg_match_all("/\((.*?)\)/", $query, $matches);
-            $values = $matches[1];
-
-            // Check if data already exists in the table
-            foreach ($values as $value) {
-                $columns = explode(",", $value);
-                // Assuming the first column is the primary key (adjust accordingly)
-                $primaryKeyValue = trim($columns[0], "'");
-
-                // Check if the record already exists based on the primary key value
-                $checkQuery = "SELECT COUNT(*) AS count FROM `$table` WHERE `$primaryKey[0]` = '$primaryKeyValue'";
-                $checkResult = $connection->query($checkQuery);
-                $checkRow = $checkResult->fetch_assoc();
-
-                // If the record does not exist, execute the insert
-                if ($checkRow['count'] == 0) {
-                    $connection->query($query);
-                }
-            }
+            // Handle INSERT INTO queries
+            // Use INSERT IGNORE to automatically skip duplicate entries based on primary key
+            $insertIgnoreQuery = str_ireplace("INSERT INTO", "INSERT IGNORE INTO", $query);
+            $connection->query($insertIgnoreQuery);
         } else {
             // Execute other queries (like table structure, indexes, etc.)
             $connection->query($query);
