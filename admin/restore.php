@@ -71,8 +71,8 @@ if ($_FILES['backupFile']['error'] === UPLOAD_ERR_OK) {
                 $checkResult = $connection->query($checkQuery);
                 $checkRow = $checkResult->fetch_assoc();
 
+                // If the record does not exist, execute the insert
                 if ($checkRow['count'] == 0) {
-                    // If the record does not exist, execute the insert
                     $connection->query($query);
                 }
             }
