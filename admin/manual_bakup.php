@@ -45,7 +45,7 @@ foreach ($tables as $table) {
 // Close the database connection
 $connection->close();
 
-// Send the backup content as a downloadable file
+// Send the backup content as a downloadable file to the user's device
 header('Content-Type: application/sql');
 header('Content-Disposition: attachment; filename="backup_' . date('Y-m-d_H-i-s') . '.sql"');
 echo $backupContent;
