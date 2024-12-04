@@ -35,10 +35,9 @@ foreach ($tables as $table) {
     // Add the table's data (INSERT INTO statements)
     $result = $connection->query("SELECT * FROM `$table`");
     while ($row = $result->fetch_assoc()) {
-        $backupContent .= "INSERT INTO `$table` (" . implode(", ", array_keys($row)) . ") VALUES (";
-        $backupContent .= "'" . implode("', '", array_map(function($value) {
-            return $GLOBALS['connection']->real_escape_string($value);  // Escape special characters in data
-        }, array_values($row))) . "');\n";
+        $backupContent .= "INSERT INTO `$table` (";
+        $backupContent .= implode(", ", array_keys($row)) . ") VALUES (";
+        $backupContent .= "'" . implode("', '", array_values($row)) . "');\n";
     }
     $backupContent .= "\n";
 }
@@ -46,13 +45,9 @@ foreach ($tables as $table) {
 // Close the database connection
 $connection->close();
 
-// Set the headers to trigger file download
+// Send the backup content as a downloadable file
 header('Content-Type: application/sql');
 header('Content-Disposition: attachment; filename="backup_' . date('Y-m-d_H-i-s') . '.sql"');
-header('Pragma: no-cache');
-header('Expires: 0');
-
-// Send the backup content as a downloadable file
 echo $backupContent;
 
 exit;
