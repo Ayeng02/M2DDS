@@ -103,20 +103,18 @@ document.getElementById('backupBtn').addEventListener('click', function () {
                 }
             });
 
-            // Perform the backup request using Fetch API
-            fetch('/admin/manual-backup.php')
-                .then(response => {
-                    if (response.ok) {
-                        // Trigger download
-                        return response.blob();
-                    } else {
-                        throw new Error('Backup failed!');
-                    }
-                })
-                .then(blob => {
+            // Create a new AJAX request
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/admin/manual-backup.php', true);
+            xhr.responseType = 'blob'; // This ensures the response is treated as a file blob
+
+            // Set up the callback to handle the response
+            xhr.onload = function () {
+                if (xhr.status === 200) {
                     Swal.close(); // Close the loading alert
                     
                     // Create a downloadable link
+                    var blob = xhr.response;
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.style.display = 'none';
@@ -126,11 +124,20 @@ document.getElementById('backupBtn').addEventListener('click', function () {
                     a.click();
                     window.URL.revokeObjectURL(url);
                     Swal.fire('Success!', 'Database backup was successful!', 'success');
-                })
-                .catch(error => {
+                } else {
                     Swal.close(); // Close the loading alert
-                    Swal.fire('Error!', error.message || 'Backup failed! Please check server permissions.', 'error');
-                });
+                    Swal.fire('Error!', 'Backup failed! Please check server permissions.', 'error');
+                }
+            };
+
+            // Handle request error
+            xhr.onerror = function () {
+                Swal.close(); // Close the loading alert
+                Swal.fire('Error!', 'An unexpected error occurred while trying to back up the database.', 'error');
+            };
+
+            // Send the request
+            xhr.send();
         }
     });
 });
