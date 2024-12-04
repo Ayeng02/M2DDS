@@ -27,9 +27,24 @@ if ($_FILES['backupFile']['error'] === UPLOAD_ERR_OK) {
         // Skip empty queries
         if (empty($query)) continue;
 
-        // Check if this query is an INSERT statement
-        if (stripos($query, 'INSERT INTO') !== false) {
-            // Extract table name from the query
+        // Check if the query is a CREATE TABLE statement
+        if (stripos($query, 'CREATE TABLE') !== false) {
+            // Extract the table name from the CREATE TABLE statement
+            preg_match("/CREATE TABLE `([^`]+)`/i", $query, $matches);
+            $table = $matches[1];
+
+            // Check if the table already exists in the database
+            $checkTableQuery = "SHOW TABLES LIKE '$table'";
+            $checkResult = $connection->query($checkTableQuery);
+            if ($checkResult->num_rows > 0) {
+                // If the table exists, skip creating it
+                continue; // Skip the current CREATE TABLE query
+            } else {
+                // If the table doesn't exist, execute the CREATE TABLE query
+                $connection->query($query);
+            }
+        } elseif (stripos($query, 'INSERT INTO') !== false) {
+            // Handle INSERT INTO queries (same as before)
             preg_match("/INSERT INTO `([^`]+)`/i", $query, $matches);
             $table = $matches[1];
 
