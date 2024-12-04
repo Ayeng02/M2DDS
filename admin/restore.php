@@ -66,7 +66,7 @@ if ($_FILES['backupFile']['error'] === UPLOAD_ERR_OK) {
                 // Assuming the first column is the primary key (adjust accordingly)
                 $primaryKeyValue = trim($columns[0], "'");
 
-                // Check if the record already exists
+                // Check if the record already exists based on the primary key value
                 $checkQuery = "SELECT COUNT(*) AS count FROM `$table` WHERE `$primaryKey[0]` = '$primaryKeyValue'";
                 $checkResult = $connection->query($checkQuery);
                 $checkRow = $checkResult->fetch_assoc();
