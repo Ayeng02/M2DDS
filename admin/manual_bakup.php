@@ -5,9 +5,6 @@ $user = 'u753706103_root_m2dds';
 $password = '@Meattodoor123';
 $dbname = 'u753706103_m2dds';
 
-// Set the file name for the backup (with current timestamp)
-$backupFile = 'backups/backup_' . date("Y-m-d_H-i-s") . '.sql';
-
 // Connect to the MySQL database
 $connection = new mysqli($host, $user, $password, $dbname);
 
@@ -48,16 +45,10 @@ foreach ($tables as $table) {
 // Close the database connection
 $connection->close();
 
-// Create the backup file
-file_put_contents($backupFile, $backupContent);
-
-// Send the backup file to the browser for download
+// Send the backup content as a downloadable file
 header('Content-Type: application/sql');
-header('Content-Disposition: attachment; filename="' . basename($backupFile) . '"');
-readfile($backupFile);
-
-// Optional: Delete the file after download (for security reasons)
-unlink($backupFile);
+header('Content-Disposition: attachment; filename="backup_' . date('Y-m-d_H-i-s') . '.sql"');
+echo $backupContent;
 
 exit;
 ?>
