@@ -150,6 +150,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./css/loginstake.css">
     <link rel="icon" href="./img/mtdd_logo.png" type="image/x-icon">
+    <style>
+        
+        .login-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .login-footer a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 
 <body>
@@ -182,6 +198,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label for="showPassword">Show Password</label>
             </div>
             <button type="submit" class="btn btn-custom w-100">Login</button>
+            <div class="login-footer">
+                <p><a href="./stakeholder/send-reset-email.php">Forgot your password?</a></p>
+            </div>
         </form>
     </div>
 
