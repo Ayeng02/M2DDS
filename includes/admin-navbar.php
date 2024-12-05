@@ -29,7 +29,7 @@ $result = $stmt->get_result();
 $row = $result->fetch_assoc();
 
 // Check if the admin role is 'super_admin'
-$isSuperAdmin = ($row['admin_role'] == 'super_admin');
+$isSuperAdmin = ($row['admin_role'] === 'super_admin');
 
 ?>
 
