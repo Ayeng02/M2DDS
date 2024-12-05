@@ -137,9 +137,7 @@ document.getElementById('backupBtn').addEventListener('click', function () {
 
 
 
-
-    // Restore Button Action
-// Restore Button Action
+//restore
 document.getElementById('restoreBtn').addEventListener('click', function () {
     Swal.fire({
         title: 'Restore Database',
@@ -152,7 +150,6 @@ document.getElementById('restoreBtn').addEventListener('click', function () {
         cancelButtonColor: '#d33'
     }).then((result) => {
         if (result.isConfirmed) {
-            // Trigger file selection for restoring backup
             let fileInput = document.createElement('input');
             fileInput.type = 'file';
             fileInput.accept = '.sql';
@@ -161,24 +158,28 @@ document.getElementById('restoreBtn').addEventListener('click', function () {
                 let formData = new FormData();
                 formData.append('backupFile', fileInput.files[0]);
 
-                // Send the backup file to the server for restoring
                 fetch('restore.php', {
                     method: 'POST',
                     body: formData
                 })
-                .then(response => response.text())
+                .then(response => response.json()) // Parse JSON response
                 .then(data => {
-                    Swal.fire('Restored!', data, 'success');
+                    if (data.status === 'success') {
+                        Swal.fire('Restored!', data.message, 'success');
+                    } else {
+                        Swal.fire('Error!', data.message, 'error');
+                    }
                 })
                 .catch(error => {
                     Swal.fire('Error!', 'Something went wrong while restoring the database.', 'error');
                 });
             };
-            
+
             fileInput.click();
         }
     });
 });
+
 
 </script>
 
