@@ -5,6 +5,30 @@ error_reporting(E_ALL & ~E_NOTICE);
 // Database connection
 include '../includes/db_connect.php';
 
+// Redirect to landing page if already logged in
+if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isset($_SESSION['AdminLogExist']) && $_SESSION['AdminLogExist'] === true) {
+    if (isset($_SESSION['emp_role'])) {
+        // Redirect based on employee role
+        switch ($_SESSION['emp_role']) {
+            case 'Shipper':
+                header("Location: ../shipper/shipper.php");
+                exit;
+            case 'Cashier':
+                header("Location: ../cashier/cashier.php");
+                exit;
+            case 'Admin':
+                header("Location: ../admin/admin_interface.php");
+                exit;
+            default:
+                // Handle unknown roles or add default redirection if needed
+                break;
+        }
+    }
+} else {
+    header("Location: ../login.php");
+    exit;
+}
+
 // Fetching the data for the shippers' transactions
 $sql = "SELECT dt.transact_code, dt.shipper_id, CONCAT(e.emp_fname, ' ', e.emp_lname) AS shipper_name, dt.order_id, dt.transact_date, dt.transact_status
         FROM delivery_transactbl dt
@@ -393,37 +417,63 @@ $TransactResult = $stmt->get_result();
 
     <script>
         $(document).ready(function() {
-            // Initialize DataTables with pagination, and set page length to 10
+            // Initialize DataTables with customization
             var table = $('#shippersTable').DataTable({
                 "pageLength": 10,
                 "ordering": true,
                 "autoWidth": true,
                 "responsive": true,
                 "order": [
-                    [4, 'desc']
+                    [6, 'desc']
                 ],
                 dom: 'Bfrtip', // Ensure buttons are displayed
                 buttons: [{
                         extend: 'copy',
                         text: '<i class="fas fa-copy"></i> Copy',
-                        titleAttr: 'Copy'
+                        titleAttr: 'Copy',
+                        messageTop: 'Melo\'s Meatshop\nAddress: Apokon RD, Tagum City\nContact #: 09388952457 | Email: melomeatshop@gmail.com',
                     },
                     {
                         extend: 'excel',
                         text: '<i class="fas fa-file-excel"></i> Excel',
-                        titleAttr: 'Excel'
+                        titleAttr: 'Excel',
+                        messageTop: 'Melo\'s Meatshop\nAddress: Apokon RD, Tagum City\nContact #: 09388952457 | Email: melomeatshop@gmail.com',
                     },
                     {
                         extend: 'pdf',
                         text: '<i class="fas fa-file-pdf"></i> PDF',
-                        titleAttr: 'PDF'
+                        titleAttr: 'PDF',
+                        filename: 'Shippers_Transactions',
+                        customize: function(doc) {
+                            // Add the second text below with a fontSize of 15
+                            doc.styles.title = {
+                                display: 'none'
+                            }; // Hide title
+                            doc.header = null;
+                            doc.footer = null;
+
+                            doc.content.unshift({
+                                text: 'Shippers Transaction',
+                                margin: [0, 10, 0, 12], // Adjust margin to add space between the first and second text
+                                alignment: 'center',
+                                fontSize: 15, // Set font size to 15
+                                bold:true,
+                            });
+
+                            doc.content.unshift({
+                                text: 'Melo\'s Meatshop\nAddress: Apokon RD, Tagum City\nContact #: 09388952457 | Email: melomeatshop@gmail.com',
+                                margin: [0, 0, 0, 12], // Add spacing at the bottom
+                                alignment: 'center',
+                                fontSize: 10,
+                            });
+                        },
                     },
                     {
                         extend: 'colvis',
                         text: '<i class="fas fa-columns"></i> Columns',
-                        titleAttr: 'Column Visibility'
-                    }
-                ]
+                        titleAttr: 'Column Visibility',
+                    },
+                ],
             });
 
             // Initialize Date Picker

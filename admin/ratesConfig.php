@@ -384,6 +384,7 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
             box-shadow: none;
             /* Remove focus outline */
         }
+
     </style>
 </head>
 
@@ -484,7 +485,10 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
 
             ?>
 
-
+            <?php
+            $roleSql = "SELECT DISTINCT emp_role FROM emp_tbl";
+            $roleResult = $conn->query($roleSql);
+            ?>
 
             <div id="header-table-title">Manage Daily Rates</div>
             <div class="d-grid gap-10 col-11 mx-auto">
@@ -493,10 +497,15 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                         <label for="role">Role</label>
                         <select id="role" name="role" class="form-select" required>
                             <option value="">Select Role</option>
-                            <option value="Shipper">Shipper</option>
-                            <option value="Butcher">Butcher</option>
-                            <option value="Cashier">Cashier</option>
-                            <option value="Order Manager">Order Manager</option>
+                            <?php
+                            if ($roleResult->num_rows > 0) {
+                                while ($row = $roleResult->fetch_assoc()) {
+                                    echo '<option value="' . htmlspecialchars($row['emp_role']) . '">' . htmlspecialchars($row['emp_role']) . '</option>';
+                                }
+                            } else {
+                                echo '<option value="">No roles available</option>';
+                            }
+                            ?>
                         </select>
                     </div>
                     <div class="form-group">
@@ -507,6 +516,10 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                 </form>
             </div>
 
+            <?php
+            $roleSql = "SELECT DISTINCT emp_role FROM emp_tbl";
+            $roleResult = $conn->query($roleSql);
+            ?>
             <div class="employee-table-container">
                 <div class="combo-box">
                     <label for="sort">Sort by Employee Name: </label>
@@ -517,10 +530,15 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                     <label for="sort-role">Sort by Employee Role: </label>
                     <select id="sort-role" onchange="sortTableByRole()">
                         <option value="all">All</option>
-                        <option value="Shipper">Shipper</option>
-                        <option value="Butcher">Butcher</option>
-                        <option value="Cashier">Cashier</option>
-                        <option value="Order Manager">Order Manager</option>
+                        <?php
+                        if ($roleResult->num_rows > 0) {
+                            while ($row = $roleResult->fetch_assoc()) {
+                                echo '<option value="' . htmlspecialchars($row['emp_role']) . '">' . htmlspecialchars($row['emp_role']) . '</option>';
+                            }
+                        } else {
+                            echo '<option value="">No roles available</option>';
+                        }
+                        ?>
                     </select>
                 </div>
                 <?php
@@ -547,12 +565,6 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                             $limit OFFSET $offset";
 
                 $result = $conn->query($sql);
-
-
-
-
-
-
                 ?>
 
 
@@ -620,6 +632,16 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                                         <input type="text" class="form-control custom-font-size" name="Daily-rate" id="editDaily-rate" required>
                                     </div>
                                 </div>
+                                <div class="row mb-3 additional-rate-container d-none">
+                                    <div class="col-4">
+                                        <label for="editAdditionalRate" class="form-label fw-bold custom-font-size">Additional</label>
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="text" class="form-control custom-font-size" name="Additional" id="editAdditionalRate" placeholder="Enter additional rate">
+                                    </div>
+                                </div>
+
+
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                     <button type="submit" class="btn btn-primary">Save changes</button>
@@ -709,24 +731,34 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
 
 
 
-
             document.addEventListener('DOMContentLoaded', function() {
-
                 const editIcons = document.querySelectorAll('.edit-icon');
 
                 editIcons.forEach(icon => {
                     icon.addEventListener('click', function() {
                         // Get the data attributes from the clicked edit icon
                         const role = this.getAttribute('data-role');
-                        const dailyRate = this.getAttribute('data-rate')
-
+                        const dailyRate = this.getAttribute('data-rate');
 
                         // Populate the modal form with the employee's data
                         document.getElementById('editRole').value = role;
                         document.getElementById('editDaily-rate').value = dailyRate;
+
+                        // Get the Additional rate input container
+                        const additionalRateContainer = document.querySelector('.additional-rate-container');
+
+                        // Check if the role is "Butcher"
+                        if (role.toLowerCase() === 'butcher') {
+                            // Show the Additional rate input field
+                            additionalRateContainer.classList.remove('d-none');
+                        } else {
+                            // Hide the Additional rate input field
+                            additionalRateContainer.classList.add('d-none');
+                        }
                     });
                 });
             });
+
 
 
 
@@ -797,6 +829,22 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                 }
             }
         </script>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const editRoleInput = document.getElementById("editRole");
+                const additionalRateContainer = document.querySelector(".additional-rate-container");
+
+                // Watch for changes in the Role field
+                editRoleInput.addEventListener("input", () => {
+                    if (editRoleInput.value.trim().toLowerCase() === "Butcher") {
+                        additionalRateContainer.classList.remove("d-none");
+                    } else {
+                        additionalRateContainer.classList.add("d-none");
+                    }
+                });
+            });
+        </script>
+
 
 </body>
 

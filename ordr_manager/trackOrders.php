@@ -1,6 +1,32 @@
 <?php
-// Database connection
+session_start();
+// Set error reporting to ignore notices
+error_reporting(E_ALL & ~E_NOTICE);
 include '../includes/db_connect.php';
+
+// Redirect to landing page if already logged in
+if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isset($_SESSION['AdminLogExist']) && $_SESSION['AdminLogExist'] === true) {
+    if (isset($_SESSION['emp_role'])) {
+        // Redirect based on employee role
+        switch ($_SESSION['emp_role']) {
+            case 'Shipper':
+                header("Location: ../shipper/shipper.php");
+                exit;
+            case 'Cashier':
+                header("Location: ../cashier/cashier.php");
+                exit;
+            case 'Admin':
+                header("Location: ../admin/admin_interface.php");
+                exit;
+            default:
+                // Handle unknown roles or add default redirection if needed
+                break;
+        }
+    }
+} else {
+    header("Location: ../login.php");
+    exit;
+}
 
 // SQL query to fetch order data including product image
 $sql = "SELECT * FROM order_summary_view";
@@ -135,7 +161,7 @@ $result = $conn->query($sql);
         <!-- Order List Card -->
         <div class="card">
             <div class="card-header text-dark" style="background: #a72828;">
-                <h3 class="mb-0" style="color: #ffffff;">Order Lists/<span style="color: #c2c2c2; font-size:20px; font-weight:500;">History</span></h3>
+                <h3 class="mb-0" style="color: #ffffff;">Orders List/<span style="color: #c2c2c2; font-size:20px; font-weight:500;">History</span></h3>
             </div>
 
             <!-- Date Picker with icon on the right side -->
@@ -169,7 +195,6 @@ $result = $conn->query($sql);
                                 <option value="Canceled">Canceled</option>
                                 <option value="Failed">Failed</option>
                                 <option value="Failed">Declined</option>
-
                             </select>
                         </div>
                     </div>
@@ -286,7 +311,7 @@ $result = $conn->query($sql);
 
     <script>
         $(document).ready(function() {
-            // Initialize DataTables with pagination, and set page length to 10
+            // Initialize DataTables with customization
             var table = $('#allOrdersTable').DataTable({
                 "pageLength": 10,
                 "ordering": true,
@@ -299,24 +324,50 @@ $result = $conn->query($sql);
                 buttons: [{
                         extend: 'copy',
                         text: '<i class="fas fa-copy"></i> Copy',
-                        titleAttr: 'Copy'
+                        titleAttr: 'Copy',
+                        messageTop: 'Melo\'s Meatshop\nAddress: Apokon RD, Tagum City\nContact #: 09388952457 | Email: melomeatshop@gmail.com',
                     },
                     {
                         extend: 'excel',
                         text: '<i class="fas fa-file-excel"></i> Excel',
-                        titleAttr: 'Excel'
+                        titleAttr: 'Excel',
+                        messageTop: 'Melo\'s Meatshop\nAddress: Apokon RD, Tagum City\nContact #: 09388952457 | Email: melomeatshop@gmail.com',
                     },
                     {
                         extend: 'pdf',
                         text: '<i class="fas fa-file-pdf"></i> PDF',
-                        titleAttr: 'PDF'
+                        titleAttr: 'PDF',
+                        filename: 'Orders List',
+                        customize: function(doc) {
+                            // Add the second text below with a fontSize of 15
+                            doc.styles.title = {
+                                display: 'none'
+                            }; // Hide title
+                            doc.header = null;
+                            doc.footer = null;
+
+                            doc.content.unshift({
+                                text: 'All Orders',
+                                margin: [0, 10, 0, 12], // Adjust margin to add space between the first and second text
+                                alignment: 'center',
+                                fontSize: 20, // Set font size to 15
+                                bold: true,
+                            });
+
+                            doc.content.unshift({
+                                text: 'Melo\'s Meatshop\nAddress: Apokon RD, Tagum City\nContact #: 09388952457 | Email: melomeatshop@gmail.com',
+                                margin: [0, 0, 0, 12], // Add spacing at the bottom
+                                alignment: 'center',
+                                fontSize: 10,
+                            });
+                        },
                     },
                     {
                         extend: 'colvis',
                         text: '<i class="fas fa-columns"></i> Columns',
-                        titleAttr: 'Column Visibility'
-                    }
-                ]
+                        titleAttr: 'Column Visibility',
+                    },
+                ],
             });
 
             // Initialize Date Picker
