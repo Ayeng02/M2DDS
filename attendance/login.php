@@ -1,4 +1,7 @@
 <?php
+session_start();
+include '../includes/db_connect.php';
+
 // Manila, Philippine timezone
 date_default_timezone_set('Asia/Manila');
 
@@ -80,46 +83,40 @@ try {
 
         if ($employee = $result->fetch_assoc()) {
             $current_timestamp = date("Y-m-d H:i:s"); // Record current timestamp
-            $current_date = date("Y-m-d H:i:s"); // Current date
-
-            // Check if an attendance record exists for today with no time_out
-            $stmt = $conn->prepare("SELECT * FROM att_tbl WHERE emp_id = ? AND att_date = ? AND time_out IS NULL");
+            $current_date = date("Y-m-d"); // Current date in YYYY-MM-DD format
+        
+            // Check if an attendance record exists for today
+            $stmt = $conn->prepare("SELECT * FROM att_tbl WHERE emp_id = ? AND DATE(att_date) = ?");
             $stmt->bind_param("ss", $emp_id, $current_date);
             $stmt->execute();
             $attendance_result = $stmt->get_result();
-
+        
             if ($attendance_row = $attendance_result->fetch_assoc()) {
-                // Employee has already logged in today and has not logged out yet
-                $response['error'] = "You're already logged in. Please log out first.";
-            } else {
-                // Check if there is a previous record for the same day but with time_out
-                $stmt = $conn->prepare("SELECT * FROM att_tbl WHERE emp_id = ? AND att_date = ? AND time_out IS NOT NULL");
-                $stmt->bind_param("ss", $emp_id, $current_date);
-                $stmt->execute();
-                $previous_attendance = $stmt->get_result();
-
-                // Allow login if either no record exists for today, or there is a time_out
-                if ($previous_attendance->num_rows > 0 || $attendance_result->num_rows === 0) {
-                    // Insert new attendance record (time_in)
-                    $stmt = $conn->prepare("INSERT INTO att_tbl (emp_id, time_in, att_date) VALUES (?, ?, ?)");
-                    $stmt->bind_param("sss", $emp_id, $current_timestamp, $current_date);
-                    $stmt->execute();
-
-                    // Set successful response with employee details
-                    $response['success'] = true;
-                    $response['success_message'] = "Login Success";
-                    $response['image'] = $employee['emp_img'] ? '../' . $employee['emp_img'] : '../Shipper_Upload/sample1.png'; // Default image path if not set
-                    $response['name'] = $employee['emp_fname'] . ' ' . $employee['emp_lname'];
-                    $response['role'] = $employee['emp_role'];
+                if (!is_null($attendance_row['time_out'])) {
+                    // Employee has already logged out for today
+                    $response['error'] = "You have already logged in for today.";
                 } else {
-                    // Unexpected error case (shouldn't happen)
-                    $response['error'] = "Unexpected error. Please try again.";
+                    // Employee has logged in but not logged out yet
+                    $response['error'] = "You're already logged in. Please log out first.";
                 }
+            } else {
+                // Insert a new attendance record (time_in)
+                $stmt = $conn->prepare("INSERT INTO att_tbl (emp_id, time_in, att_date) VALUES (?, ?, ?)");
+                $stmt->bind_param("sss", $emp_id, $current_timestamp, $current_date);
+                $stmt->execute();
+        
+                // Set successful response with employee details
+                $response['success'] = true;
+                $response['success_message'] = "Login Success";
+                $response['image'] = $employee['emp_img'] ? '../' . $employee['emp_img'] : '../Shipper_Upload/sample1.png'; // Default image path if not set
+                $response['name'] = $employee['emp_fname'] . ' ' . $employee['emp_lname'];
+                $response['role'] = $employee['emp_role'];
             }
         } else {
             // Employee not found in emp_tbl
             $response['error'] = "Employee ID Not Found.";
         }
+        
 
         // Close statement and connection
         $stmt->close();
