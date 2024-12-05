@@ -45,13 +45,13 @@ $offset = ($current_page - 1) * $records_per_page;
 $total_pages = ceil($total_records / $records_per_page);
 
 // Query to fetch records for the current page
-$query = "SELECT ac.id, ac.emp_id, CONCAT(e.emp_fname, ' ', e.emp_lname) AS emp_name, ac.granted_date, e.emp_role,
+$CPquery = "SELECT ac.id, ac.emp_id, CONCAT(e.emp_fname, ' ', e.emp_lname) AS emp_name, ac.granted_date, e.emp_role,
                  ac.add_product, ac.edit_product, ac.add_category 
           FROM access_control ac
           JOIN emp_tbl e ON ac.emp_id = e.emp_id
           ORDER BY ac.granted_date DESC
           LIMIT $records_per_page OFFSET $offset";
-$result = mysqli_query($conn, $query);
+$CPresult = mysqli_query($conn, $CPquery);
 
 ?>
 
@@ -177,7 +177,7 @@ $result = mysqli_query($conn, $query);
                             <tbody>
                                 <?php
                                 $count = $offset + 1; // Start counting from the current offset
-                                while ($row = mysqli_fetch_assoc($result)): ?>
+                                while ($row = mysqli_fetch_assoc($CPresult)): ?>
                                     <tr>
                                         <td><?php echo $count++; ?></td> <!-- Custom Incremented ID -->
                                         <td><?php echo $row['emp_id']; ?></td>
