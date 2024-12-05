@@ -141,6 +141,9 @@
                         data.forEach(function(log) {
                             var date = new Date(log.systemlog_date);
 
+                            // Add 8 hours to the date
+                            date.setHours(date.getHours() + 8);
+
                             // Format the date into 12-hour format with AM/PM
                             var formattedDate = date.toLocaleString('en-US', {
                                 hour: '2-digit',
