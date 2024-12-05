@@ -434,7 +434,12 @@ $("#menu-toggle, #menu-toggle-top").click(function(e) {
 
 </script>
  <script>
-
+document.getElementById("toggleAddPassword").addEventListener("click", function () {
+    const addPasswordField = document.getElementById("password");
+    const type = addPasswordField.type === "password" ? "text" : "password";
+    addPasswordField.type = type;
+    this.classList.toggle("fa-eye-slash");
+});
 
     </script>
 </body>
