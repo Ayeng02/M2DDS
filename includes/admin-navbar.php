@@ -1,4 +1,6 @@
 <?php
+session_start();
+error_reporting(E_ALL & ~E_NOTICE) ;
 // Fetch notifications from the adminnotif_tbl for today only
 include '../includes/db_connect.php';
 
@@ -16,6 +18,20 @@ $Notifresult = $conn->query($Notifquery);
 
 // Get the count of 'unseen' notifications for today
 $notificationCount = $conn->query("SELECT COUNT(*) FROM adminnotif_tbl WHERE notif_status = 'unseen' AND DATE(notif_date) = '$currentDate'")->fetch_row()[0];
+
+$admin_id = $_SESSION['admin_id'];
+
+// Query to check if the admin has 'super_admin' role
+$query = "SELECT admin_role FROM admin_tbl WHERE admin_id = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("s", $admin_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$row = $result->fetch_assoc();
+
+// Check if the admin role is 'super_admin'
+$isSuperAdmin = ($row['admin_role'] == 'super_admin');
+
 ?>
 
 
@@ -101,7 +117,10 @@ $notificationCount = $conn->query("SELECT COUNT(*) FROM adminnotif_tbl WHERE not
                             <li class="dropdown-item dropdown-toggle" href="#"> <i class="fas fa-newspaper"></i> Preferences</li>
                             <ul class="dropdown-menu" style="display: none; padding-left: 20px;">
                                 <li><a class="dropdown-item" href="../admin/shopmgt.php"> <i class="fas fa-shop"></i> Shop Management</a></li>
-                                <li><a class="dropdown-item" href="../admin/DB_bUp&Restore.php"> <i class="fas fa-database"></i> Backup & Restore</a></li>
+                                 <!-- Only display Backup & Restore if the admin is super_admin -->
+                                 <?php if ($isSuperAdmin): ?>
+                                    <li><a class="dropdown-item" href="../admin/DB_bUp&Restore.php"> <i class="fas fa-database"></i> Backup & Restore</a></li>
+                                <?php endif; ?>
                             </ul>
 
                             <li class="dropdown-item dropdown-toggle" href="#"> <i class="fas fa-gear"></i> Configuration</li>
