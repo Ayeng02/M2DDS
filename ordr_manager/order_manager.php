@@ -46,7 +46,7 @@ $pendingQuery = "
     JOIN product_tbl p ON o.prod_code = p.prod_code
     JOIN brgy_tbl b ON o.order_barangay = b.Brgy_name
     WHERE o.status_code = 1 
-      AND DATE(o.order_date) = CURDATE()
+      AND DATE(CONVERT_TZ(o.order_date, 'Europe/Vilnius', 'Asia/Manila')) = DATE(CONVERT_TZ(NOW(), 'Europe/Vilnius', 'Asia/Manila'));
     ORDER BY o.order_date DESC";
 
 $pendingResult = $conn->query($pendingQuery);
