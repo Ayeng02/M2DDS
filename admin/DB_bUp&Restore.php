@@ -1,6 +1,6 @@
 <?php
 session_start();
-
+error_reporting(E_ALL & ~E_NOTICE) ;
 include '../includes/db_connect.php';
 
 $admin_id = $_SESSION['admin_id'];
@@ -85,7 +85,7 @@ $isSuperAdmin = ($row['admin_role'] == 'super_admin');
                             <p class="text-muted">
                                 You do not have the necessary permissions to perform database backup and restore actions.
                             </p>
-                            <div class="text-center">
+                            <div class="text-center" style="margin-bottom:100px;">
                                 <i class="fas fa-exclamation-circle fa-5x" style="color: crimson;"></i>
                             </div>
                         </div>
