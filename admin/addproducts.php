@@ -379,7 +379,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ];
     } else {
         // Database connection
-       
+        $conn = new mysqli('localhost', 'root', '', 'm2dds');
+        if ($conn->connect_error) {
+            die("Connection failed: " . $conn->connect_error);
+        }
 
         // Check for duplicate product name
         $stmt = $conn->prepare("SELECT COUNT(*) FROM product_tbl WHERE prod_name = ?");
@@ -478,7 +481,11 @@ ob_end_flush();
 
 <?php
     // Fetch categories from the database
-    include '../includes/db_connect.php';
+    //$conn = new mysqli('localhost', 'root', '', 'm2dds');
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+
     $categories = $conn->query("SELECT category_code, category_name FROM category_tbl");
 
     if ($categories === false) {
@@ -711,7 +718,7 @@ ob_end_flush();
                     <td contenteditable="false"><?php echo number_format($product['prod_price']); ?></td>
                     <td contenteditable="false"><?php echo number_format($product['prod_qoh']); ?></td>
                     <td contenteditable="false"><?php echo number_format($product['prod_discount']); ?></td>
-                     <td><img src="<?php echo $barcodeDataUris[$product['prod_code']]; ?>" alt="Barcode" style="width: 150px; height: auto;"></td>
+                     <td><img src="<?php echo $barcodeDataUris[$product['prod_code']]; ?>" alt="Barcode" style="width: 150px; height: 20px;"></td>
                     
                     <td>
                         <a href="#" class="edit-icon" data-bs-toggle="modal" data-bs-target="#editModal"
@@ -730,7 +737,7 @@ ob_end_flush();
                             data-code="<?php echo htmlspecialchars($product['prod_code']); ?>"
                             data-name="<?php echo htmlspecialchars($product['prod_name']); ?>"
                             data-barcode="<?php echo $barcodeDataUris[$product['prod_code']]; ?>"
-                            onclick="printProductDetails(
+                            onclick="openPrintModal(
                                 '<?php echo htmlspecialchars($product['prod_code']); ?>',
                                 '<?php echo htmlspecialchars($product['prod_name']); ?>',
                                 '<?php echo $barcodeDataUris[$product['prod_code']]; ?>'
@@ -824,6 +831,26 @@ ob_end_flush();
         </div>
     </div>
 </div>
+<!-- Modal for printing options -->
+<div class="modal fade" id="printModal" tabindex="-1" aria-labelledby="printModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="printModalLabel">Select Number of Copies</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label for="copyCount">How many copies can be printed on one page?</label>
+                <input type="number" id="copyCount" class="form-control" min="1" placeholder="Enter number of copies" required>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="printConfirmButton">Print</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 
 
@@ -974,26 +1001,83 @@ $("#menu-toggle, #menu-toggle-top").click(function(e) {
             }
         };
     });
+
+   // Function to open the print modal and store the product data
+function openPrintModal(prodCode, prodName, barcode) {
+    // Store the product data globally to use when printing
+    window.selectedProduct = {
+        prodCode: prodCode,
+        prodName: prodName,
+        barcode: barcode
+    };
+
+    // Open the modal
+    const printModal = new bootstrap.Modal(document.getElementById('printModal'));
+    printModal.show();
+}
+
+// Event listener for the "Print" button in the modal
+document.getElementById('printConfirmButton').addEventListener('click', function () {
+    const copyCount = document.getElementById('copyCount').value;
+
+    // Validate input
+    if (copyCount < 1 || isNaN(copyCount)) {
+        alert("Please enter a valid number of copies.");
+        return;
+    }
+
+    // Call the print function with the selected product data and the number of copies
+    printProductDetails(
+        window.selectedProduct.prodCode,
+        window.selectedProduct.prodName,
+        window.selectedProduct.barcode,
+        copyCount
+    );
+
+    // Close the modal after printing
+    const printModal = bootstrap.Modal.getInstance(document.getElementById('printModal'));
+    printModal.hide();
+});
+ 
+
     //print barcode
-function printProductDetails(code, name, barcodeDataUri) {
-            const printWindow = window.open('', '', 'height=600,width=800');
-            printWindow.document.write('<html><head><title>Print Product Details</title>');
-            printWindow.document.write('<style>body { font-family: Arial, sans-serif; margin: 20px; } .container { max-width: 500px; margin: auto; } img { max-width: 100%; height: auto; } h1 { font-size: 20px; } p { margin: 10px 0; }</style>');
-            printWindow.document.write('</head><body >');
-            printWindow.document.write('<div class="container">');
-            printWindow.document.write('<h1>Product Details</h1>');
-            printWindow.document.write('<p>' + name + '</p>');
-            
-            printWindow.document.write('<img src="' + barcodeDataUri + '" alt="Barcode">');
-            
-            printWindow.document.write(' <p style="letter-spacing: 18px; margin-top: -0.4px; color: #0000007e;">' + code + ' </p>');
-            printWindow.document.write('</div>');
-            printWindow.document.write('</body></html>');
-            printWindow.document.close();
-            
-            printWindow.focus();
-            printWindow.print();
-        }
+function printProductDetails(code, name, barcodeDataUri, copyCount) {
+    const printWindow = window.open('', '', 'height=600,width=800');
+
+    printWindow.document.write('<html><head><title>Print Product Details</title>');
+    printWindow.document.write('<style>');
+    printWindow.document.write('body { font-family: Arial, sans-serif; margin: 20px; } .container { max-width: 500px; margin: auto; } img { max-width: 100%; height: auto; } h1 { font-size: 20px; } p { margin: 10px 0; }');
+    printWindow.document.write('.container { max-width: 500px; margin: auto; }');
+    printWindow.document.write('.barcode { margin-bottom: 20px; text-align: center; }');
+    printWindow.document.write('.product-code { letter-spacing: 18px; margin-top: -0.4px; color: #0000007e; }');
+    printWindow.document.write('</style>');
+    printWindow.document.write('</head><body>');
+    
+    printWindow.document.write('<div class="container">');
+    printWindow.document.write('<h1>Product Details</h1>');
+    printWindow.document.write('<p>' + name + '</p>');
+
+    // Print the barcode multiple times based on copy count
+    for (let i = 0; i < copyCount; i++) {
+        printWindow.document.write('<div class="barcode">');
+        printWindow.document.write('<img src="' + barcodeDataUri + '" alt="Barcode" style="width: 220px; height: 20px;">');
+         printWindow.document.write(' <p style="letter-spacing: 5px; margin-top: -0.4px; color: #0000007e;">' + code + ' </p>');
+        printWindow.document.write('</div>');
+    }
+
+    printWindow.document.write('</div>');
+    printWindow.document.write('</body></html>');
+    
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+   // Close the modal after the print window is opened
+    setTimeout(function() {
+        const printModal = bootstrap.Modal.getInstance(document.getElementById('printModal'));
+        printModal.hide();
+    }, 500);
+}
+
 //print all barcode 
 
         function printAllCategories() {
@@ -1007,8 +1091,8 @@ function printProductDetails(code, name, barcodeDataUri) {
             products.forEach(product => {
                 const barcodeDataUri = <?php echo json_encode($barcodeDataUris); ?>[product['prod_code']];
                 content += '<p>' + product['prod_name'] + '</p>';
-                content += '<img src="' + barcodeDataUri + '" alt="Barcode">';
-                content += '<p style="letter-spacing: 18px; margin-top: -0.4px; color: #0000007e;">' +  product['prod_code'] + ' </p>';
+                content += '<img src="' + barcodeDataUri + '" alt="Barcode" style="width: 220px; height: 20px;">';
+                content += '<p style="letter-spacing: 5px; margin-top: -0.4px; color: #0000007e;">' +  product['prod_code'] + ' </p>';
                 
             });
             content += '</div>';
