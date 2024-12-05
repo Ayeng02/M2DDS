@@ -28,34 +28,27 @@ if ($_FILES['backupFile']['error'] === UPLOAD_ERR_OK) {
         // Skip empty queries
         if (empty($query)) continue;
 
-        // Ignore `CREATE TABLE` statements if the table already exists
+        // Check for CREATE TABLE statements
         if (stripos($query, 'CREATE TABLE') === 0) {
-            preg_match("/CREATE TABLE IF NOT EXISTS `([^`]+)`/i", $query, $matches);
-            $tableName = $matches[1] ?? null;
-
-            // If `IF NOT EXISTS` is not in the query, add it
-            if ($tableName && !stripos($query, 'IF NOT EXISTS')) {
-                $query = str_replace(
-                    "CREATE TABLE `$tableName`",
-                    "CREATE TABLE IF NOT EXISTS `$tableName`",
+            // Add IF NOT EXISTS to CREATE TABLE statements
+            if (!stripos($query, 'IF NOT EXISTS')) {
+                $query = preg_replace(
+                    "/CREATE TABLE (`?[^` ]+`?)/i",
+                    "CREATE TABLE IF NOT EXISTS $1",
                     $query
                 );
             }
         }
 
-        // Handle INSERT INTO queries with ON DUPLICATE KEY UPDATE
-        if (stripos($query, 'INSERT INTO') === 0) {
-            $query = preg_replace(
-                "/INSERT INTO (`[^`]+`)/i",
-                "INSERT INTO $1 ON DUPLICATE KEY UPDATE ",
-                $query
-            );
-            $query .= " id = VALUES(id)";
-        }
-
-        // Execute the query
-        if (!$connection->query($query)) {
-            echo "Error: " . $connection->error . "\nQuery: " . $query . "<br>";
+        try {
+            // Execute the query
+            if (!$connection->query($query)) {
+                // Log the error and continue
+                echo "Query error: " . $connection->error . " for query: " . $query . "<br>";
+            }
+        } catch (mysqli_sql_exception $e) {
+            // Log the error and continue
+            echo "Error: " . $e->getMessage() . " for query: " . $query . "<br>";
         }
     }
 
