@@ -11,7 +11,7 @@ if (isset($_GET['cust_id'])) {
         while ($row = $result->fetch_assoc()) {
             $sender = htmlspecialchars($row['sender']);
             $message = htmlspecialchars($row['message']);
-            $timestamp = date('F j, Y h:i A', strtotime($row['timestamp'])); // Format timestamp
+            $timestamp = date('F j, Y h:i A', strtotime('+5 hours', strtotime($row['timestamp'])));// Format timestamp
 
             if ($sender == 'customer') {
                 echo "<div class='message-user'>
