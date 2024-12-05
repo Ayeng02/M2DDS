@@ -1,5 +1,6 @@
 <?php
 session_start();
+error_reporting(E_ALL & ~E_NOTICE) ;
 include '../includes/db_connect.php';
 
 // Redirect to landing page if already logged in
