@@ -1,4 +1,5 @@
 <?php
+session_start();
 include '../includes/db_connect.php';
 
 // Fetch Active Employees from emp_tbl
