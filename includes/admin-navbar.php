@@ -86,7 +86,8 @@ $notificationCount = $conn->query("SELECT COUNT(*) FROM adminnotif_tbl WHERE not
                                     <p class="dropdown-item text-center text-muted">No notifications</p>
                                 <?php endif; ?>
                                 <div class="dropdown-divider"></div>
-                                <a href="all_notifications.php" class="dropdown-item text-center text-primary">See all notifications</a>
+                                <!--
+                                <a href="all_notifications.php" class="dropdown-item text-center text-primary">See all notifications</a> -->
                             </div>
                         </div>
                     </li>
@@ -100,6 +101,7 @@ $notificationCount = $conn->query("SELECT COUNT(*) FROM adminnotif_tbl WHERE not
                             <li class="dropdown-item dropdown-toggle" href="#"> <i class="fas fa-newspaper"></i> Preferences</li>
                             <ul class="dropdown-menu" style="display: none; padding-left: 20px;">
                                 <li><a class="dropdown-item" href="../admin/shopmgt.php"> <i class="fas fa-shop"></i> Shop Management</a></li>
+                                <li><a class="dropdown-item" href="../admin/DB_bUp&Restore.php"> <i class="fas fa-database"></i> Backup & Restore</a></li>
                             </ul>
 
                             <li class="dropdown-item dropdown-toggle" href="#"> <i class="fas fa-gear"></i> Configuration</li>
