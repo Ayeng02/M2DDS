@@ -138,7 +138,6 @@ document.getElementById('backupBtn').addEventListener('click', function () {
 
 
 
-    // Restore Button Action
 // Restore Button Action
 document.getElementById('restoreBtn').addEventListener('click', function () {
     Swal.fire({
@@ -146,7 +145,7 @@ document.getElementById('restoreBtn').addEventListener('click', function () {
         text: 'This will overwrite the current database. Proceed with caution.',
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonText: 'Yes',
+        confirmButtonText: 'Yes, Restore',
         cancelButtonText: 'Cancel',
         confirmButtonColor: '#ffc107',
         cancelButtonColor: '#d33'
@@ -161,6 +160,17 @@ document.getElementById('restoreBtn').addEventListener('click', function () {
                 let formData = new FormData();
                 formData.append('backupFile', fileInput.files[0]);
 
+                Swal.fire({
+                    title: 'Restoring Database',
+                    text: 'Please wait while the restore is in progress...',
+                    icon: 'info',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
                 // Send the backup file to the server for restoring
                 fetch('restore.php', {
                     method: 'POST',
@@ -168,9 +178,17 @@ document.getElementById('restoreBtn').addEventListener('click', function () {
                 })
                 .then(response => response.text())
                 .then(data => {
-                    Swal.fire('Restored!', data, 'success');
+                    // Close the loading state and display the result
+                    Swal.close();
+
+                    if (data.includes('Database restore complete')) {
+                        Swal.fire('Restored!', data, 'success');
+                    } else {
+                        Swal.fire('Error!', 'Some issues occurred:\n' + data, 'error');
+                    }
                 })
                 .catch(error => {
+                    // Handle fetch errors
                     Swal.fire('Error!', 'Something went wrong while restoring the database.', 'error');
                 });
             };
