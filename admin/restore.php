@@ -28,20 +28,34 @@ if ($_FILES['backupFile']['error'] === UPLOAD_ERR_OK) {
         // Skip empty queries
         if (empty($query)) continue;
 
+        // Ignore `CREATE TABLE` statements if the table already exists
+        if (stripos($query, 'CREATE TABLE') === 0) {
+            preg_match("/CREATE TABLE IF NOT EXISTS `([^`]+)`/i", $query, $matches);
+            $tableName = $matches[1] ?? null;
+
+            // If `IF NOT EXISTS` is not in the query, add it
+            if ($tableName && !stripos($query, 'IF NOT EXISTS')) {
+                $query = str_replace(
+                    "CREATE TABLE `$tableName`",
+                    "CREATE TABLE IF NOT EXISTS `$tableName`",
+                    $query
+                );
+            }
+        }
+
         // Handle INSERT INTO queries with ON DUPLICATE KEY UPDATE
         if (stripos($query, 'INSERT INTO') === 0) {
-            // Convert the query to handle duplicates
             $query = preg_replace(
                 "/INSERT INTO (`[^`]+`)/i",
                 "INSERT INTO $1 ON DUPLICATE KEY UPDATE ",
                 $query
             );
-            $query .= " id = VALUES(id)"; // Example for updating primary key
+            $query .= " id = VALUES(id)";
         }
 
         // Execute the query
         if (!$connection->query($query)) {
-            echo "Error: " . $connection->error . "\nQuery: " . $query;
+            echo "Error: " . $connection->error . "\nQuery: " . $query . "<br>";
         }
     }
 
