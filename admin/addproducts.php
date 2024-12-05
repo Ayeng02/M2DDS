@@ -706,7 +706,7 @@ ob_end_flush();
                     <td><?php echo htmlspecialchars($product['prod_code']); ?></td>
                     <td contenteditable="false"><?php echo htmlspecialchars($product['category_name']); ?></td>
                     <td>
-                        <img src="../<?php echo htmlspecialchars($product['prod_img']); ?>" alt="Product Image" style="width: 120px; height: 50px;">
+                        <img src="../<?php echo htmlspecialchars($product['prod_img']); ?>" alt="Product Image" style="width: 70px; height: 70px;">
                     </td>
                     <td contenteditable="false"><?php echo htmlspecialchars($product['prod_name']); ?></td>
                     <td contenteditable="false"><?php echo number_format($product['prod_price']); ?></td>
