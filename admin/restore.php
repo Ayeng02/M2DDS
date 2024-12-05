@@ -10,20 +10,27 @@ $connection = new mysqli($host, $user, $password, $dbname);
 
 // Check the connection
 if ($connection->connect_error) {
-    die(json_encode(["status" => "error", "message" => "Connection failed: " . $connection->connect_error]));
+    die("Connection failed: " . $connection->connect_error);
 }
 
 // Check if a file is uploaded
 if ($_FILES['backupFile']['error'] === UPLOAD_ERR_OK) {
+    // Read the uploaded SQL file
     $fileContent = file_get_contents($_FILES['backupFile']['tmp_name']);
-    $queries = explode(";\n", $fileContent);
-    $success = true;
 
+    // Split the SQL file into individual queries
+    $queries = explode(";\n", $fileContent);
+
+    // Loop through each query and execute it
     foreach ($queries as $query) {
         $query = trim($query);
+
+        // Skip empty queries
         if (empty($query)) continue;
 
+        // Check for CREATE TABLE statements
         if (stripos($query, 'CREATE TABLE') === 0) {
+            // Add IF NOT EXISTS to CREATE TABLE statements
             if (!stripos($query, 'IF NOT EXISTS')) {
                 $query = preg_replace(
                     "/CREATE TABLE (`?[^` ]+`?)/i",
@@ -34,22 +41,26 @@ if ($_FILES['backupFile']['error'] === UPLOAD_ERR_OK) {
         }
 
         try {
+            // Execute the query
             if (!$connection->query($query)) {
+                // Log the error only if it's not an "already exists" error
                 if (stripos($connection->error, 'already exists') === false) {
-                    $success = false;
+                    echo "Query error: " . $connection->error . " for query: " . htmlspecialchars($query) . "<br>";
                 }
             }
         } catch (mysqli_sql_exception $e) {
+            // Log the error only if it's not an "already exists" error
             if (stripos($e->getMessage(), 'already exists') === false) {
-                $success = false;
+                echo "Error: " . htmlspecialchars($e->getMessage()) . " for query: " . htmlspecialchars($query) . "<br>";
             }
         }
     }
 
-    echo json_encode(["status" => $success ? "success" : "error", "message" => $success ? "Database restored successfully." : "Some queries failed during restore."]);
+    echo "Database restore complete!";
 } else {
-    echo json_encode(["status" => "error", "message" => "Error uploading file: " . $_FILES['backupFile']['error']]);
+    echo "Error uploading file: " . $_FILES['backupFile']['error'];
 }
 
+// Close the connection
 $connection->close();
 ?>
