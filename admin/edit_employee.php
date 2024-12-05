@@ -20,6 +20,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Initialize an empty variable for the image path
     $image_path = null;
 
+    // Check for duplicate full name
+$sql = "SELECT emp_id FROM emp_tbl WHERE emp_fname = ? AND emp_lname = ? AND emp_id != ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param('sss', $emp_fname, $emp_lname, $emp_id);
+$stmt->execute();
+$stmt->store_result();
+
+if ($stmt->num_rows > 0) {
+    // Set alert data in session for duplicate full name
+    $_SESSION['alert'] = [
+        'icon' => 'error',
+        'title' => "Employee with the same full name already exists. Please use a different name."
+    ];
+    // Redirect to the addEmployee.php page
+    header("Location: addEmployee.php?alert=1");
+    exit; 
+}
+
   // Check for duplicate product name
   $sql = "SELECT emp_id FROM emp_tbl WHERE emp_email = ? AND emp_id != ?";
   $stmt = $conn->prepare($sql);
@@ -51,7 +69,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Move the uploaded file to the target directory
         if (!move_uploaded_file($image_file['tmp_name'], $image_path)) {
-            $_SESSION['error'] = "Error uploading image.";
+            $_SESSION['alert'] = [
+             'icon' => 'error',
+             'title' => "Employee email already exists. Please choose a different name."];
             header("Location: addEmployee.php");
             exit();
         }

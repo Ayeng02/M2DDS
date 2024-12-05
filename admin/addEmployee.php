@@ -408,6 +408,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $emp_role = trim($_POST['emp_role']);
     $emp_pass = $_POST['emp_pass'];
     $emp_img = $_FILES['emp_img'];
+    
 
     // Validate input fields
     if (!empty($emp_fname) && !empty($emp_lname) && !empty($emp_email) && !empty($emp_num) && !empty($emp_address) && !empty($emp_role) && !empty($emp_pass) && !empty($emp_img['name'])) {
@@ -443,8 +444,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                         $stmt->bind_param("ssssssss", $emp_fname, $emp_lname, $emp_email, $emp_num, $emp_address, $emp_role, $hashed_pass, $relative_path_to_store);
 
                                         if ($stmt->execute()) {
-
-                                            // Insert into system log
+                                           
+                                           // Insert into system log
                                             $user_id = $_SESSION['admin_id']; 
                                             $action = "Added new employee: " . $emp_fname . " " . $emp_lname;
 
@@ -485,43 +486,81 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                                     <h3>Welcome, {$emp_fname} {$emp_lname}</h3>
                                                     <p>Your account has been created. Here are your credentials:</p>
                                                     <ul>
+                                                        <li><strong>Employee ID:</strong> {$emp_id}</li>
                                                         <li><strong>Email:</strong> {$emp_email}</li>
                                                         <li><strong>Password:</strong> {$emp_pass}</li>
                                                     </ul>
                                                     <p>Please change your password after logging in for the first time.</p>
+                                                    <p>Our login page is here: https://meat-to-door.shop/login.php</p>
                                                     <p>Regards,<br>Melos's Meatshop</p>";
                                                 
                                                 $mail->send();
                                                 echo 'Message has been sent';
                                             } catch (Exception $e) {
-                                                echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+                                                 $_SESSION['alert'] = [
+                                                        'icon' => 'error',
+                                                        'title' =>  "Message could not be sent. Mailer Error: {$mail->ErrorInfo}"
+                                                    ];
+                                               
                                             }
                                             $success = true;
                                         } else {
                                             $error = 'Database error: ' . htmlspecialchars($stmt->error);
+                                             $_SESSION['alert'] = [
+                                                        'icon' => 'error',
+                                                        'title' =>  'Database error: ' . htmlspecialchars($stmt->error)
+                                                    ];
                                         }
                                         $stmt->close();
                                     }
                                 } else {
                                     $error = 'Failed to upload image.';
+                                     $_SESSION['alert'] = [
+                                                        'icon' => 'error',
+                                                        'title' =>  'Failed to upload image.'
+                                                    ];
                                 }
                             } else {
                                 $error = 'Email already exists.';
+                                 $_SESSION['alert'] = [
+                                        'icon' => 'error',
+                                        'title' =>  'Email already exists.'
+                                                    ];
                             }
                         } else {
                             $error = 'Contact number must be numeric and up to 11 digits.';
+                             $_SESSION['alert'] = [
+                                        'icon' => 'error',
+                                        'title' =>  'Contact number must be numeric and up to 11 digits.'
+                                                    ];
                         }
                     } else {
                         $error = 'Address format is invalid.';
+                         $_SESSION['alert'] = [
+                                    'icon' => 'error',
+                                    'title' =>  'Address format is invalid.'
+                                                    ];
                     }
                 } else {
                     $error = 'Phone number must be in Philippine cellular format (09xxxxxxxxx).';
+                      $_SESSION['alert'] = [
+                                'icon' => 'error',
+                                'title' =>  'Phone number must be in Philippine cellular format (09xxxxxxxxx).'
+                                   ];
                 }
             } else {
                 $error = 'Invalid email format.';
+                $_SESSION['alert'] = [
+                           'icon' => 'error',
+                           'title' =>  'Invalid email format.'
+                           ];
             }
         } else {
             $error = 'First name and last name must start with a capital letter and contain only letters.';
+            $_SESSION['alert'] = [
+                           'icon' => 'error',
+                           'title' =>  'First name and last name must start with a capital letter and contain only letters.'
+                           ];
         }
     } else {
         $error = 'All fields are required.';

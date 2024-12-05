@@ -1,6 +1,4 @@
 <?php
-session_start();
-error_reporting(E_ALL & ~E_NOTICE);
 // Fetch notifications from the adminnotif_tbl for today only
 include '../includes/db_connect.php';
 
@@ -139,7 +137,7 @@ $isSuperAdmin = ($row['admin_role'] == 'super_admin');
 
                     <!-- Profile and Logout Links -->
                     <li class="nav-item">
-                        <a class="nav-link" href="#profile"><i class="fas fa-user"></i></a>
+                        <a class="nav-link" href="../admin/admin_profile.php"><i class="fas fa-user"></i></a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
