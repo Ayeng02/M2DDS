@@ -31,7 +31,7 @@ if ($result->num_rows > 0) {
                 <td>{$row['prod_code']}</td>
                 <td contenteditable='true'>{$row['category_name']}</td>
                 <td>
-                    <img src='../" . htmlspecialchars($row['prod_img']) . "' alt='Product Image' style='width: 120px; height: 50px;'>
+                    <img src='../" . htmlspecialchars($row['prod_img']) . "' alt='Product Image' style='width: 70px; height: 70px;'>
                 </td>
                 <td contenteditable='true'>{$row['prod_name']}</td>
                 <td contenteditable='true'>" . number_format($row['prod_price']) . "</td>
