@@ -1,6 +1,8 @@
 <?php
 session_start();
 
+include '../includes/db_connect.php';
+
 $admin_id = $_SESSION['admin_id'];
 
 // Query to check if the admin has 'super_admin' role
