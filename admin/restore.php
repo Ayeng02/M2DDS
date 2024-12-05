@@ -43,12 +43,16 @@ if ($_FILES['backupFile']['error'] === UPLOAD_ERR_OK) {
         try {
             // Execute the query
             if (!$connection->query($query)) {
-                // Log the error and continue
-                echo "Query error: " . $connection->error . " for query: " . $query . "<br>";
+                // Skip specific errors for already existing tables
+                if (stripos($connection->error, 'already exists') === false) {
+                    echo "Query error: " . $connection->error . " for query: " . htmlspecialchars($query) . "<br>";
+                }
             }
         } catch (mysqli_sql_exception $e) {
-            // Log the error and continue
-            echo "Error: " . $e->getMessage() . " for query: " . $query . "<br>";
+            // Skip errors for already existing tables
+            if (stripos($e->getMessage(), 'already exists') === false) {
+                echo "Error: " . htmlspecialchars($e->getMessage()) . " for query: " . htmlspecialchars($query) . "<br>";
+            }
         }
     }
 
