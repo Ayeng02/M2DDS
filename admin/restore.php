@@ -40,21 +40,22 @@ if ($_FILES['backupFile']['error'] === UPLOAD_ERR_OK) {
             }
         }
 
+        // Modify INSERT INTO queries to IGNORE duplicates
+        if (stripos($query, 'INSERT INTO') === 0) {
+            $query = preg_replace(
+                "/^INSERT INTO/i",
+                "INSERT IGNORE INTO",
+                $query
+            );
+        }
+
         try {
             // Execute the query
-            if (!$connection->query($query)) {
-                // Suppress errors for "already exists" cases
-                $error = strtolower($connection->error);
-                if (strpos($error, 'already exists') === false) {
-                    echo "Query error: " . $connection->error . " for query: " . htmlspecialchars($query) . "<br>";
-                }
-            }
+            $connection->query($query);
         } catch (mysqli_sql_exception $e) {
-            // Suppress errors for "already exists" cases
-            $error = strtolower($e->getMessage());
-            if (strpos($error, 'already exists') === false) {
-                echo "Error: " . htmlspecialchars($e->getMessage()) . " for query: " . htmlspecialchars($query) . "<br>";
-            }
+            // Log errors silently and continue
+            // Optional: log the error to a file instead of displaying it
+            error_log("Error executing query: " . $e->getMessage() . "\n", 3, "restore_errors.log");
         }
     }
 
