@@ -14,7 +14,7 @@ while ($row = $result->fetch_assoc()) {
     $messages[] = [
         'message' => $row['message'],
         'sender' => $row['sender'],
-        'timestamp' => $row['timestamp']
+        'timestamp' => date('F j, Y h:i A', strtotime('+8 hours', strtotime($row['timestamp'])))
     ];
 }
 
