@@ -23,7 +23,7 @@ $admin_id = $_SESSION['admin_id'];
 // Query to check if the admin has 'super_admin' role
 $query = "SELECT admin_role FROM admin_tbl WHERE admin_id = ?";
 $stmt = $conn->prepare($query);
-$stmt->bind_param("s", $admin_id);
+$stmt->bind_param("i", $admin_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $row = $result->fetch_assoc();
