@@ -264,6 +264,7 @@ if ($shop_vid_result && $shop_vid_result->num_rows > 0) {
 
             <!-- Special Offers -->
             <div class="col-lg-6">
+                <!--
                 <h3>Special Offers</h3>
                 <div class="card-deck">
                     <div class="card">
@@ -291,6 +292,7 @@ if ($shop_vid_result && $shop_vid_result->num_rows > 0) {
                         </div>
                     </div>
                 </div>
+                -->
             </div>
         </div>
 
