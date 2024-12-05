@@ -177,7 +177,7 @@ if (mysqli_num_rows($transactResult) > 0) {
     <title>Order Manager</title>
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
 
     <!-- Font Awesome -->
@@ -235,42 +235,6 @@ if (mysqli_num_rows($transactResult) > 0) {
         .product-img+span {
             font-size: 14px;
             line-height: 1.5;
-        }
-        .status-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .accBtn,
-        .shipBtn,
-        .trackBtn {
-            background-color: #FF8225;
-            color: white;
-            transition: background-color 0.3s ease-in-out;
-            border: none;
-        }
-
-        .printAllBtn {
-            background-color: #ec4242;
-            color: white;
-            transition: background-color 0.3s ease-in-out;
-            border: none;
-        }
-
-        .printAllBtn:hover {
-            background-color: #c12e2e;
-            color: white;
-
-        }
-
-        .accBtn:hover,
-        .shipBtn:hover,
-        .trackBtn:hover {
-            background-color: #c12e2e;
-            color: white;
         }
     </style>
 
