@@ -378,12 +378,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'title' => 'The image size should not exceed 5MB.'
         ];
     } else {
-        // Database connection
-        $conn = new mysqli('localhost', 'root', '', 'm2dds');
-        if ($conn->connect_error) {
-            die("Connection failed: " . $conn->connect_error);
-        }
-
         // Check for duplicate product name
         $stmt = $conn->prepare("SELECT COUNT(*) FROM product_tbl WHERE prod_name = ?");
         $stmt->bind_param('s', $prod_name);
