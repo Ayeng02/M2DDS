@@ -106,7 +106,12 @@ document.getElementById('searchForm').addEventListener('submit', function (event
         });
 
         // Focus on the productCode field for the next scan
+        document.getElementById('productCode').value = '';
+        document.getElementById('productName').value = '';
+        document.getElementById('productPrice').value = '';
+        document.getElementById('itemStocks').value = '';
         document.getElementById('productCode').focus();
+
       }
     })
     .catch(error => {
