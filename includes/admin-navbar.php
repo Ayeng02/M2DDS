@@ -28,6 +28,11 @@ $stmt->execute();
 $result = $stmt->get_result();
 $row = $result->fetch_assoc();
 
+
+// Debug: print the role to check if it's fetched correctly
+var_dump($row['admin_role']); // Remove this in production
+
+
 // Check if the admin role is 'super_admin'
 $isSuperAdmin = ($row['admin_role'] === 'super_admin');
 
