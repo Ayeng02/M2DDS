@@ -23,12 +23,15 @@
 
     <style>
         /* Custom styles for the table */
-        .table th, .table td {
-            vertical-align: middle; /* Center align the content */
+        .table th,
+        .table td {
+            vertical-align: middle;
+            /* Center align the content */
         }
 
         .table-hover tbody tr:hover {
-            background-color: #f8f9fa; /* Light gray background on hover */
+            background-color: #f8f9fa;
+            /* Light gray background on hover */
         }
 
         .table-wrapper {
@@ -40,15 +43,14 @@
         }
 
         .loading {
-            display: none; /* Initially hide the loader */
+            display: none;
+            /* Initially hide the loader */
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             font-size: 24px;
         }
-
-        
     </style>
 </head>
 
@@ -62,7 +64,7 @@
                 <div class="content-header">
                     <h3 class="mt-4" id="dashboard">System Logs</h3>
                 </div>
-                
+
                 <div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading logs...</div>
 
                 <div class="table-wrapper">
@@ -117,7 +119,7 @@
     <script src="https://cdn.datatables.net/2.1.6/js/dataTables.bootstrap5.js"></script>
 
     <script>
-          $(document).ready(function() {
+        $(document).ready(function() {
             // Show loading spinner
             $('.loading').show();
 
@@ -137,13 +139,26 @@
                     } else {
                         // Populate the DataTable with logs
                         data.forEach(function(log) {
+                            var date = new Date(log.systemlog_date);
+
+                            // Format the date into 12-hour format with AM/PM
+                            var formattedDate = date.toLocaleString('en-US', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                second: '2-digit',
+                                hour12: true, // 12-hour format
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            });
+
                             var row = '<tr>' +
                                 '<td>' + log.id + '</td>' +
                                 '<td>' + log.user_id + '</td>' +
                                 '<td>' + log.user_name + '</td>' +
                                 '<td>' + log.user_type + '</td>' +
                                 '<td>' + log.systemlog_action + '</td>' +
-                                '<td>' + new Date(log.systemlog_date).toLocaleString() + '</td>' +
+                                '<td>' + formattedDate + '</td>' +
                                 '</tr>';
                             tableBody.append(row);
                         });
@@ -210,7 +225,6 @@
                 $('.loading').hide();
             }
         });
-
     </script>
 </body>
 
