@@ -16,7 +16,7 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                 exit;
             case 'Order Manager':
                 header("Location: ../ordr_manager/order_manager.php");
-                exit;    
+                exit;
             default:
                 // Handle unknown roles or add default redirection if needed
                 break;
@@ -319,48 +319,29 @@ if ($result1->num_rows > 0) {
             $('input[name="emp_status"]').change(function() {
                 var newStatus = $(this).val(); // Get the selected status
 
-                // Show a confirmation dialog before updating
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: `Do you want to update the status to "${newStatus}"?`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes',
-                    cancelButtonText: 'Cancel',
-                    reverseButtons: true
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Proceed with the AJAX request if confirmed
-                        $.ajax({
-                            url: '', // Current PHP script
-                            type: 'POST',
-                            data: {
-                                emp_status: newStatus
-                            },
-                            success: function(response) {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Status Updated',
-                                    text: response,
-                                    timer: 1500,
-                                    showConfirmButton: false
-                                });
-                            },
-                            error: function() {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Update Failed',
-                                    text: 'Error updating status.',
-                                    timer: 1500,
-                                    showConfirmButton: false
-                                });
-                            }
-                        });
-                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+                // Immediately proceed with the AJAX request
+                $.ajax({
+                    url: '', // Current PHP script
+                    type: 'POST',
+                    data: {
+                        emp_status: newStatus
+                    },
+                    success: function(response) {
+                        // Show success message
                         Swal.fire({
-                            icon: 'info',
-                            title: 'Cancelled',
-                            text: 'Status update was cancelled.',
+                            icon: 'success',
+                            title: 'Status Updated',
+                            text: response,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    },
+                    error: function() {
+                        // Show error message if update fails
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Update Failed',
+                            text: 'Error updating status.',
                             timer: 1500,
                             showConfirmButton: false
                         });
@@ -388,7 +369,6 @@ if ($result1->num_rows > 0) {
             });
         }
 
-        
         document.addEventListener('DOMContentLoaded', function() {
             const activeSwitch = document.getElementById('activeSwitch');
             const shippedSwitch = document.getElementById('shippedSwitch');
@@ -407,7 +387,6 @@ if ($result1->num_rows > 0) {
             shippedSwitch.addEventListener('change', updateSwitchColor);
             updateSwitchColor(); // Initial load
         });
-
     </script>
 </body>
 
