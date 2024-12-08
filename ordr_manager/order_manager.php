@@ -46,7 +46,7 @@ $pendingQuery = "
     JOIN product_tbl p ON o.prod_code = p.prod_code
     JOIN brgy_tbl b ON o.order_barangay = b.Brgy_name
     WHERE o.status_code = 1 
-      AND DATE(o.order_date) = DATE(DATE_ADD(NOW(), INTERVAL 5 HOUR))
+      AND DATE(o.order_date) = DATE(DATE_ADD(NOW(), INTERVAL 8 HOUR))
     ORDER BY o.order_date DESC";
 
 $pendingResult = $conn->query($pendingQuery);
@@ -67,7 +67,7 @@ $processingQuery = "
     JOIN product_tbl p ON o.prod_code = p.prod_code
     JOIN brgy_tbl b ON o.order_barangay = b.Brgy_name
     WHERE o.status_code = 2 
-      AND DATE(o.order_date) = DATE(DATE_ADD(NOW(), INTERVAL 5 HOUR))
+      AND DATE(o.order_date) = DATE(DATE_ADD(NOW(), INTERVAL 8 HOUR))
     ORDER BY o.order_date DESC";
 
 $processingResult = $conn->query($processingQuery);
