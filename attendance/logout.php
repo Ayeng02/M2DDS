@@ -32,7 +32,7 @@ try {
         $current_time_str = $current_time->format('H:i:s'); // Get current time in HH:MM:SS format
 
         // Retrieve logout window from AttendSched_tbl
-        $stmt = $conn->prepare("SELECT pm_logout_start, pm_logout_end FROM attendSched_tbl");
+        $stmt = $conn->prepare("SELECT pm_logout_start, pm_logout_end FROM attendsched_tbl");
         $stmt->execute();
         $result = $stmt->get_result();
 
