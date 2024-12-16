@@ -120,6 +120,7 @@ $isSuperAdmin = ($row['admin_role'] == 'super_admin');
                                  <?php if ($isSuperAdmin): ?>
                                     <li><a class="dropdown-item" href="../admin/DB_bUp&Restore.php"> <i class="fas fa-database"></i> Backup & Restore</a></li>
                                 <?php endif; ?>
+                                <li><a class="dropdown-item" href="../admin/loginAttempt.php"> <i class="fas fa-sign-in-alt"></i> Login Attempts</a></li>
                             </ul>
 
                             <li class="dropdown-item dropdown-toggle" href="#"> <i class="fas fa-gear"></i> Configuration</li>
