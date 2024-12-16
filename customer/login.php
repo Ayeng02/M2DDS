@@ -7,38 +7,84 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
     exit();
 }
 
-
 // Database connection
 include '../includes/db_connect.php';
+
+// Constants
+const MAX_ATTEMPTS = 5;
+const BAN_DURATION = 86400; // 1 day in seconds
 
 // Handle form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    // Prepare and execute query
-    $stmt = $conn->prepare("SELECT cust_id, cust_pass FROM customers WHERE email = ?");
+    // Check login attempts
+    $stmt = $conn->prepare("SELECT failed_attempts, last_failed FROM login_attempts WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
-    $stmt->bind_result($user_id, $hashed_password);
+    $stmt->bind_result($failed_attempts, $last_failed);
     $stmt->fetch();
     $stmt->close();
 
-    // Validate password
-    if ($user_id && password_verify($password, $hashed_password)) {
-        // Regenerate session ID to prevent session fixation attacks
-        session_regenerate_id(true);
-
-        // Set session variables
-        $_SESSION['loggedin'] = true;
-        $_SESSION['email'] = $email;
-        $_SESSION['cust_id'] = $user_id;
-
-        // Redirect to dashboard or landing page
-        header('Location: customerLandingPage.php');
-        exit();
+    $current_time = time();
+    
+    // Check if user is banned
+    if ($failed_attempts >= MAX_ATTEMPTS && ($current_time - strtotime($last_failed)) < BAN_DURATION) {
+        $error = 'Account is locked. Please try again later. (1 day duration)';
     } else {
-        $error = 'Invalid email or password.';
+        // Prepare and execute query
+        $stmt = $conn->prepare("SELECT cust_id, cust_pass FROM customers WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $stmt->bind_result($user_id, $hashed_password);
+        $stmt->fetch();
+        $stmt->close();
+
+        if ($user_id && password_verify($password, $hashed_password)) {
+            // Reset failed attempts on successful login
+            $stmt = $conn->prepare("DELETE FROM login_attempts WHERE email = ?");
+            $stmt->bind_param("s", $email);
+            $stmt->execute();
+            $stmt->close();
+
+            // Regenerate session ID to prevent session fixation attacks
+            session_regenerate_id(true);
+
+            // Set session variables
+            $_SESSION['loggedin'] = true;
+            $_SESSION['email'] = $email;
+            $_SESSION['cust_id'] = $user_id;
+
+            // Redirect to dashboard or landing page
+            header('Location: customerLandingPage.php');
+            exit();
+        } else {
+            // Increment failed attempts
+            if ($failed_attempts) {
+                if (($current_time - strtotime($last_failed)) > BAN_DURATION) {
+                    // Reset attempts after ban duration
+                    $failed_attempts = 0;
+                }
+                $failed_attempts++;
+                $stmt = $conn->prepare("UPDATE login_attempts SET failed_attempts = ?, last_failed = NOW() WHERE email = ?");
+                $stmt->bind_param("is", $failed_attempts, $email);
+            } else {
+                // First failed attempt
+                $failed_attempts = 1;
+                $stmt = $conn->prepare("INSERT INTO login_attempts (email, failed_attempts, last_failed) VALUES (?, ?, NOW())");
+                $stmt->bind_param("si", $email, $failed_attempts);
+            }
+            $stmt->execute();
+            $stmt->close();
+
+            // Check if user should be banned
+            if ($failed_attempts >= MAX_ATTEMPTS) {
+                $error = 'Account is locked due to multiple failed login attempts. Please try again later.';
+            } else {
+                $error = 'Invalid email or password.';
+            }
+        }
     }
 }
 

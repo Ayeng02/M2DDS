@@ -29,110 +29,190 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
 // Database connections
 include './includes/db_connect.php';
 
+// Constants
+const MAX_ATTEMPTS = 5;
+const BAN_DURATION = 86400; // 1 day in seconds
+
 // Process form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    // Check if the email belongs to an admin
-    $adminSql = "SELECT admin_id, admin_pass FROM admin_tbl WHERE admin_email = ?";
-    $adminStmt = $conn->prepare($adminSql);
-    $adminStmt->bind_param("s", $email);
-    $adminStmt->execute();
-    $adminStmt->store_result();
+    // Check login attempts
+    $stmt = $conn->prepare("SELECT failed_attempts, last_failed FROM login_attempts WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $stmt->bind_result($failed_attempts, $last_failed);
+    $stmt->fetch();
+    $stmt->close();
 
-    if ($adminStmt->num_rows > 0) {
-        // Admin found
-        $adminStmt->bind_result($adminId, $adminHashedPassword);
-        $adminStmt->fetch();
+    $current_time = time();
 
-        if (password_verify($password, $adminHashedPassword)) {
-            // Password is correct, set session data and redirect to admin directory
-            $_SESSION['AdminLogExist'] = true;
-            $_SESSION['admin_id'] = $adminId;
-            $_SESSION['emp_role'] = 'Admin';
-
-            header('Location: ./admin/admin_interface.php');
-            exit();
-        } else {
-            $error_message = 'Invalid email or password';
-        }
-        $adminStmt->close();
+    // Check if user is banned
+    if ($failed_attempts >= MAX_ATTEMPTS && ($current_time - strtotime($last_failed)) < BAN_DURATION) {
+        $error_message = 'Account is locked. Please try again later.';
     } else {
-        // Admin not found, check if email exists in employee table
-        $empSql = "SELECT emp_id, emp_pass, emp_role FROM emp_tbl WHERE emp_email = ?";
-        $empStmt = $conn->prepare($empSql);
-        $empStmt->bind_param("s", $email);
-        $empStmt->execute();
-        $empStmt->store_result();
+        // Check if the email belongs to an admin
+        $adminSql = "SELECT admin_id, admin_pass FROM admin_tbl WHERE admin_email = ?";
+        $adminStmt = $conn->prepare($adminSql);
+        $adminStmt->bind_param("s", $email);
+        $adminStmt->execute();
+        $adminStmt->store_result();
 
-        if ($empStmt->num_rows > 0) {
-            // Employee found
-            $empStmt->bind_result($empId, $empHashedPassword, $empRole);
-            $empStmt->fetch();
+        if ($adminStmt->num_rows > 0) {
+            // Admin found
+            $adminStmt->bind_result($adminId, $adminHashedPassword);
+            $adminStmt->fetch();
 
-            if (password_verify($password, $empHashedPassword)) {
-                // Check if the employee has logged in attendance for the current day
-                $today = date('Y-m-d');
-                $attSql = "SELECT att_id, time_out FROM att_tbl WHERE emp_id = ? AND DATE(att_date) = ?";
-                $attStmt = $conn->prepare($attSql);
-                $attStmt->bind_param("ss", $empId, $today);
-                $attStmt->execute();
-                $attStmt->store_result();
-                $attStmt->bind_result($attId, $timeOut);
+            if (password_verify($password, $adminHashedPassword)) {
+                // Reset failed attempts on successful login
+                resetFailedAttempts($email, $conn);
 
-                if ($attStmt->num_rows > 0) {
-                    $attStmt->fetch();
+                $_SESSION['AdminLogExist'] = true;
+                $_SESSION['admin_id'] = $adminId;
+                $_SESSION['emp_role'] = 'Admin';
 
-                    // Check if the time_out is already recorded for the day
-                    if (!is_null($timeOut)) {
-                        // Employee has logged out for the day, deny login
-                        $error_message = 'Ooopss. You have already logged out for today!';
-                    } else {
-                        // Employee has already logged in for the day, proceed with redirection
-                        $_SESSION['EmpLogExist'] = true;
-                        $_SESSION['emp_id'] = $empId;
-                        $_SESSION['emp_role'] = $empRole;
+                header('Location: ./admin/admin_interface.php');
+                exit();
+            } else {
+                $error_message = handleFailedAttempt($email, $conn);
+            }
+            $adminStmt->close();
+        } else {
+            // Admin not found, check if email exists in employee table
+            $empSql = "SELECT emp_id, emp_pass, emp_role FROM emp_tbl WHERE emp_email = ?";
+            $empStmt = $conn->prepare($empSql);
+            $empStmt->bind_param("s", $email);
+            $empStmt->execute();
+            $empStmt->store_result();
 
-                        // Update employee status to 'Active' only if the current status is not 'On Shipped'
-                        $statusUpdateSql = "UPDATE emp_tbl SET emp_status = 'Active' WHERE emp_id = ? AND emp_status != 'On Shipped'";
-                        $statusUpdateStmt = $conn->prepare($statusUpdateSql);
-                        $statusUpdateStmt->bind_param("s", $empId);
-                        $statusUpdateStmt->execute();
-                        $statusUpdateStmt->close();
+            if ($empStmt->num_rows > 0) {
+                // Employee found
+                $empStmt->bind_result($empId, $empHashedPassword, $empRole);
+                $empStmt->fetch();
 
-                        $redirectUrl = '';
-                        switch ($empRole) {
-                            case 'Shipper':
-                                $redirectUrl = './shipper/shipper.php';
-                                break;
-                            case 'Order Manager':
-                                $redirectUrl = './ordr_manager/order_manager.php';
-                                break;
-                            case 'Cashier':
-                                $redirectUrl = './cashier/cashier.php';
-                                break;
-                            default:
-                                $redirectUrl = 'login.php';
-                                break;
+                if (password_verify($password, $empHashedPassword)) {
+                    // Reset failed attempts on successful login
+                    resetFailedAttempts($email, $conn);
+
+                    // Check if the employee has logged in attendance for the current day
+                    $today = date('Y-m-d');
+                    $attSql = "SELECT att_id, time_out FROM att_tbl WHERE emp_id = ? AND DATE(att_date) = ?";
+                    $attStmt = $conn->prepare($attSql);
+                    $attStmt->bind_param("ss", $empId, $today);
+                    $attStmt->execute();
+                    $attStmt->store_result();
+                    $attStmt->bind_result($attId, $timeOut);
+
+                    if ($attStmt->num_rows > 0) {
+                        $attStmt->fetch();
+
+                        // Check if the time_out is already recorded for the day
+                        if (!is_null($timeOut)) {
+                            // Employee has logged out for the day, deny login
+                            $error_message = 'Ooopss. You have already logged out for today!';
+                        } else {
+                            // Employee has already logged in for the day, proceed with redirection
+                            $_SESSION['EmpLogExist'] = true;
+                            $_SESSION['emp_id'] = $empId;
+                            $_SESSION['emp_role'] = $empRole;
+
+                            // Update employee status to 'Active' only if the current status is not 'On Shipped'
+                            $statusUpdateSql = "UPDATE emp_tbl SET emp_status = 'Active' WHERE emp_id = ? AND emp_status != 'On Shipped'";
+                            $statusUpdateStmt = $conn->prepare($statusUpdateSql);
+                            $statusUpdateStmt->bind_param("s", $empId);
+                            $statusUpdateStmt->execute();
+                            $statusUpdateStmt->close();
+
+                            $redirectUrl = '';
+                            switch ($empRole) {
+                                case 'Shipper':
+                                    $redirectUrl = './shipper/shipper.php';
+                                    break;
+                                case 'Order Manager':
+                                    $redirectUrl = './ordr_manager/order_manager.php';
+                                    break;
+                                case 'Cashier':
+                                    $redirectUrl = './cashier/cashier.php';
+                                    break;
+                                default:
+                                    $redirectUrl = 'login.php';
+                                    break;
+                            }
+                            header("Location: $redirectUrl");
+                            exit();
                         }
-                        header("Location: $redirectUrl");
-                        exit();
+                    } else {
+                        // Employee has not logged in for the day, redirect to attendance page
+                        $error_message = 'Ooopss. You did not log your attendance yet!';
                     }
                 } else {
-                    // Employee has not logged in for the day, redirect to attendance page
-                    $error_message = 'Ooopss. You did not log your attendance yet!';
+                    $error_message = handleFailedAttempt($email, $conn);
                 }
+                $empStmt->close();
             } else {
-                $error_message = 'Invalid email or password';
+                $error_message = handleFailedAttempt($email, $conn);
             }
-            $empStmt->close();
-        } else {
-            $error_message = 'Invalid email or password';
+        }
+    }
+}
+
+$conn->close();
+
+// Helper function to reset failed attempts
+function resetFailedAttempts($email, $conn) {
+    $stmt = $conn->prepare("DELETE FROM login_attempts WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $stmt->close();
+}
+
+// Helper function to handle failed attempts
+function handleFailedAttempt($email, $conn) {
+    $failed_attempts = 0; // Initialize with default value
+    $last_failed = null; // Initialize with default value
+
+    $stmt = $conn->prepare("SELECT failed_attempts, last_failed FROM login_attempts WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $stmt->bind_result($failed_attempts, $last_failed);
+
+    // Fetch result, if exists
+    if (!$stmt->fetch()) {
+        // If no row exists, set defaults
+        $failed_attempts = 0;
+        $last_failed = null;
+    }
+    $stmt->close();
+
+    $current_time = time();
+
+    // Check and handle the ban duration
+    if ($failed_attempts > 0 && $last_failed !== null) {
+        $last_failed_time = strtotime($last_failed);
+        if (($current_time - $last_failed_time) > BAN_DURATION) {
+            // Reset attempts after ban duration
+            $failed_attempts = 0;
         }
     }
 
-    $conn->close();
+    // Increment failed attempts
+    $failed_attempts++;
+    if ($failed_attempts > 1) {
+        $stmt = $conn->prepare("UPDATE login_attempts SET failed_attempts = ?, last_failed = NOW() WHERE email = ?");
+        $stmt->bind_param("is", $failed_attempts, $email);
+    } else {
+        $stmt = $conn->prepare("INSERT INTO login_attempts (email, failed_attempts, last_failed) VALUES (?, ?, NOW())");
+        $stmt->bind_param("si", $email, $failed_attempts);
+    }
+    $stmt->execute();
+    $stmt->close();
+
+    if ($failed_attempts >= MAX_ATTEMPTS) {
+        return 'Account is locked due to multiple failed login attempts. Please try again later.';
+    } else {
+        return 'Invalid email or password.';
+    }
 }
 ?>
 
