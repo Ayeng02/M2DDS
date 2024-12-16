@@ -72,6 +72,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['admin_id'] = $adminId;
                 $_SESSION['emp_role'] = 'Admin';
 
+                // Log the successful login in the system log
+                $action = "Successful login by Employee ID: " . $adminId;
+                $logStmt = $conn->prepare("INSERT INTO systemlog_tbl (user_id, user_type, systemlog_action, systemlog_date) VALUES (?, 'Admin', ?, NOW())");
+                $logStmt->bind_param("ss", $adminId, $action);
+
+                if (!$logStmt->execute()) {
+                    // Handle logging failure (optional)
+                    error_log("Logging action failed for Employee ID: " . $adminId);
+                }
+                $logStmt->close();
+
                 header('Location: ./admin/admin_interface.php');
                 exit();
             } else {
@@ -116,6 +127,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $_SESSION['EmpLogExist'] = true;
                             $_SESSION['emp_id'] = $empId;
                             $_SESSION['emp_role'] = $empRole;
+
+                            // Log the successful login in the system log
+                            $action = "Successful login by Employee ID: " . $empId;
+                            $logStmt = $conn->prepare("INSERT INTO systemlog_tbl (user_id, user_type, systemlog_action, systemlog_date) VALUES (?, 'Employee', ?, NOW())");
+                            $logStmt->bind_param("ss", $empId, $action);
+
+                            if (!$logStmt->execute()) {
+                                // Handle logging failure (optional)
+                                error_log("Logging action failed for Employee ID: " . $empId);
+                            }
+                            $logStmt->close();
 
                             // Update employee status to 'Active' only if the current status is not 'On Shipped'
                             $statusUpdateSql = "UPDATE emp_tbl SET emp_status = 'Active' WHERE emp_id = ? AND emp_status != 'On Shipped'";
