@@ -592,8 +592,8 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                         shouldSwitch = false;
 
 
-                        x = rows[i].getElementsByTagName("TD")[2];
-                        y = rows[i + 1].getElementsByTagName("TD")[2];
+                        x = rows[i].getElementsByTagName("TD")[1];
+                        y = rows[i + 1].getElementsByTagName("TD")[1];
 
                         if (sortOption === "a-z") {
 
