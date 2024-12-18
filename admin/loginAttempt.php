@@ -449,6 +449,7 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                         log_id, email, action_details, log_date 
                         FROM 
                             login_attempts_log
+                            ORDER BY log_id DESC
                         LIMIT 
                             $limit OFFSET $offset";
 
