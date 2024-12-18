@@ -37,7 +37,7 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Rates</title>
+    <title>Attempt Logs</title>
     <link rel="icon" href="../img/mtdd_logo.png" type="image/x-icon">
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
@@ -440,15 +440,15 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                 $offset = ($page - 1) * $limit;
 
                 // Count the total number of employees
-                $count_sql = "SELECT COUNT(*) AS total FROM login_attempts";
+                $count_sql = "SELECT COUNT(*) AS total FROM login_attempts_log";
                 $count_result = $conn->query($count_sql);
                 $total_rows = $count_result->fetch_assoc()['total'];
                 $total_pages = ceil($total_rows / $limit);
 
                 $sql = "SELECT 
-                        id, email, failed_attempts, last_failed 
+                        log_id, email, action_details, log_date 
                         FROM 
-                            login_attempts
+                            login_attempts_log
                         LIMIT 
                             $limit OFFSET $offset";
 
@@ -464,29 +464,24 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                                 <th>EMAIL</th>
                                 <th>FAILED ATTEMPT</th>
                                 <th>LAST ATTEMPT</th>
-                                <th>Action</th>
+                                
                             </tr>
                         </thead>
                         <tbody>
                             <?php if ($result->num_rows > 0): ?>
                                 <?php while ($attempt = $result->fetch_assoc()): ?>
                                     <tr>
-                                        <td><?php echo htmlspecialchars($attempt['id']); ?></td>
+                                        <td><?php echo htmlspecialchars($attempt['log_id']); ?></td>
                                         <td><?php echo htmlspecialchars($attempt['email']); ?></td>
-                                        <td><?php echo number_format($attempt['failed_attempts']); ?></td>
-                                         <td><?php echo date('F j, Y h:i A', strtotime($attempt['last_failed'])); ?></td>
+                                        <td><?php echo htmlspecialchars($attempt['action_details']); ?></td>
+                                         <td><?php echo date('F j, Y h:i A', strtotime($attempt['log_date'])); ?></td>
 
-                                        <td>
-                                            
-                                             <a href="delete_attempt.php?id=<?php echo htmlspecialchars($attempt['id']); ?>" class="delete-icon" onclick="confirmDelete(event, '<?php echo htmlspecialchars($category['category_code']); ?>')">
-                                    <i class="fa fa-trash"></i>
-                                </a>
-                                        </td>
+                                        
                                     </tr>
                                 <?php endwhile; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="5">No data found.</td>
+                                    <td colspan="4">No data found.</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
@@ -495,7 +490,7 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
             </div>
 
 
-           
+        
           
 
 
@@ -579,7 +574,7 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
 
 
 
-
+           
 
             // sort table by Name
             function sortTable() {
