@@ -410,25 +410,24 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                     <h1 class="mt-4" id="dashboard">Dashboard</h1>
                 </div>
                 <?php
-
-                $sql = "SELECT SUM(order_total) AS monthly_sales 
+$sql = "SELECT SUM(order_total) AS monthly_sales 
         FROM order_tbl 
         WHERE MONTH(order_date) = MONTH(CURDATE()) 
           AND YEAR(order_date) = YEAR(CURDATE())
           AND status_code = '4'";
-                $result = $conn->query($sql);
+$result = $conn->query($sql);
 
-                $monthly_sales = 0;
+$monthly_sales = 0; // Default value
 
-                if ($result->num_rows > 0) {
+if ($result->num_rows > 0) {
+    $row = $result->fetch_assoc();
+    $monthly_sales = $row['monthly_sales'] ?? 0; // Ensure null is treated as 0
+}
 
-                    while ($row = $result->fetch_assoc()) {
-                        $monthly_sales = $row['monthly_sales'];
-                    }
-                } else {
-                    $monthly_sales = "No data available";
-                }
-                ?>
+// Format the monthly sales value for display
+echo number_format($monthly_sales, 2);
+?>
+
                 <?php
                 $sql = "SELECT COUNT(cust_id) AS total_customers FROM customers";
                 $result = $conn->query($sql);
