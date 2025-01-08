@@ -424,8 +424,7 @@ if ($result->num_rows > 0) {
     $monthly_sales = $row['monthly_sales'] ?? 0; // Ensure null is treated as 0
 }
 
-// Format the monthly sales value for display
-echo number_format($monthly_sales, 2);
+
 ?>
 
                 <?php
@@ -499,7 +498,7 @@ echo number_format($monthly_sales, 2);
                         <i class="fas fa-money-bill-wave"></i>
                         <div>
                             <a href="viewSales.php" style="text-decoration: none; color: inherit;">
-                                <span class="sales-amount">₱ <?php echo number_format($monthly_sales); ?></span>
+                                <span class="sales-amount">₱ <?php echo number_format($monthly_sales, 2); ?></span>
                                 <span class="sales-label">Monthly Sales (<?php echo date('F'); ?>) </span>
                             </a>
                         </div>
