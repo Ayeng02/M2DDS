@@ -536,7 +536,7 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                     }
                     ?>
                     <div class="container-box">
-                        <i class="fa-solid <?php echo $star_icon; ?>" style="font-size: 24px;"></i>
+                        <i class="fa-solid <?php echo $star_icon; ?>"></i>
                         <span class="stars-total"><?php echo ($highest_reviews); ?></span>
                         <div>
                             <p class="prod-name"><?php echo htmlspecialchars($prod_name); ?></p>
