@@ -1,6 +1,6 @@
 <?php
 session_start();
-error_reporting(E_ALL & ~E_NOTICE) ;
+error_reporting(E_ALL & ~E_NOTICE);
 include '../includes/db_connect.php';
 
 // Redirect to landing page if already logged in
@@ -410,22 +410,22 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                     <h1 class="mt-4" id="dashboard">Dashboard</h1>
                 </div>
                 <?php
-$sql = "SELECT SUM(order_total) AS monthly_sales 
+                $sql = "SELECT SUM(order_total) AS monthly_sales 
         FROM order_tbl 
         WHERE MONTH(order_date) = MONTH(CURDATE()) 
           AND YEAR(order_date) = YEAR(CURDATE())
           AND status_code = '4'";
-$result = $conn->query($sql);
+                $result = $conn->query($sql);
 
-$monthly_sales = 0; // Default value
+                $monthly_sales = 0; // Default value
 
-if ($result->num_rows > 0) {
-    $row = $result->fetch_assoc();
-    $monthly_sales = $row['monthly_sales'] ?? 0; // Ensure null is treated as 0
-}
+                if ($result->num_rows > 0) {
+                    $row = $result->fetch_assoc();
+                    $monthly_sales = $row['monthly_sales'] ?? 0; // Ensure null is treated as 0
+                }
 
 
-?>
+                ?>
 
                 <?php
                 $sql = "SELECT COUNT(cust_id) AS total_customers FROM customers";
@@ -488,6 +488,8 @@ if ($result->num_rows > 0) {
                     }
                 } else {
                     $highest_reviews = "No reviews found";
+                    $average_rating = 0;
+                    $prod_name = "No product";
                 }
                 ?>
 
@@ -523,13 +525,25 @@ if ($result->num_rows > 0) {
                         </div>
                     </div>
 
+                    <?php
+                    // Determine the star class based on the average rating
+                    if ($average_rating >= 4.75) {
+                        $star_icon = "fa-star"; // Full star
+                    } elseif ($average_rating >= 4.25) {
+                        $star_icon = "fa-star-half-stroke"; // Half star
+                    } else {
+                        $star_icon = "fa-regular fa-star"; // Empty star
+                    }
+                    ?>
                     <div class="container-box">
-                        <i class="fa-solid fa-star"></i><span class="stars-total"><?php echo ($highest_reviews); ?></span>
+                        <i class="fa-solid <?php echo $star_icon; ?>" style="font-size: 24px;"></i>
+                        <span class="stars-total"><?php echo ($highest_reviews); ?></span>
                         <div>
-                            <p class="prod-name"><?php echo ($prod_name); ?></p>
+                            <p class="prod-name"><?php echo htmlspecialchars($prod_name); ?></p>
                             <p class="sales-label">Highest Rated Product</p>
                         </div>
                     </div>
+
                 </div>
                 <br>
                 <hr>
