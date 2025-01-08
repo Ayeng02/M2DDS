@@ -529,7 +529,7 @@ if (isset($_SESSION['EmpLogExist']) && $_SESSION['EmpLogExist'] === true || isse
                     // Determine the star class based on the average rating
                     if ($average_rating >= 4.75) {
                         $star_icon = "fa-star"; // Full star
-                    } elseif ($average_rating >= 4.25) {
+                    } elseif ($average_rating >= 2.50) {
                         $star_icon = "fa-star-half-stroke"; // Half star
                     } else {
                         $star_icon = "fa-regular fa-star"; // Empty star
